@@ -1,0 +1,38 @@
+<div class="dashboard-wrap">
+  <div class="dash-header">
+    <div>
+      <h1>My Experiments</h1>
+      <p>Manage and track your encoding experiments</p>
+    </div>
+    <button mat-raised-button color="primary">+ New Experiment</button>
+  </div>
+
+  <div class="stats">
+    <mat-card>
+      <mat-card-content>
+        <div class="stat-val blue">12</div>
+        <div class="stat-lbl">Total</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-content>
+        <div class="stat-val green">9</div>
+        <div class="stat-lbl">Completed</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-content>
+        <div class="stat-val warn">2</div>
+        <div class="stat-lbl">Running</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-content>
+        <div class="stat-val red">1</div>
+        <div class="stat-lbl">Failed</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <ag-grid-angular [rowData]="experiments" [columnDefs]="colDefs" style="height: 400px" />
+</div>
