@@ -28,7 +28,7 @@ export class Dashboard implements OnInit {
   constructor(private experimentsService: ExperimentsService) {}
 
   ngOnInit() {
-    // this.isAdmin = this.authService.isAdmin(); // TODO: we would pass this value into the getExperiments fnc to determine whether we show ALL experiments(admin) or just the users
+    // this.isAdmin = this.authService.isAdmin(); // TODO: we would pass this value into the getExperiments fnc to determine whether we show ALL experiments (admin) or just the users
     this.experimentsService.getExperiments().subscribe((data) => {
       this.experiments = data;
     });

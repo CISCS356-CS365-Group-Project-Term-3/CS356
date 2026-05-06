@@ -5,50 +5,49 @@ import { of } from 'rxjs';
   providedIn: 'root',
 })
 export class ExperimentsService {
+  getExperiments() {
+    return of(this.mockExperiments);
+  }
   private mockExperiments = [
     {
-      id: '#042',
-      name: 'HEVC comparison',
+      id: '#01',
+      name: 'Experiment 1',
       codec: 'HEVC',
       sequences: 'Beauty, Bosphorus',
       date: 'Today 14:32',
       status: 'Complete',
     },
     {
-      id: '#041',
-      name: 'AVC low delay test',
+      id: '#02',
+      name: 'Experiment 2',
       codec: 'AVC',
       sequences: 'HoneyBee, Jockey',
       date: 'Today 13:10',
       status: 'Running',
     },
     {
-      id: '#040',
-      name: 'SHVC scalability',
+      id: '#03',
+      name: 'Experiment 3',
       codec: 'SHVC',
       sequences: 'ReadySetGo',
       date: 'Today 11:45',
       status: 'Running',
     },
     {
-      id: '#039',
-      name: 'H.265 quality test',
+      id: '#04',
+      name: 'Experiment 4',
       codec: 'HEVC',
       sequences: 'Beauty, ShakeNDry',
       date: 'Yesterday',
       status: 'Complete',
     },
     {
-      id: '#038',
-      name: 'Baseline AVC',
+      id: '#05',
+      name: 'Experiment 5',
       codec: 'AVC',
       sequences: 'YachtRide',
-      date: 'Yesterday',
+      date: '03/05/2026',
       status: 'Failed',
     },
   ];
-
-  getExperiments() {
-    return of(this.mockExperiments);
-  }
 }
