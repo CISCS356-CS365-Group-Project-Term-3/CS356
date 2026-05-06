@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
+import { Experiment } from '../models/experiment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +9,7 @@ export class ExperimentsService {
   getExperiments() {
     return of(this.mockExperiments);
   }
-  private mockExperiments = [
+  private mockExperiments: Experiment[] = [
     {
       id: '#01',
       name: 'Experiment 1',

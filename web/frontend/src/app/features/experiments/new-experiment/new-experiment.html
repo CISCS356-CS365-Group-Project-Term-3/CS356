@@ -1,0 +1,64 @@
+<div class="page-wrap">
+  <div class="new-experiment-wrap">
+    <div class="page-header">
+      <h1>New Experiment</h1>
+      <p>Configure and launch a new encoding experiment</p>
+    </div>
+
+    <mat-card>
+      <mat-stepper [linear]="true" #stepper>
+        <mat-step label="Project Setup" [completed]="isProjectSetupComplete()">
+          <app-project-setup />
+        </mat-step>
+
+        <mat-step label="Encoder Type">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Codec & Mode">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Sequences">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Scalability">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Network">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Analysis">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Outputs">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Review">
+          <p>Coming soon</p>
+        </mat-step>
+      </mat-stepper>
+      <div class="actions">
+        <span class="step-counter"
+          >Step {{ stepper.selectedIndex + 1 }} of {{ stepper.steps.length }}</span
+        >
+        <div class="action-buttons">
+          <button mat-stroked-button (click)="stepper.previous()">Back</button>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="stepper.next()"
+            [disabled]="!canProceed(stepper.selectedIndex)"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>
