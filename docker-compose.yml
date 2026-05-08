@@ -1,0 +1,27 @@
+services:
+  engine:
+    build: ./experiments_engine
+    depends_on:
+      queue: 
+        condition: service_healthy
+    profiles:
+      - engine
+    environment:
+      - QUEUE_NAME=experiment_queue
+      - QUEUE_CONTAINER=queue
+  queue:
+    image: rabbitmq:4.3-management-alpine
+    profiles:
+      - engine
+    ports:
+      - "5672:5672"
+      - "15672:15672" 
+    healthcheck:
+      # use the flag --erlang-cookie if setting the erlang 
+      # cookie was necessary (comment by red-riding-hood)
+      # test: rabbitmq-diagnostics -q ping --erlang-cookie "mycookie"
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
