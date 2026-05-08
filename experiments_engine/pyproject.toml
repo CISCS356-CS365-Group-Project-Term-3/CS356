@@ -1,0 +1,9 @@
+[project]
+name = "experiments-engine"
+version = "0.1.0"
+dependencies = [
+    "pika",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
