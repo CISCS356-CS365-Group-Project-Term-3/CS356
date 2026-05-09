@@ -8,11 +8,16 @@ TOKEN = None
 def main(json):
     global TOKEN
     # takes in JSON data
-    temp = parse_payload(json)
-    if temp is not None:
-        TOKEN = temp
+    if json is not None:
+        temp = parse_payload(json)
+        if temp is not None:
+            TOKEN = temp
+            return None
+        else:
+            print("Error generating token.")
+            return None
     else:
-        print("Error generating token.")
+        raise ValueError("No JSON data provided.")
 
 def parse_payload(user_data):
     try:
