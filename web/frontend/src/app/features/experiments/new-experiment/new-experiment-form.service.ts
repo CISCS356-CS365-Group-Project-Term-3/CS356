@@ -1,12 +1,21 @@
 import { Injectable } from '@angular/core';
 
+export interface SequenceConfig {
+  videoFileId: number;
+  resolutionId: number | null;
+  frameRateId: number | null;
+  qualityId: number | null;
+  depthId: number | null;
+  gamutId: number | null;
+}
+
 export interface NewExperimentForm {
   name: string;
   projectTypeId: number | null;
   encoderTypeId: number | null;
   codecId: number | null;
   encoderModeId: number | null;
-  sequenceIds: number[];
+  sequences: SequenceConfig[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,6 +26,6 @@ export class NewExperimentFormService {
     encoderTypeId: null,
     codecId: null,
     encoderModeId: null,
-    sequenceIds: [],
+    sequences: [],
   };
 }

@@ -1,65 +1,82 @@
-export interface InfrastructureConfig {
-  project_types: ProjectType[];
-  encoder_types: EncoderType[];
-  codecs: Codec[];
-  encoder_modes: EncoderMode[];
-  scalability_types: ScalabilityType[];
-  raw_files: RawFile[];
-  pre_encoded_files: PreEncodedFile[];
+export interface ProjectType {
+  id: number;
+  name: string;
 }
 
 export interface EncoderType {
   id: number;
   name: string;
-  code: string;
-  active: boolean;
   active_codecs: number[];
 }
 
 export interface Codec {
   id: number;
   name: string;
-  code: string;
-  max_layers: number;
-  active_encoder_modes: number[];
-  active_scalability: number[] | null;
 }
 
 export interface EncoderMode {
   id: number;
   name: string;
-  code: string;
 }
 
-export interface ScalabilityOption {
+export interface VideoFile {
   id: number;
   name: string;
-  order: number;
-  code: string;
+  available_spatials: number[];
+  available_temporals: number[];
+  available_depths: number[];
+}
+
+export interface Resolution {
+  id: number;
+  name: string;
   value: string;
 }
 
-export interface ScalabilityType {
+export interface FrameRate {
   id: number;
   name: string;
-  types: ScalabilityOption[]; // the actual selectable values
+  value: string;
 }
 
-export interface PreEncodedFile {
-  id: number;
-  code: string;
-  duration: string;
-}
-
-export interface RawFile {
+export interface QualityOption {
   id: number;
   name: string;
-  code: string;
-  duration: string;
 }
 
-export interface ProjectType {
+export interface DepthOption {
   id: number;
   name: string;
-  code: string;
+}
+
+export interface GamutOption {
+  id: number;
+  name: string;
+}
+
+export interface Topology {
+  id: number;
+  name: string;
+}
+
+export interface TransmissionCondition {
+  id: number;
+  name: string;
+  lower_bound: string;
+  upper_bound: string;
+}
+
+export interface InfrastructureConfig {
+  project_types: ProjectType[];
+  encoder_types: EncoderType[];
+  codecs: Codec[];
+  encoder_modes: EncoderMode[];
+  video_files: VideoFile[];
+  resolutions: Resolution[];
+  frame_rates: FrameRate[];
+  quality: QualityOption[];
+  depth: DepthOption[];
+  gamut: GamutOption[];
+  topologies: Topology[];
+  transmission_conditions: TransmissionCondition[];
 }

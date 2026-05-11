@@ -5,42 +5,45 @@
       <p>Configure and launch a new encoding experiment</p>
     </div>
 
-    <mat-card>
-      <mat-stepper [linear]="true" #stepper>
+    <mat-card appearance="outlined">
+      <mat-stepper class="wizard-stepper" [linear]="true" #stepper>
+        <ng-template matStepperIcon="edit">
+          <mat-icon>check</mat-icon>
+        </ng-template>
         <mat-step label="Project Setup" [completed]="isProjectSetupComplete()">
           <app-project-setup />
         </mat-step>
 
-        <mat-step label="Encoder Type">
-          <p>Coming soon</p>
+        <mat-step label="Encoder Type" [completed]="isEncoderTypeComplete()">
+          <app-encoder-type />
         </mat-step>
 
-        <mat-step label="Codec & Mode">
-          <p>Coming soon</p>
+        <mat-step label="Codec & Mode" [completed]="isCodecModeComplete()">
+          <app-codec-mode />
         </mat-step>
 
-        <mat-step label="Sequences">
-          <p>Coming soon</p>
+        <mat-step label="Sequences" [completed]="isSequencesComplete()">
+          <app-sequences />
         </mat-step>
-
+        <!-- 
         <mat-step label="Scalability">
           <p>Coming soon</p>
         </mat-step>
 
         <mat-step label="Network">
           <p>Coming soon</p>
-        </mat-step>
+        </mat-step> -->
 
-        <mat-step label="Analysis">
+        <!-- <mat-step label="Analysis">
           <p>Coming soon</p>
         </mat-step>
 
         <mat-step label="Outputs">
           <p>Coming soon</p>
-        </mat-step>
+        </mat-step> -->
 
         <mat-step label="Review">
-          <p>Coming soon</p>
+          <app-review />
         </mat-step>
       </mat-stepper>
       <div class="actions">
@@ -48,14 +51,20 @@
           >Step {{ stepper.selectedIndex + 1 }} of {{ stepper.steps.length }}</span
         >
         <div class="action-buttons">
-          <button mat-stroked-button (click)="stepper.previous()">Back</button>
+          <button
+            mat-stroked-button
+            [routerLink]="stepper.selectedIndex === 0 ? '/experiments' : null"
+            (click)="stepper.previous()"
+          >
+            {{ stepper.selectedIndex === 0 ? 'Cancel' : 'Back' }}
+          </button>
           <button
             mat-raised-button
             color="primary"
-            (click)="stepper.next()"
+            (click)="stepper.selectedIndex === stepper.steps.length - 1 ? submit() : stepper.next()"
             [disabled]="!canProceed(stepper.selectedIndex)"
           >
-            Next
+            {{ stepper.selectedIndex === stepper.steps.length - 1 ? 'Submit' : 'Next' }}
           </button>
         </div>
       </div>
