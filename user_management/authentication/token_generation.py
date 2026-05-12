@@ -64,6 +64,7 @@ def load_key():
         print(f"Error loading private key: {e}")
         return None
 
+# for testing
 if __name__ == '__main__':
         test_user = {
             'user_id': 1,
