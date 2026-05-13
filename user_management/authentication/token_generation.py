@@ -35,7 +35,7 @@ def generate_token(user_id, user_name, user_email, user_role):
         'user_name': user_name,
         'user_email': user_email,
         'user_role': user_role,
-        'exp': datetime.datetime.now(datetime.timezone.utc)
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
     }
     my_secret = load_key()
 
