@@ -3,6 +3,7 @@ name = "experiments-engine"
 version = "0.1.0"
 dependencies = [
     "pika",
+    "pymongo",
 ]
 
 [tool.setuptools.packages.find]
