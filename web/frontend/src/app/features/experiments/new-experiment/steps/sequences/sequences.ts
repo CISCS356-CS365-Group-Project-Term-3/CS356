@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -17,7 +16,7 @@ import { NewExperimentFormService, SequenceConfig } from '../../new-experiment-f
 
 @Component({
   selector: 'app-sequences',
-  imports: [MatCardModule, MatButtonToggleModule, MatFormFieldModule, MatSelectModule, FormsModule],
+  imports: [MatCardModule, MatFormFieldModule, MatSelectModule, FormsModule],
   templateUrl: './sequences.html',
   styleUrl: './sequences.scss',
 })
@@ -43,6 +42,12 @@ export class SequencesStep implements OnInit {
       this.depth = data.depth;
       this.gamut = data.gamut;
     });
+  }
+
+  get hasIncompleteSequences(): boolean {
+    return this.formService.form.sequences.some(
+      (s) => s.resolutionId === null || s.frameRateId === null || s.qualityId === null,
+    );
   }
 
   isSelected(file: VideoFile): boolean {
@@ -79,5 +84,11 @@ export class SequencesStep implements OnInit {
     const file = this.getFile(fileId);
     if (!file) return [];
     return this.frameRates.filter((fr) => file.available_temporals.includes(fr.id));
+  }
+
+  getDepthOptions(fileId: number): DepthOption[] {
+    const file = this.getFile(fileId);
+    if (!file) return [];
+    return this.depth.filter((d) => file.available_depths.includes(d.id));
   }
 }

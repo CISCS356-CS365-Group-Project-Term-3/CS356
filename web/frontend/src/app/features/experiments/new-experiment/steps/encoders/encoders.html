@@ -1,0 +1,64 @@
+<div class="step-content">
+  @for (encoder of formService.form.encoders; track $index; let i = $index) {
+    <mat-card class="encoder-card">
+      <mat-card-content>
+        <div class="encoder-header">
+          <p class="section-label">Encoder {{ i + 1 }}</p>
+          @if (formService.form.encoders.length > 1) {
+            <button mat-icon-button (click)="removeEncoder(i)" aria-label="Remove encoder">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+
+        <p class="sub-label">Encoder type</p>
+        <div class="options">
+          @for (encoderType of encoderTypes; track encoderType.id) {
+            <mat-card
+              class="option-card"
+              [class.selected]="encoder.encoderTypeId === encoderType.id"
+              (click)="selectEncoderType(encoder, encoderType)"
+            >
+              <div class="option-name">{{ encoderType.name }}</div>
+              <div class="option-desc">{{ encoderTypeDescriptions[encoderType.name] }}</div>
+            </mat-card>
+          }
+        </div>
+
+        @if (encoder.encoderTypeId !== null) {
+          <p class="sub-label">Codec</p>
+          <div class="options">
+            @for (codec of availableCodecs(encoder); track codec.id) {
+              <mat-card
+                class="option-card"
+                [class.selected]="encoder.codecId === codec.id"
+                (click)="selectCodec(encoder, codec)"
+              >
+                <div class="option-name">{{ codec.name }}</div>
+              </mat-card>
+            }
+          </div>
+        }
+
+        @if (encoder.codecId !== null) {
+          <p class="sub-label">Encoder mode</p>
+          <div class="options">
+            @for (mode of allModes; track mode.id) {
+              <mat-card
+                class="option-card"
+                [class.selected]="encoder.encoderModeId === mode.id"
+                (click)="selectMode(encoder, mode)"
+              >
+                <div class="option-name">{{ mode.name }}</div>
+              </mat-card>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <button mat-stroked-button (click)="addEncoder()">
+    <mat-icon>add</mat-icon> Add Encoder
+  </button>
+</div>

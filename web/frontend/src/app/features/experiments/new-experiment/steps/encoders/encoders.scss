@@ -4,11 +4,29 @@
   gap: 16px;
 }
 
+.encoder-card {
+  width: 100%;
+}
+
+.encoder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
 .section-label {
-  margin: 0 0 16px;
+  margin: 0;
   font-size: 14px;
   font-weight: 500;
   color: #555;
+}
+
+.sub-label {
+  margin: 16px 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #777;
 }
 
 .options {
@@ -23,7 +41,7 @@
   text-align: center;
   transition: box-shadow 0.2s;
 
-  &:hover:not(.disabled) {
+  &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
 }
@@ -40,23 +58,10 @@
   line-height: 1.4;
 }
 
-.option-badge {
-  margin-top: 12px;
-  font-size: 11px;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .selected {
   border: 2px solid #1976d2;
 
   .option-name {
     color: #1976d2;
   }
-}
-
-.disabled {
-  cursor: default;
-  opacity: 0.45;
 }

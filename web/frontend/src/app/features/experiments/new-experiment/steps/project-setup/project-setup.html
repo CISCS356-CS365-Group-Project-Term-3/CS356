@@ -1,7 +1,7 @@
 <div class="step-content">
   <mat-card>
     <mat-card-content>
-      <mat-form-field appearance="outline" style="width: 100%">
+      <mat-form-field appearance="outline" class="name-field">
         <mat-label>Experiment name</mat-label>
         <input
           type="text"
@@ -24,7 +24,7 @@
             (click)="formService.form.projectTypeId = projectType.id"
           >
             <div class="option-name">{{ projectType.name }}</div>
-            <div class="option-desc">{{ projectTypeDescriptions[projectType.id] }}</div>
+            <div class="option-desc">{{ projectTypeDescriptions[projectType.name] }}</div>
           </mat-card>
         }
       </div>

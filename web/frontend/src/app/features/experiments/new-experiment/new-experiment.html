@@ -14,12 +14,8 @@
           <app-project-setup />
         </mat-step>
 
-        <mat-step label="Encoder Type" [completed]="isEncoderTypeComplete()">
-          <app-encoder-type />
-        </mat-step>
-
-        <mat-step label="Codec & Mode" [completed]="isCodecModeComplete()">
-          <app-codec-mode />
+        <mat-step label="Encoders" [completed]="isEncodersComplete()">
+          <app-encoders />
         </mat-step>
 
         <mat-step label="Sequences" [completed]="isSequencesComplete()">

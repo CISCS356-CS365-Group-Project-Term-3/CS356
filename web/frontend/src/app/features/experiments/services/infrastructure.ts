@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+// import { HttpClient } from '@angular/common/http';
+import { Observable, of, shareReplay } from 'rxjs';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InfrastructureService {
+  // constructor(private http: HttpClient) {}
+
+  // private config$ = this.http.get<InfrastructureConfig>('/api/config').pipe(shareReplay(1));
+  private config$ = of(MOCK_CONFIG).pipe(shareReplay(1));
+
   getConfig(): Observable<InfrastructureConfig> {
-    return of(MOCK_CONFIG);
+    return this.config$;
   }
 }
 

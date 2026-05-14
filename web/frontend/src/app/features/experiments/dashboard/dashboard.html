@@ -1,0 +1,70 @@
+<div class="page-wrap">
+  <div class="dash-header">
+    <div class="page-header">
+      <h1>{{ pageTitle }}</h1>
+      <p>Manage and track your encoding experiments</p>
+    </div>
+    <div class="header-actions">
+      @if (isAdmin) {
+        <mat-slide-toggle [checked]="showAllExperiments" (change)="onScopeToggle()">
+          Show all experiments
+        </mat-slide-toggle>
+      }
+      <button mat-raised-button color="primary" routerLink="/experiments/new">
+        + New Experiment
+      </button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <mat-card (click)="setStatusFilter(null)" [class.active-total]="activeStatusFilter === null">
+      <mat-card-content>
+        <div class="stat-val blue">{{ totalCount }}</div>
+        <div class="stat-lbl">Total</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('Complete')" [class.active-complete]="activeStatusFilter === 'Complete'">
+      <mat-card-content>
+        <div class="stat-val green">{{ completedCount }}</div>
+        <div class="stat-lbl">Completed</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('Running')" [class.active-running]="activeStatusFilter === 'Running'">
+      <mat-card-content>
+        <div class="stat-val warn">{{ runningCount }}</div>
+        <div class="stat-lbl">Running</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('Failed')" [class.active-failed]="activeStatusFilter === 'Failed'">
+      <mat-card-content>
+        <div class="stat-val red">{{ failedCount }}</div>
+        <div class="stat-lbl">Failed</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="table-actions">
+    @if (activeStatusFilter) {
+      <span class="filter-label">Filtered by: {{ activeStatusFilter }}</span>
+    }
+    @if (selectedExperiment) {
+      <span class="selected-label">{{ selectedExperiment.id }} {{ selectedExperiment.name }}</span>
+      <button mat-stroked-button (click)="createFromTemplate()">Create from Template</button>
+    }
+  </div>
+
+  @if (isLoading) {
+    <p class="state-msg">Loading experiments...</p>
+  } @else if (experiments.length === 0) {
+    <p class="state-msg">No experiments yet. Click <strong>+ New Experiment</strong> to create one.</p>
+  } @else {
+    <ag-grid-angular
+      [rowData]="filteredExperiments"
+      [columnDefs]="colDefs"
+      [rowSelection]="'single'"
+      domLayout="autoHeight"
+      (selectionChanged)="onSelectionChanged($event)"
+      (rowClicked)="onRowClicked($event)"
+    />
+  }
+</div>

@@ -1,11 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterLink } from '@angular/router';
 import { NewExperimentFormService } from './new-experiment-form.service';
 import { ProjectSetup } from './steps/project-setup/project-setup';
-import { EncoderTypeStep } from './steps/encoder-type/encoder-type';
-import { CodecModeStep } from './steps/codec-mode/codec-mode';
+import { EncodersStep } from './steps/encoders/encoders';
 import { SequencesStep } from './steps/sequences/sequences';
 import { ReviewStep } from './steps/review/review';
 import { MatCardModule } from '@angular/material/card';
@@ -18,8 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatButtonModule,
     RouterLink,
     ProjectSetup,
-    EncoderTypeStep,
-    CodecModeStep,
+    EncodersStep,
     SequencesStep,
     ReviewStep,
     MatCardModule,
@@ -28,24 +26,27 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './new-experiment.html',
   styleUrl: './new-experiment.scss',
 })
-export class NewExperiment {
+export class NewExperiment implements OnInit {
   constructor(
     public formService: NewExperimentFormService,
     private router: Router,
   ) {}
+
+  ngOnInit(): void {
+    this.formService.applyPendingTemplate();
+  }
 
   isProjectSetupComplete(): boolean {
     const form = this.formService.form;
     return form.name.trim().length > 0 && form.projectTypeId !== null;
   }
 
-  isEncoderTypeComplete(): boolean {
-    return this.formService.form.encoderTypeId !== null;
-  }
-
-  isCodecModeComplete(): boolean {
-    const form = this.formService.form;
-    return form.codecId !== null && form.encoderModeId !== null;
+  isEncodersComplete(): boolean {
+    const encoders = this.formService.form.encoders;
+    return (
+      encoders.length > 0 &&
+      encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null && e.encoderModeId !== null)
+    );
   }
 
   isSequencesComplete(): boolean {
@@ -60,10 +61,13 @@ export class NewExperiment {
     const form = this.formService.form;
     const payload = {
       name: form.name,
+      status: 'draft', // change to 'finalized' when the finalize button is implemented
       project_type_id: form.projectTypeId,
-      encoder_type_id: form.encoderTypeId,
-      codec_id: form.codecId,
-      encoder_mode_id: form.encoderModeId,
+      encoders: form.encoders.map((e) => ({
+        encoder_type_id: e.encoderTypeId,
+        codec_id: e.codecId,
+        encoder_mode_id: e.encoderModeId,
+      })),
       sequences: form.sequences.map((s) => ({
         video_file_id: s.videoFileId,
         resolution_id: s.resolutionId,
@@ -73,7 +77,9 @@ export class NewExperiment {
         gamut_id: s.gamutId,
       })),
     };
-    console.log('Submitting experiment:', payload);
+    // this.experimentsService.createExperiment(payload).subscribe(() => {
+    //   this.router.navigate(['/experiments']);
+    // });
     this.router.navigate(['/experiments']);
   }
 
@@ -82,10 +88,8 @@ export class NewExperiment {
       case 0:
         return this.isProjectSetupComplete();
       case 1:
-        return this.isEncoderTypeComplete();
+        return this.isEncodersComplete();
       case 2:
-        return this.isCodecModeComplete();
-      case 3:
         return this.isSequencesComplete();
       default:
         return true;
