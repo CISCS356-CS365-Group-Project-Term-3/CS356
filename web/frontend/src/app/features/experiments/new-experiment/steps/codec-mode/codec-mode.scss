@@ -1,0 +1,42 @@
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-label {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
+.options {
+  display: flex;
+  gap: 12px;
+}
+
+.option-card {
+  flex: 1;
+  cursor: pointer;
+  padding: 24px 20px;
+  text-align: center;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.option-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.selected {
+  border: 2px solid #1976d2;
+
+  .option-name {
+    color: #1976d2;
+  }
+}

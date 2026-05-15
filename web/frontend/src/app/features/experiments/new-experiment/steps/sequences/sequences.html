@@ -1,0 +1,56 @@
+<div class="step-content">
+  <mat-card>
+    <mat-card-content>
+      <p class="section-label">Select video sequences</p>
+      <div class="file-grid">
+        @for (file of videoFiles; track file.id) {
+          <mat-card
+            class="file-card"
+            [class.selected]="isSelected(file)"
+            (click)="toggleFile(file)"
+          >
+            <div class="file-name">{{ file.name }}</div>
+          </mat-card>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @for (seq of formService.form.sequences; track seq.videoFileId) {
+    <mat-card>
+      <mat-card-content>
+        <p class="section-label">{{ getFile(seq.videoFileId)?.name }}</p>
+        <div class="config-rows">
+          <div class="config-row">
+            <span class="config-label">Resolution</span>
+            <mat-button-toggle-group [(ngModel)]="seq.resolutionId" hideSingleSelectionIndicator>
+              @for (opt of getResolutionOptions(seq.videoFileId); track opt.id) {
+                <mat-button-toggle [value]="opt.id">
+                  {{ opt.name }}&nbsp;<span class="opt-value">{{ opt.value }}</span>
+                </mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Frame Rate</span>
+            <mat-button-toggle-group [(ngModel)]="seq.frameRateId" hideSingleSelectionIndicator>
+              @for (opt of getFrameRateOptions(seq.videoFileId); track opt.id) {
+                <mat-button-toggle [value]="opt.id">{{ opt.name }}</mat-button-toggle>
+              }
+            </mat-button-toggle-group>
+          </div>
+          <div class="config-row">
+            <span class="config-label">Quality (QP)</span>
+            <mat-form-field appearance="outline" class="quality-field">
+              <mat-select [(ngModel)]="seq.qualityId" placeholder="Select QP value">
+                @for (opt of quality; track opt.id) {
+                  <mat-option [value]="opt.id">{{ opt.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
