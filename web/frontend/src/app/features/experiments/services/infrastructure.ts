@@ -42,15 +42,33 @@ const MOCK_CONFIG: InfrastructureConfig = {
   ],
 
   video_files: [
-    { id: 1, name: 'Video 1', available_spatials: [1, 2, 3], available_temporals: [1, 2], available_depths: [1] },
-    { id: 2, name: 'Video 2', available_spatials: [1, 2, 3], available_temporals: [1, 2], available_depths: [1] },
-    { id: 3, name: 'Video 3', available_spatials: [1, 2, 3], available_temporals: [1, 2], available_depths: [1, 2] },
+    {
+      id: 1,
+      name: 'Beauty',
+      available_spatials: [1, 2, 3],
+      available_temporals: [1, 2],
+      available_depths: [1],
+    },
+    {
+      id: 2,
+      name: 'Honeybee',
+      available_spatials: [1, 2, 3],
+      available_temporals: [1, 2],
+      available_depths: [1],
+    },
+    {
+      id: 3,
+      name: 'Bosphorous',
+      available_spatials: [1, 2, 3],
+      available_temporals: [1, 2],
+      available_depths: [1, 2],
+    },
   ],
 
   resolutions: [
-    { id: 1, name: 'WVGA',  value: '832x480'   },
-    { id: 2, name: 'XGA',   value: '1024x768'  },
-    { id: 3, name: 'HD720', value: '1280x720'  },
+    { id: 1, name: 'WVGA', value: '832x480' },
+    { id: 2, name: 'XGA', value: '1024x768' },
+    { id: 3, name: 'HD720', value: '1280x720' },
   ],
 
   frame_rates: [
@@ -68,9 +86,7 @@ const MOCK_CONFIG: InfrastructureConfig = {
     { id: 2, name: '12 bit' },
   ],
 
-  gamut: [
-    { id: 1, name: 'Gamut 1' },
-  ],
+  gamut: [{ id: 1, name: 'Gamut 1' }],
 
   topologies: [
     { id: 1, name: 'IP to IP' },
@@ -78,7 +94,7 @@ const MOCK_CONFIG: InfrastructureConfig = {
   ],
 
   transmission_conditions: [
-    { id: 1, name: 'Delay',  lower_bound: '0ms', upper_bound: '1000ms' },
+    { id: 1, name: 'Delay', lower_bound: '0ms', upper_bound: '1000ms' },
     { id: 2, name: 'Jitter', lower_bound: '0ms', upper_bound: '1000ms' },
   ],
 };

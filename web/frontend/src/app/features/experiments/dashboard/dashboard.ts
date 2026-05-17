@@ -3,7 +3,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AgGridAngular } from 'ag-grid-angular';
-import { AllCommunityModule, ColDef, ModuleRegistry, RowClickedEvent, SelectionChangedEvent } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  ColDef,
+  ModuleRegistry,
+  RowClickedEvent,
+  SelectionChangedEvent,
+} from 'ag-grid-community';
 import { ExperimentsService } from '../services/experiments';
 import { Experiment, ExperimentStatus } from '../models/experiment.model';
 import { Router, RouterLink } from '@angular/router';
@@ -26,7 +32,13 @@ export class Dashboard implements OnInit {
   isAdmin: boolean = false; // TODO: replace with real auth check once JWT structure is known
 
   colDefs: ColDef[] = [
-    { field: 'id', headerName: 'Name', valueGetter: (p) => p.data.id + ' ' + p.data.name, flex: 2, checkboxSelection: true },
+    {
+      field: 'id',
+      headerName: 'Name',
+      valueGetter: (p) => p.data.id + ' ' + p.data.name,
+      flex: 2,
+      checkboxSelection: true,
+    },
     { field: 'codec', flex: 1 },
     { field: 'sequences', flex: 2 },
     { field: 'date', flex: 1 },
@@ -43,14 +55,18 @@ export class Dashboard implements OnInit {
     return this.experiments.filter((e) => e.status === this.activeStatusFilter);
   }
 
-  get pageTitle(): string {
-    return this.isAdmin && this.showAllExperiments ? 'All Experiments' : 'My Experiments';
+  get totalCount() {
+    return this.experiments.length;
   }
-
-  get totalCount()     { return this.experiments.length; }
-  get completedCount() { return this.experiments.filter((e) => e.status === 'Complete').length; }
-  get runningCount()   { return this.experiments.filter((e) => e.status === 'Running').length; }
-  get failedCount()    { return this.experiments.filter((e) => e.status === 'Failed').length; }
+  get completedCount() {
+    return this.experiments.filter((e) => e.status === 'Complete').length;
+  }
+  get runningCount() {
+    return this.experiments.filter((e) => e.status === 'Running').length;
+  }
+  get failedCount() {
+    return this.experiments.filter((e) => e.status === 'Failed').length;
+  }
 
   constructor(
     private experimentsService: ExperimentsService,
@@ -104,8 +120,8 @@ export class Dashboard implements OnInit {
   statusCellRenderer(params: { value: ExperimentStatus }) {
     const styles: Record<ExperimentStatus, string> = {
       Complete: 'background:#e8f5e9;color:#388e3c',
-      Running:  'background:#fff3e0;color:#f57c00',
-      Failed:   'background:#ffebee;color:#d32f2f',
+      Running: 'background:#fff3e0;color:#f57c00',
+      Failed: 'background:#ffebee;color:#d32f2f',
     };
     const style = styles[params.value] ?? 'background:#f5f5f5;color:#888';
     return `<span style="${style};padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">${params.value}</span>`;

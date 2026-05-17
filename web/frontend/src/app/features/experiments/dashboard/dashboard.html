@@ -1,7 +1,7 @@
 <div class="page-wrap">
   <div class="dash-header">
     <div class="page-header">
-      <h1>{{ pageTitle }}</h1>
+      <h1>My Experiments</h1>
       <p>Manage and track your encoding experiments</p>
     </div>
     <div class="header-actions">
@@ -23,19 +23,28 @@
         <div class="stat-lbl">Total</div>
       </mat-card-content>
     </mat-card>
-    <mat-card (click)="setStatusFilter('Complete')" [class.active-complete]="activeStatusFilter === 'Complete'">
+    <mat-card
+      (click)="setStatusFilter('Complete')"
+      [class.active-complete]="activeStatusFilter === 'Complete'"
+    >
       <mat-card-content>
         <div class="stat-val green">{{ completedCount }}</div>
         <div class="stat-lbl">Completed</div>
       </mat-card-content>
     </mat-card>
-    <mat-card (click)="setStatusFilter('Running')" [class.active-running]="activeStatusFilter === 'Running'">
+    <mat-card
+      (click)="setStatusFilter('Running')"
+      [class.active-running]="activeStatusFilter === 'Running'"
+    >
       <mat-card-content>
         <div class="stat-val warn">{{ runningCount }}</div>
         <div class="stat-lbl">Running</div>
       </mat-card-content>
     </mat-card>
-    <mat-card (click)="setStatusFilter('Failed')" [class.active-failed]="activeStatusFilter === 'Failed'">
+    <mat-card
+      (click)="setStatusFilter('Failed')"
+      [class.active-failed]="activeStatusFilter === 'Failed'"
+    >
       <mat-card-content>
         <div class="stat-val red">{{ failedCount }}</div>
         <div class="stat-lbl">Failed</div>
@@ -56,7 +65,9 @@
   @if (isLoading) {
     <p class="state-msg">Loading experiments...</p>
   } @else if (experiments.length === 0) {
-    <p class="state-msg">No experiments yet. Click <strong>+ New Experiment</strong> to create one.</p>
+    <p class="state-msg">
+      No experiments yet. Click <strong>+ New Experiment</strong> to create one.
+    </p>
   } @else {
     <ag-grid-angular
       [rowData]="filteredExperiments"

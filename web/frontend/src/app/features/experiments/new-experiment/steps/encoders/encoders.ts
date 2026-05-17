@@ -17,11 +17,6 @@ export class EncodersStep implements OnInit {
   allCodecs: Codec[] = [];
   allModes: EncoderMode[] = [];
 
-  encoderTypeDescriptions: Record<string, string> = {
-    'Standard Encoder': 'Single-layer encoding using traditional codecs (H.264, H.265)',
-    'Scalable Encoder':  'Multi-layer scalable video coding for adaptive streaming',
-  };
-
   constructor(
     private infrastructureService: InfrastructureService,
     public formService: NewExperimentFormService,
