@@ -3,14 +3,9 @@
       <h1>Create an Account</h1>
       <p>Register to access the system</p>
     </div>
-<!--    <button mat-raised-button color="primary">+ New Experiment</button>-->
 <form [formGroup]="accountForm" (ngSubmit)="submitDetails()">
-
-
   <div class="form-element">
-
     <mat-form-field appearance="outline">
-
       <mat-label>Enter a username</mat-label>
       <input
         matInput
@@ -21,6 +16,22 @@
       />
       @if (accountForm.get('username')?.invalid) {
         <mat-error>{{usernameErrorMessage()}}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <div class="form-element">
+    <mat-form-field appearance="outline">
+      <mat-label>Enter your email</mat-label>
+      <input
+        matInput
+        placeholder="John@uni.strath.ac.uk.com"
+        formControlName="email"
+        (blur)="updateEmailErrorMessage()"
+        required
+      />
+      @if (accountForm.get('email')?.invalid) {
+        <mat-error>{{emailErrorMessage()}}</mat-error>
       }
     </mat-form-field>
   </div>
