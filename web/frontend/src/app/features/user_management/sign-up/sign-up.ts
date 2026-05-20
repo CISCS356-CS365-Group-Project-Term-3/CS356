@@ -1,12 +1,33 @@
 import { Component, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+
+// custom validators
+function specialCharacterValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (!value) {
+    return null;
+  }
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+  return hasSpecialChar ? null : { noSpecialCharacter: true };
+}
+
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.parent?.get('password');
+  const reenteredPassword = control.value;
+
+  if (!password || !reenteredPassword) {
+    return null;
+  }
+
+  return password.value === reenteredPassword ? null : { passwordMismatch: true };
+}
 
 /** @title Sign up page */
   @Component({
@@ -31,12 +52,21 @@ export class SignUp {
 // set up account form
   readonly accountForm = new FormGroup({
     username: new FormControl('', Validators.required),
-    password: new FormControl('', Validators.required),
-    reenteredPassword: new FormControl('', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(8),
+      specialCharacterValidator
+    ]),
+    reenteredPassword: new FormControl('', [
+      Validators.required,
+      passwordMatchValidator
+    ]),
     accountType: new FormControl('', Validators.required)
   });
 
   usernameErrorMessage = signal('');
+  emailErrorMessage = signal('');
   passwordErrorMessage = signal('');
   reenteredPasswordErrorMessage = signal('');
   hide = signal(true);
@@ -49,9 +79,15 @@ export class SignUp {
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
         this.updateUsernameErrorMessage();
+        this.updateEmailErrorMessage();
         this.updatePasswordErrorMessage();
         this.updateReenteredPasswordErrorMessage();
       });
+
+    // update reenteredPassword validation when password changes
+    this.accountForm.get('password')?.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.accountForm.get('reenteredPassword')?.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
   updateUsernameErrorMessage() {
@@ -61,17 +97,29 @@ export class SignUp {
       this.usernameErrorMessage.set('');
     }
   }
-  updatePasswordErrorMessage() {
-    if (this.accountForm.get('password')?.hasError('required')) {
-      this.passwordErrorMessage.set('You must enter a value');
 
-    // check if password meets requirements
+  updateEmailErrorMessage() {
+    const emailControl = this.accountForm.get('email');
+    if (emailControl?.hasError('required')) {
+      this.emailErrorMessage.set('You must enter a value');
+    } else if (emailControl?.hasError('email')) {
+      this.emailErrorMessage.set('Not a valid email');
+    } else {
+      this.emailErrorMessage.set('');
+    }
+  }
+  updatePasswordErrorMessage() {
+    const passwordControl = this.accountForm.get('password');
+
+    if (passwordControl?.hasError('required')) {
+      this.passwordErrorMessage.set('You must enter a value');
+    } else if (passwordControl?.hasError('minlength')) {
+      this.passwordErrorMessage.set('Password must be at least 8 characters');
+    } else if (passwordControl?.hasError('noSpecialCharacter')) {
+      this.passwordErrorMessage.set('Password must contain at least one special character');
     } else {
       this.passwordErrorMessage.set('');
     }
-
-    // add more checks
-    // check Validators. options
   }
 
   clickPasswordEvent(event: MouseEvent) {
@@ -81,14 +129,12 @@ export class SignUp {
 
   updateReenteredPasswordErrorMessage() {
     const reenteredPassword = this.accountForm.get('reenteredPassword');
-    const password = this.accountForm.get('password');
 
     if (reenteredPassword?.hasError('required')) {
       this.reenteredPasswordErrorMessage.set('You must enter a value');
-    } else if (reenteredPassword?.value && password?.value && reenteredPassword.value !== password?.value) {
-      this.reenteredPasswordErrorMessage.set('Passwords do not match')
-    }
-    else {
+    } else if (reenteredPassword?.hasError('passwordMismatch')) {
+      this.reenteredPasswordErrorMessage.set('Passwords do not match');
+    } else {
       this.reenteredPasswordErrorMessage.set('');
     }
 }
@@ -99,7 +145,8 @@ submitDetails(){
   const password = this.accountForm.get('password');
   const accountType = this.accountForm.get('accountType');
 
-// submit details to API endpoint
+  // submit details to API endpoint
+  // check if username exists
 
 }
 }
