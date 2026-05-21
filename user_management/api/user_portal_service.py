@@ -1,4 +1,5 @@
 from user_management.authentication.token_generation import main as generate_token
+import jwt
 
 def validate_login(json):
     try:
@@ -29,3 +30,13 @@ def get_user_info(user_name):
     # get user info from database and return as json
     # NOTE: Must include user_id for token generation
     return {"user_id": 1, "user_name": user_name, "user_email": "", "user_role": "admin"}
+
+def verify_token(token):
+    if jwt.decode(token, verify=True):
+        return True
+    else:
+        return False
+
+def get_user_id_and_role(token):
+    decoded_token = jwt.decode(token, verify=True)
+    return decoded_token['user_id'], decoded_token['user_role']

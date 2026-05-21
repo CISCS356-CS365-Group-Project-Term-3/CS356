@@ -19,3 +19,15 @@ def login(login_details: LoginRequest):
     except Exception as e:
         return {"error": f"Login failed: {str(e)}"}
 
+@app.get("/auth/verify")
+def verify(token: str):
+    try:
+        is_valid = user_portal_service.verify_token(token)
+        if is_valid:
+            user_id, user_role = user_portal_service.get_user_id_and_role(token)
+            return {"user_id": user_id, "user_role": user_role}
+        else:
+            return {"error": "Invalid token"}
+    except Exception as e:
+        return {"error": f"Token verification failed: {str(e)}"}
+
