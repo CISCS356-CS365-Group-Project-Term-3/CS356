@@ -6,8 +6,11 @@ from user_management.authentication.token_generation import load_key
 class Test(TestCase):
     def test_generate_token_success(self):
         json = {"user_id": 1, "user_name": "test", "user_email": "", "user_role": "admin"}
-        main(json)
-
+        token = main(json)
+        self.assertIsNotNone(token)
+        self.assertIsInstance(token, str)
+        self.assertEqual(len(token.split('.')), 3)
+        
     def test_generate_token_none_json(self):
         json = None
         with self.assertRaises(ValueError):
