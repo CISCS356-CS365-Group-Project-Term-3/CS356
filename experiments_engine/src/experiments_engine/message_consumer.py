@@ -1,57 +1,123 @@
 import json
+import pika
+from experiments_engine.config import Settings
+from experiments_engine.runner import experiment
 
-# rabbitmq consumer class.
+# RabbitMQ consumer class.
+# this whole class listens for experiment messages and passes them into the encoding system
 
 
 class MessageConsumer:
 
     def __init__(self, engine):
 
-        # rabbitmq connection/channel
+        # RabbitMQ connection object
         self.connection = None
+
+        # RabbitMQ communication channel
         self.channel = None
 
-        # engine collaborator
+        # used to start experiment processing
         self.engine = engine
 
     def connect(self):
 
-        # connects to rabbitmq
+        # Connect to RabbitMQ container.
 
-        pass
+        # because RabbitMQ runs inside Docker we can use the container name
+
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(
+                Settings.queue_container
+            )
+        )
+
+        # Create communication channel.
+        #
+        #  channel is used to:
+        # - send messages
+        # - receive messages
+        # - acknowledge messages
+
+        self.channel = self.connection.channel()
+
+        # Declare queue.
+        #
+        # if queue already exists then RabbitMQ reuses it.
+
+        self.channel.queue_declare(
+            queue=Settings.experiment_queue,
+            exclusive=True
+        )
 
     def listen(self):
 
-        #  listening for messages
+        # set up message consumption
+        # auto_ack=False means messages are only acknowledged AFTER processing is completed successfully
 
-        pass
+        self.channel.basic_consume(
+            queue=Settings.experiment_queue,
+            on_message_callback=self.on_message,
+            auto_ack=False
+        )
 
-    def on_message(self, message):
+        print("Waiting for messages")
 
-        # Handles received message
+        # starts listening for new experiment messages- continuous process
 
-        data = json.loads(message)
+        self.channel.start_consuming()
 
-        experiment_id = data["experiment_id"]
+    def on_message(self, ch, method, properties, body):
 
-        self.engine.process(experiment_id)
+        #automatically runs whenever RabbitMQ sends a message
 
-        self.acknowledge(message)
+        try:
 
-    def acknowledge(self, message):
+            # runner.py logic.
 
-        # ack successful message
+            experiment(body)
 
-        pass
+            # convert JSON message into python dictionary.
 
-    def reject(self, message):
+            data = json.loads(body)
 
-        # rejects failed message
+            # get experiment id from incoming message.
 
-        pass
+            experiment_id = data["experiment_id"]
+
+            # passes experiment into Engine workflow.
+
+            self.engine.process(experiment_id)
+
+            # only acknowledge message AFTER processing completes successfully
+
+            self.acknowledge(method)
+
+        except Exception:
+
+            # rejecting the failed message
+
+            self.reject(method)
+
+    def acknowledge(self, method):
+
+        # acknowledge successful processing- tells RabbitMQ the message can now be removed from the queue
+
+        self.channel.basic_ack(
+            delivery_tag=method.delivery_tag
+        )
+
+    def reject(self, method):
+
+        # reject failed processing- tells RabbitMQ processing failed.
+
+        self.channel.basic_nack(
+            delivery_tag=method.delivery_tag
+        )
 
     def disconnect(self):
 
-        # Disconnects from rabbitmq
+        # close RabbitMQ connection cleanly
 
-        pass
+        if self.connection:
+            self.connection.close()

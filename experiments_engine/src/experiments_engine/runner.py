@@ -1,4 +1,6 @@
 
+# This code only really existed for testing & proving the message queue worked. You can ignore it or use it as you require.
+
 def decode(message_body):
     # method will construct an experiment object from the message
     return message_body.decode()
