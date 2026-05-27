@@ -1,6 +1,7 @@
 import pytest
 import os
 from experiments_engine.encoder import Encoder
+from experiments_engine.encoding_result import EncodingResult
 
 DIRECTORY_NAME = os.path.dirname(__file__)
 TEST_ENCODED_VIDEO_PATH: str = os.path.join(DIRECTORY_NAME, 'test_data/encoded_akiyo_qcif')
@@ -29,10 +30,10 @@ def encode(capfd, encoder: str):
 
     remove_output(TEST_ENCODED_VIDEO_PATH)
     command: list[str] = e.build_command((encoder,TEST_RAW_VIDEO_PATH,TEST_ENCODED_VIDEO_PATH), '')
-    exit_code = e.run(command=command)
+    result: EncodingResult = e.run(command=command)
     out, err = capfd.readouterr()
 
-    assert exit_code == 0
+    assert result.to_dict()['status'] == 0
     return err
 
     
