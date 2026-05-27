@@ -1,1 +1,2 @@
-experiments_engine/tests/test_data/
+experiments_engine/tests/test_data/*
+!experiments_engine/tests/test_data/*.y4m
