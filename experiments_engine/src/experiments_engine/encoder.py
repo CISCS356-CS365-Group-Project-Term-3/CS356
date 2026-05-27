@@ -5,12 +5,35 @@ import subprocess
 
 class Encoder:
 
+    format_map: dict = {
+        'h261': 'h261',
+        'h263': 'h263',
+        'libx264': 'h264',
+        'libx265': 'hevc'
+    }
+
     def build_command(self, sequence, config) -> list[str]:
         # builds ffmeg command from decoded sequence/config
 
         (encoder, input_file, output_file) = self._get_encoder(sequence=sequence)
 
-        command = ['ffmpeg', '-i', input_file, '-map', '0:v', '-c', encoder, output_file]
+        format: str = self.format_map[encoder]
+
+        command = ['ffmpeg', 
+                   # select input file
+                   '-i', 
+                   input_file, 
+                   # select video stream to apply encoder (simple raw video so it is the only stream)
+                   '-map', 
+                   '0:v', 
+                   # select encoder
+                   '-c', 
+                   encoder, 
+                   # select output format
+                   '-f',
+                   format,
+
+                   output_file]
 
         return command
 
@@ -21,12 +44,6 @@ class Encoder:
         process = subprocess.run(command)
 
         return process.returncode
-
-    def check_output(self, return_code, stderr):
-
-        # Checks encoding output and determines success/failure
-
-        pass
 
     @classmethod
     def _get_encoder(cls, sequence) -> tuple[str, str, str]:
