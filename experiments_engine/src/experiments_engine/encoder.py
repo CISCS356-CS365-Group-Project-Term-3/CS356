@@ -14,13 +14,13 @@ class Encoder:
 
         return command
 
-    def run(self, command):
+    def run(self, command) -> int:
 
         # Runs the ffmpeg command
 
-        subprocess.run(command)
+        process = subprocess.run(command)
 
-        pass
+        return process.returncode
 
     def check_output(self, return_code, stderr):
 
