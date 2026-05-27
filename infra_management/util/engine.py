@@ -21,3 +21,12 @@ def get_engine(user="postgres", host="localhost", database="postgres"):
     url = generate_url(user, host, database)
     engine = create_engine(url)
     return engine
+
+def table_to_json(table):
+    return {c.name: getattr(table, c.name) for c in table.__table__.columns}
+
+def query_result_as_list(result):
+    output = []
+    for row in result:
+        output.append(table_to_json(row))
+    return output
