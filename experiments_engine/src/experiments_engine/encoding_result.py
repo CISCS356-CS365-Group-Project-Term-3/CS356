@@ -5,11 +5,11 @@ class EncodingResult:
 
     def __init__(
         self,
-        status,
-        video_path,
-        log_path,
-        metrics=None,
-        error=None
+        status: int,
+        video_path: str | None =None,
+        log_path: str | None =None,
+        metrics: str | None =None,
+        error: str | None =None
     ):
 
         # Status of encoding job- may be PENDING, RUNNING, FAILED, COMPLETED
@@ -26,3 +26,6 @@ class EncodingResult:
 
         #  error message if job fails etc. optional.
         self.error = error
+
+    def to_dict(self):
+        return vars(self)

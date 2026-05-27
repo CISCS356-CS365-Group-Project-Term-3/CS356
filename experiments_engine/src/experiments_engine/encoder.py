@@ -1,5 +1,7 @@
 import subprocess
 
+from .encoding_result import EncodingResult
+
 # builds and runs ffmpeg commands.
 
 
@@ -37,13 +39,13 @@ class Encoder:
 
         return command
 
-    def run(self, command) -> int:
+    def run(self, command) -> EncodingResult:
 
         # Runs the ffmpeg command
 
         process = subprocess.run(command)
 
-        return process.returncode
+        return EncodingResult(status= process.returncode)
 
     @classmethod
     def _get_encoder(cls, sequence) -> tuple[str, str, str]:
