@@ -47,20 +47,16 @@
           >Step {{ stepper.selectedIndex + 1 }} of {{ stepper.steps.length }}</span
         >
         <div class="action-buttons">
-          <button
-            mat-stroked-button
-            [routerLink]="stepper.selectedIndex === 0 ? '/experiments' : null"
-            (click)="stepper.previous()"
-          >
-            {{ stepper.selectedIndex === 0 ? 'Cancel' : 'Back' }}
+          <button mat-stroked-button (click)="onBack()">
+            {{ isFirstStep ? 'Cancel' : 'Back' }}
           </button>
           <button
             mat-raised-button
             color="primary"
-            (click)="stepper.selectedIndex === stepper.steps.length - 1 ? submit() : stepper.next()"
+            (click)="onNext()"
             [disabled]="!canProceed(stepper.selectedIndex)"
           >
-            {{ stepper.selectedIndex === stepper.steps.length - 1 ? 'Submit' : 'Next' }}
+            {{ isLastStep ? 'Submit' : 'Next' }}
           </button>
         </div>
       </div>

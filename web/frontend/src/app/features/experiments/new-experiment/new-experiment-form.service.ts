@@ -34,12 +34,12 @@ export class NewExperimentFormService {
 
   applyPendingTemplate(): void {
     if (this.pendingTemplate) {
-      const t = this.pendingTemplate;
+      const template = this.pendingTemplate;
       this.form = {
-        name: t.name + ' (copy)',
-        projectTypeId: t.projectTypeId,
-        encoders: t.encoders.map((e) => ({ ...e })),
-        sequences: t.sequences.map((s) => ({ ...s })),
+        name: template.name + ' (copy)',
+        projectTypeId: template.projectTypeId,
+        encoders: template.encoders.map((e) => ({ ...e })),
+        sequences: template.sequences.map((s) => ({ ...s })),
       };
       this.pendingTemplate = null;
     } else {

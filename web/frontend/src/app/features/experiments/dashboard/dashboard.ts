@@ -37,7 +37,6 @@ export class Dashboard implements OnInit {
       headerName: 'Name',
       valueGetter: (p) => p.data.id + ' ' + p.data.name,
       flex: 2,
-      checkboxSelection: true,
     },
     { field: 'codec', flex: 1 },
     { field: 'sequences', flex: 2 },
@@ -49,6 +48,8 @@ export class Dashboard implements OnInit {
       cellRenderer: (params: { value: ExperimentStatus }) => this.statusCellRenderer(params),
     },
   ];
+
+  getRowId = (params: { data: Experiment }) => String(params.data.id);
 
   get filteredExperiments(): Experiment[] {
     if (!this.activeStatusFilter) return this.experiments;

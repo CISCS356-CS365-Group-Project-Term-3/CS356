@@ -4,6 +4,21 @@ import { InfrastructureConfig } from '../../../models/infrastructure-config.mode
 import { InfrastructureService } from '../../../services/infrastructure';
 import { EncoderConfig, NewExperimentFormService, SequenceConfig } from '../../new-experiment-form.service';
 
+interface EncoderDisplay {
+  type: string;
+  codec: string;
+  mode: string;
+}
+
+interface SequenceDisplay {
+  videoFile: string;
+  resolution: string;
+  frameRate: string;
+  quality: string;
+  depth: string;
+  gamut: string;
+}
+
 @Component({
   selector: 'app-review',
   imports: [MatCardModule],
@@ -28,7 +43,7 @@ export class ReviewStep implements OnInit {
     return this.config?.project_types.find((p) => p.id === this.formService.form.projectTypeId)?.name ?? '—';
   }
 
-  getEncoderDisplay(encoder: EncoderConfig): { type: string; codec: string; mode: string } {
+  getEncoderDisplay(encoder: EncoderConfig): EncoderDisplay {
     return {
       type:  this.config?.encoder_types.find((e) => e.id === encoder.encoderTypeId)?.name ?? '—',
       codec: this.config?.codecs.find((c) => c.id === encoder.codecId)?.name ?? '—',
@@ -36,7 +51,7 @@ export class ReviewStep implements OnInit {
     };
   }
 
-  getSequenceDisplay(seq: SequenceConfig): { videoFile: string; resolution: string; frameRate: string; quality: string; depth: string; gamut: string } {
+  getSequenceDisplay(seq: SequenceConfig): SequenceDisplay {
     return {
       videoFile:  this.config?.video_files.find((f) => f.id === seq.videoFileId)?.name ?? '—',
       resolution: this.config?.resolutions.find((r) => r.id === seq.resolutionId)?.name ?? '—',

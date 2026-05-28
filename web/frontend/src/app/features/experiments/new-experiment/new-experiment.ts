@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { MatStepperModule } from '@angular/material/stepper';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { NewExperimentFormService } from './new-experiment-form.service';
 import { ProjectSetup } from './steps/project-setup/project-setup';
 import { EncodersStep } from './steps/encoders/encoders';
@@ -15,7 +15,6 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [
     MatStepperModule,
     MatButtonModule,
-    RouterLink,
     ProjectSetup,
     EncodersStep,
     SequencesStep,
@@ -27,6 +26,8 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl: './new-experiment.scss',
 })
 export class NewExperiment implements OnInit {
+  @ViewChild('stepper') stepper!: MatStepper;
+
   constructor(
     public formService: NewExperimentFormService,
     private router: Router,
@@ -34,6 +35,30 @@ export class NewExperiment implements OnInit {
 
   ngOnInit(): void {
     this.formService.applyPendingTemplate();
+  }
+
+  get isFirstStep(): boolean {
+    return this.stepper?.selectedIndex === 0;
+  }
+
+  get isLastStep(): boolean {
+    return this.stepper?.selectedIndex === this.stepper?.steps.length - 1;
+  }
+
+  onBack(): void {
+    if (this.isFirstStep) {
+      this.router.navigate(['/experiments']);
+    } else {
+      this.stepper.previous();
+    }
+  }
+
+  onNext(): void {
+    if (this.isLastStep) {
+      this.submit();
+    } else {
+      this.stepper.next();
+    }
   }
 
   isProjectSetupComplete(): boolean {

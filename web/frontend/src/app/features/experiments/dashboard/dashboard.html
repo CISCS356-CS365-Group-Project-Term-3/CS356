@@ -73,6 +73,7 @@
       [rowData]="filteredExperiments"
       [columnDefs]="colDefs"
       [rowSelection]="'single'"
+      [getRowId]="getRowId"
       domLayout="autoHeight"
       (selectionChanged)="onSelectionChanged($event)"
       (rowClicked)="onRowClicked($event)"
