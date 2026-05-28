@@ -1,13 +1,8 @@
-"""
-Creating an in memory storage so I can test out the functionality before integrating Database
-Ordering based off larger id for now to determine order in the future this may be
-replaced with smarter logic
-"""
-
 experiments = []
 experiment_id = 1
 
 def save_experiment(experiment):
+    """ save an experiment to the database """
     global experiment_id
     experiment["id"] = experiment_id
     experiments.append(experiment)

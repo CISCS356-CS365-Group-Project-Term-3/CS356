@@ -1,15 +1,10 @@
 from flask import Flask, request
 from services import experiment_service
-
-""" 
-Endpoints are defined here should be simple and modular 
-I will add 
-1. Retrieving experiment information api from storage
-"""
 app = Flask(__name__)
 
 @app.route("/experiments", methods=["POST"])
-def create_experiment():
+def create_experiment_endpoint():
+    """ create an experiment endpoint """
     data = request.get_json()
     experiment_service.create_experiment(data)
 
