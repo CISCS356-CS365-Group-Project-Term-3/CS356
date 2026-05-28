@@ -11,47 +11,35 @@
           }
         </div>
 
-        <p class="sub-label">Encoder type</p>
-        <div class="options">
-          @for (encoderType of encoderTypes; track encoderType.id) {
-            <mat-card
-              class="option-card"
-              [class.selected]="encoder.encoderTypeId === encoderType.id"
-              (click)="selectEncoderType(encoder, encoderType)"
-            >
-              <div class="option-name">{{ encoderType.name }}</div>
-            </mat-card>
-          }
-        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Encoder type</mat-label>
+          <mat-select [(ngModel)]="encoder.encoderTypeId" (ngModelChange)="onEncoderTypeChange(encoder)">
+            @for (encoderType of encoderTypes; track encoderType.id) {
+              <mat-option [value]="encoderType.id">{{ encoderType.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
 
         @if (encoder.encoderTypeId !== null) {
-          <p class="sub-label">Codec</p>
-          <div class="options">
-            @for (codec of availableCodecs(encoder); track codec.id) {
-              <mat-card
-                class="option-card"
-                [class.selected]="encoder.codecId === codec.id"
-                (click)="selectCodec(encoder, codec)"
-              >
-                <div class="option-name">{{ codec.name }}</div>
-              </mat-card>
-            }
-          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Codec</mat-label>
+            <mat-select [(ngModel)]="encoder.codecId" (ngModelChange)="onCodecChange(encoder)">
+              @for (codec of availableCodecs(encoder); track codec.id) {
+                <mat-option [value]="codec.id">{{ codec.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         }
 
         @if (encoder.codecId !== null) {
-          <p class="sub-label">Encoder mode</p>
-          <div class="options">
-            @for (mode of allModes; track mode.id) {
-              <mat-card
-                class="option-card"
-                [class.selected]="encoder.encoderModeId === mode.id"
-                (click)="selectMode(encoder, mode)"
-              >
-                <div class="option-name">{{ mode.name }}</div>
-              </mat-card>
-            }
-          </div>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Encoder mode</mat-label>
+            <mat-select [(ngModel)]="encoder.encoderModeId">
+              @for (mode of allModes; track mode.id) {
+                <mat-option [value]="mode.id">{{ mode.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         }
       </mat-card-content>
     </mat-card>

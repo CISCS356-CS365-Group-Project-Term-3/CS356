@@ -14,6 +14,8 @@ import { ExperimentsService } from '../services/experiments';
 import { Experiment, ExperimentStatus } from '../models/experiment.model';
 import { Router, RouterLink } from '@angular/router';
 import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
+import { InfrastructureService } from '../services/infrastructure';
+import { InfrastructureConfig } from '../models/infrastructure-config.model';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -30,16 +32,24 @@ export class Dashboard implements OnInit {
   showAllExperiments = false;
   isLoading = true;
   isAdmin: boolean = false; // TODO: replace with real auth check once JWT structure is known
+  private config: InfrastructureConfig | null = null;
 
   colDefs: ColDef[] = [
     {
-      field: 'id',
       headerName: 'Name',
       valueGetter: (p) => p.data.id + ' ' + p.data.name,
       flex: 2,
     },
-    { field: 'codec', flex: 1 },
-    { field: 'sequences', flex: 2 },
+    {
+      headerName: 'Codec',
+      valueGetter: (p) => this.config?.codecs.find((c) => c.id === p.data.encoders[0]?.codecId)?.name ?? '—',
+      flex: 1,
+    },
+    {
+      headerName: 'Sequences',
+      valueGetter: (p) => p.data.sequences.map((s: Experiment['sequences'][0]) => this.config?.video_files.find((f) => f.id === s.videoFileId)?.name ?? '—').join(', '),
+      flex: 2,
+    },
     { field: 'date', flex: 1 },
     {
       field: 'status',
@@ -73,11 +83,15 @@ export class Dashboard implements OnInit {
     private experimentsService: ExperimentsService,
     private formService: NewExperimentFormService,
     private router: Router,
+    private infrastructureService: InfrastructureService,
   ) {}
 
   ngOnInit() {
     // this.isAdmin = this.authService.isAdmin();
-    this.loadExperiments();
+    this.infrastructureService.getConfig().subscribe((config) => {
+      this.config = config;
+      this.loadExperiments();
+    });
   }
 
   loadExperiments(): void {

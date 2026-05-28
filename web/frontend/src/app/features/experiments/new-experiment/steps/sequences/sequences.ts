@@ -41,6 +41,7 @@ export class SequencesStep implements OnInit {
       this.quality = data.quality;
       this.depth = data.depth;
       this.gamut = data.gamut;
+      this.selectedFileIds = this.formService.form.sequences.map((s) => s.videoFileId);
     });
   }
 
@@ -50,24 +51,25 @@ export class SequencesStep implements OnInit {
     );
   }
 
-  isSelected(file: VideoFile): boolean {
-    return this.formService.form.sequences.some((s) => s.videoFileId === file.id);
-  }
+  selectedFileIds: number[] = [];
 
-  toggleFile(file: VideoFile): void {
-    const idx = this.formService.form.sequences.findIndex((s) => s.videoFileId === file.id);
-    if (idx >= 0) {
-      this.formService.form.sequences.splice(idx, 1);
-    } else {
-      this.formService.form.sequences.push({
-        videoFileId: file.id,
-        resolutionId: file.available_spatials.length === 1 ? file.available_spatials[0] : null,
-        frameRateId: file.available_temporals.length === 1 ? file.available_temporals[0] : null,
-        qualityId: null,
-        depthId: file.available_depths[0] ?? null,
-        gamutId: this.gamut[0]?.id ?? null,
-      });
+  onFileSelectionChange(selectedIds: number[]): void {
+    for (const id of selectedIds) {
+      if (!this.formService.form.sequences.some((s) => s.videoFileId === id)) {
+        const file = this.videoFiles.find((f) => f.id === id)!;
+        this.formService.form.sequences.push({
+          videoFileId: id,
+          resolutionId: file.available_spatials.length === 1 ? file.available_spatials[0] : null,
+          frameRateId: file.available_temporals.length === 1 ? file.available_temporals[0] : null,
+          qualityId: null,
+          depthId: file.available_depths[0] ?? null,
+          gamutId: this.gamut[0]?.id ?? null,
+        });
+      }
     }
+    this.formService.form.sequences = this.formService.form.sequences.filter((s) =>
+      selectedIds.includes(s.videoFileId),
+    );
   }
 
   getFile(fileId: number): VideoFile | undefined {

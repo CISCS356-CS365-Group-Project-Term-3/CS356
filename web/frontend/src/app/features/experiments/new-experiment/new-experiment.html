@@ -42,6 +42,9 @@
           <app-review />
         </mat-step>
       </mat-stepper>
+      @if (submitError) {
+        <p class="submit-error">{{ submitError }}</p>
+      }
       <div class="actions">
         <span class="step-counter"
           >Step {{ stepper.selectedIndex + 1 }} of {{ stepper.steps.length }}</span

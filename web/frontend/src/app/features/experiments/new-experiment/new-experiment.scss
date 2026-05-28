@@ -22,3 +22,9 @@
   display: flex;
   gap: 8px;
 }
+
+.submit-error {
+  color: var(--mat-sys-error);
+  margin: 0 16px;
+  font-size: 14px;
+}

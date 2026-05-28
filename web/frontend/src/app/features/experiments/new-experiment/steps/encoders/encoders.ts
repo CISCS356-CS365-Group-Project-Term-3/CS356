@@ -1,14 +1,17 @@
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { Codec, EncoderMode, EncoderType } from '../../../models/infrastructure-config.model';
 import { InfrastructureService } from '../../../services/infrastructure';
 import { EncoderConfig, NewExperimentFormService } from '../../new-experiment-form.service';
 
 @Component({
   selector: 'app-encoders',
-  imports: [MatCardModule, MatButtonModule, MatIconModule],
+  imports: [FormsModule, MatCardModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatSelectModule],
   templateUrl: './encoders.html',
   styleUrl: './encoders.scss',
 })
@@ -36,23 +39,13 @@ export class EncodersStep implements OnInit {
     return this.allCodecs.filter((c) => et.active_codecs.includes(c.id));
   }
 
-  selectEncoderType(encoder: EncoderConfig, encoderType: EncoderType): void {
-    if (encoder.encoderTypeId !== encoderType.id) {
-      encoder.encoderTypeId = encoderType.id;
-      encoder.codecId = null;
-      encoder.encoderModeId = null;
-    }
+  onEncoderTypeChange(encoder: EncoderConfig): void {
+    encoder.codecId = null;
+    encoder.encoderModeId = null;
   }
 
-  selectCodec(encoder: EncoderConfig, codec: Codec): void {
-    if (encoder.codecId !== codec.id) {
-      encoder.codecId = codec.id;
-      encoder.encoderModeId = null;
-    }
-  }
-
-  selectMode(encoder: EncoderConfig, mode: EncoderMode): void {
-    encoder.encoderModeId = mode.id;
+  onCodecChange(encoder: EncoderConfig): void {
+    encoder.encoderModeId = null;
   }
 
   addEncoder(): void {

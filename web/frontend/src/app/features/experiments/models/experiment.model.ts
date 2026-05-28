@@ -3,15 +3,8 @@ export type ExperimentStatus = 'Complete' | 'Running' | 'Failed';
 export interface Experiment {
   id: string;
   name: string;
-  codec: string;
-  sequences: string;
-  date: string;
   status: ExperimentStatus;
-}
-
-export interface ExperimentDetail {
-  id: string;
-  name: string;
+  date: string;
   projectTypeId: number;
   encoders: { encoderTypeId: number; codecId: number; encoderModeId: number }[];
   sequences: {

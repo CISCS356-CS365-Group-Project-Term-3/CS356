@@ -3,6 +3,7 @@ import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { NewExperimentFormService } from './new-experiment-form.service';
+import { ExperimentsService } from '../services/experiments';
 import { ProjectSetup } from './steps/project-setup/project-setup';
 import { EncodersStep } from './steps/encoders/encoders';
 import { SequencesStep } from './steps/sequences/sequences';
@@ -27,10 +28,12 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
+  submitError: string | null = null;
 
   constructor(
     public formService: NewExperimentFormService,
     private router: Router,
+    private experimentsService: ExperimentsService,
   ) {}
 
   ngOnInit(): void {
@@ -85,8 +88,9 @@ export class NewExperiment implements OnInit {
   submit(): void {
     const form = this.formService.form;
     const payload = {
+      user_id: 1, // TODO: replace with real user ID from JWT
       name: form.name,
-      status: 'draft', // change to 'finalized' when the finalize button is implemented
+      status: 'draft', // TODO: change to 'finalised' when finalize button is implemented
       project_type_id: form.projectTypeId,
       encoders: form.encoders.map((e) => ({
         encoder_type_id: e.encoderTypeId,
@@ -102,10 +106,11 @@ export class NewExperiment implements OnInit {
         gamut_id: s.gamutId,
       })),
     };
-    // this.experimentsService.createExperiment(payload).subscribe(() => {
-    //   this.router.navigate(['/experiments']);
-    // });
-    this.router.navigate(['/experiments']);
+    this.submitError = null;
+    this.experimentsService.createExperiment(payload).subscribe({
+      next: () => this.router.navigate(['/experiments']),
+      error: () => (this.submitError = 'Failed to create experiment. Please try again.'),
+    });
   }
 
   canProceed(stepIndex: number): boolean {

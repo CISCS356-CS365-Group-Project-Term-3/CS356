@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ExperimentDetail } from '../models/experiment.model';
+import { Experiment } from '../models/experiment.model';
 
 export interface SequenceConfig {
   videoFileId: number;
@@ -26,9 +26,9 @@ export interface NewExperimentForm {
 @Injectable({ providedIn: 'root' })
 export class NewExperimentFormService {
   form: NewExperimentForm = this.blankForm();
-  private pendingTemplate: ExperimentDetail | null = null;
+  private pendingTemplate: Experiment | null = null;
 
-  setTemplate(detail: ExperimentDetail): void {
+  setTemplate(detail: Experiment): void {
     this.pendingTemplate = detail;
   }
 

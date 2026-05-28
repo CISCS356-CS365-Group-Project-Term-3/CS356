@@ -15,19 +15,14 @@
 
   <mat-card>
     <mat-card-content>
-      <p class="section-label">Select a project type</p>
-      <div class="options">
-        @for (projectType of projectTypes; track projectType.id) {
-          <mat-card
-            class="option-card"
-            [class.selected]="formService.form.projectTypeId === projectType.id"
-            (click)="formService.form.projectTypeId = projectType.id"
-          >
-            <div class="option-name">{{ projectType.name }}</div>
-            <div class="option-desc">{{ projectTypeDescriptions[projectType.name] }}</div>
-          </mat-card>
-        }
-      </div>
+      <mat-form-field appearance="outline" class="name-field">
+        <mat-label>Project type</mat-label>
+        <mat-select [(ngModel)]="formService.form.projectTypeId">
+          @for (projectType of projectTypes; track projectType.id) {
+            <mat-option [value]="projectType.id">{{ projectType.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
     </mat-card-content>
   </mat-card>
 </div>
