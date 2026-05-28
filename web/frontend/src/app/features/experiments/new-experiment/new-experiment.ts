@@ -29,10 +29,12 @@ import { MatIconModule } from '@angular/material/icon';
 export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
+  showDraftModal = false;
+  visitedSteps = new Set<number>();
 
   constructor(
     public formService: NewExperimentFormService,
-    private router: Router,
+    public router: Router,
     private experimentsService: ExperimentsService,
   ) {}
 
@@ -58,10 +60,20 @@ export class NewExperiment implements OnInit {
 
   onNext(): void {
     if (this.isLastStep) {
-      this.submit();
+      if (this.isFormComplete()) {
+        this.doSubmit('finalised');
+      } else {
+        this.showDraftModal = true;
+      }
     } else {
+      this.visitedSteps.add(this.stepper.selectedIndex);
       this.stepper.next();
     }
+  }
+
+  confirmDraft(): void {
+    this.showDraftModal = false;
+    this.doSubmit('draft');
   }
 
   isProjectSetupComplete(): boolean {
@@ -85,12 +97,20 @@ export class NewExperiment implements OnInit {
     );
   }
 
-  submit(): void {
+  isFormComplete(): boolean {
+    return this.isProjectSetupComplete() && this.isEncodersComplete() && this.isSequencesComplete();
+  }
+
+  isStepError(stepIndex: number): boolean {
+    return this.visitedSteps.has(stepIndex) && !this.canProceed(stepIndex);
+  }
+
+  private doSubmit(status: string): void {
     const form = this.formService.form;
     const payload = {
       user_id: 1, // TODO: replace with real user ID from JWT
       name: form.name,
-      status: 'draft', // TODO: change to 'finalised' when finalize button is implemented
+      status,
       project_type_id: form.projectTypeId,
       encoders: form.encoders.map((e) => ({
         encoder_type_id: e.encoderTypeId,
@@ -106,6 +126,7 @@ export class NewExperiment implements OnInit {
         gamut_id: s.gamutId,
       })),
     };
+    console.log('createExperiment payload', payload);
     this.submitError = null;
     this.experimentsService.createExperiment(payload).subscribe({
       next: () => this.router.navigate(['/experiments']),

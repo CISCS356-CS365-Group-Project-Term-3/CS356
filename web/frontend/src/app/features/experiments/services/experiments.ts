@@ -18,9 +18,8 @@ export class ExperimentsService {
   }
 
   getExperimentById(id: string) {
-    // TODO: swap when GET /experiments/:id endpoint exists
-    // return this.http.get<Experiment>(`${API_BASE}/experiments/${id}`);
-    return of(this.mockExperiments.find((e) => e.id === id) ?? this.mockExperiments[0]);
+    return this.http.get<Experiment>(`${API_BASE}/experiments/${id}`);
+    // return of(this.mockExperiments.find((e) => e.id === id) ?? this.mockExperiments[0]);
   }
 
   createExperiment(payload: object) {
