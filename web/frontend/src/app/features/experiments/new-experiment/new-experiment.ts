@@ -108,22 +108,22 @@ export class NewExperiment implements OnInit {
   private doSubmit(status: string): void {
     const form = this.formService.form;
     const payload = {
-      user_id: 1, // TODO: replace with real user ID from JWT
+      userId: 1, // TODO: replace with real user ID from JWT
       name: form.name,
       status,
-      project_type_id: form.projectTypeId,
+      projectTypeId: form.projectTypeId,
       encoders: form.encoders.map((e) => ({
-        encoder_type_id: e.encoderTypeId,
-        codec_id: e.codecId,
-        encoder_mode_id: e.encoderModeId,
+        encoderTypeId: e.encoderTypeId,
+        codecId: e.codecId,
+        encoderModeId: e.encoderModeId,
       })),
       sequences: form.sequences.map((s) => ({
-        video_file_id: s.videoFileId,
-        resolution_id: s.resolutionId,
-        frame_rate_id: s.frameRateId,
-        quality_id: s.qualityId,
-        depth_id: s.depthId,
-        gamut_id: s.gamutId,
+        videoFileId: s.videoFileId,
+        resolutionId: s.resolutionId,
+        frameRateId: s.frameRateId,
+        qualityId: s.qualityId,
+        depthId: s.depthId,
+        gamutId: s.gamutId,
       })),
     };
     console.log('createExperiment payload', payload);

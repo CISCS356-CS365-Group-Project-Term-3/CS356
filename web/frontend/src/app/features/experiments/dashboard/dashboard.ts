@@ -47,7 +47,7 @@ export class Dashboard implements OnInit {
     },
     {
       headerName: 'Sequences',
-      valueGetter: (p) => p.data.sequences.map((s: Experiment['sequences'][0]) => this.config?.video_files.find((f) => f.id === s.videoFileId)?.name ?? '—').join(', '),
+      valueGetter: (p) => p.data.sequences.map((s: Experiment['sequences'][0]) => this.config?.videoFiles.find((f) => f.id === s.videoFileId)?.name ?? '—').join(', '),
       flex: 2,
     },
     { field: 'date', flex: 1 },

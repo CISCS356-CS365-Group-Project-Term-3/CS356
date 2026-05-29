@@ -40,22 +40,22 @@ export class ReviewStep implements OnInit {
   }
 
   get projectTypeName(): string {
-    return this.config?.project_types.find((p) => p.id === this.formService.form.projectTypeId)?.name ?? '—';
+    return this.config?.projectTypes.find((p) => p.id === this.formService.form.projectTypeId)?.name ?? '—';
   }
 
   getEncoderDisplay(encoder: EncoderConfig): EncoderDisplay {
     return {
-      type:  this.config?.encoder_types.find((e) => e.id === encoder.encoderTypeId)?.name ?? '—',
+      type:  this.config?.encoderTypes.find((e) => e.id === encoder.encoderTypeId)?.name ?? '—',
       codec: this.config?.codecs.find((c) => c.id === encoder.codecId)?.name ?? '—',
-      mode:  this.config?.encoder_modes.find((m) => m.id === encoder.encoderModeId)?.name ?? '—',
+      mode:  this.config?.encoderModes.find((m) => m.id === encoder.encoderModeId)?.name ?? '—',
     };
   }
 
   getSequenceDisplay(seq: SequenceConfig): SequenceDisplay {
     return {
-      videoFile:  this.config?.video_files.find((f) => f.id === seq.videoFileId)?.name ?? '—',
+      videoFile:  this.config?.videoFiles.find((f) => f.id === seq.videoFileId)?.name ?? '—',
       resolution: this.config?.resolutions.find((r) => r.id === seq.resolutionId)?.name ?? '—',
-      frameRate:  this.config?.frame_rates.find((fr) => fr.id === seq.frameRateId)?.name ?? '—',
+      frameRate:  this.config?.frameRates.find((fr) => fr.id === seq.frameRateId)?.name ?? '—',
       quality:    this.config?.quality.find((q) => q.id === seq.qualityId)?.name ?? '—',
       depth:      this.config?.depth.find((d) => d.id === seq.depthId)?.name ?? '—',
       gamut:      this.config?.gamut.find((g) => g.id === seq.gamutId)?.name ?? '—',

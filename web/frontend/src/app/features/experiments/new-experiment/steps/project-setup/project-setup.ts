@@ -30,7 +30,7 @@ export class ProjectSetup implements OnInit {
 
   ngOnInit(): void {
     this.infrastructureService.getConfig().subscribe((data) => {
-      this.projectTypes = data.project_types;
+      this.projectTypes = data.projectTypes;
     });
   }
 }

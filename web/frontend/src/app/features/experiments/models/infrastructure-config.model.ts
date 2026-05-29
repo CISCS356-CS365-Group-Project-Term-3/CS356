@@ -6,7 +6,7 @@ export interface ProjectType {
 export interface EncoderType {
   id: number;
   name: string;
-  active_codecs: number[];
+  activeCodecs: number[];
 }
 
 export interface Codec {
@@ -22,9 +22,9 @@ export interface EncoderMode {
 export interface VideoFile {
   id: number;
   name: string;
-  available_spatials: number[];
-  available_temporals: number[];
-  available_depths: number[];
+  availableSpatials: number[];
+  availableTemporals: number[];
+  availableDepths: number[];
 }
 
 export interface Resolution {
@@ -62,21 +62,21 @@ export interface Topology {
 export interface TransmissionCondition {
   id: number;
   name: string;
-  lower_bound: string;
-  upper_bound: string;
+  lowerBound: string;
+  upperBound: string;
 }
 
 export interface InfrastructureConfig {
-  project_types: ProjectType[];
-  encoder_types: EncoderType[];
+  projectTypes: ProjectType[];
+  encoderTypes: EncoderType[];
   codecs: Codec[];
-  encoder_modes: EncoderMode[];
-  video_files: VideoFile[];
+  encoderModes: EncoderMode[];
+  videoFiles: VideoFile[];
   resolutions: Resolution[];
-  frame_rates: FrameRate[];
+  frameRates: FrameRate[];
   quality: QualityOption[];
   depth: DepthOption[];
   gamut: GamutOption[];
   topologies: Topology[];
-  transmission_conditions: TransmissionCondition[];
+  transmissionConditions: TransmissionCondition[];
 }

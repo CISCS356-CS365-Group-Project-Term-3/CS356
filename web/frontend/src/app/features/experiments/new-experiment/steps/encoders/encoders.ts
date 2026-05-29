@@ -27,16 +27,16 @@ export class EncodersStep implements OnInit {
 
   ngOnInit(): void {
     this.infrastructureService.getConfig().subscribe((data) => {
-      this.encoderTypes = data.encoder_types;
+      this.encoderTypes = data.encoderTypes;
       this.allCodecs = data.codecs;
-      this.allModes = data.encoder_modes;
+      this.allModes = data.encoderModes;
     });
   }
 
   availableCodecs(encoder: EncoderConfig): Codec[] {
     const et = this.encoderTypes.find((e) => e.id === encoder.encoderTypeId);
     if (!et) return [];
-    return this.allCodecs.filter((c) => et.active_codecs.includes(c.id));
+    return this.allCodecs.filter((c) => et.activeCodecs.includes(c.id));
   }
 
   onEncoderTypeChange(encoder: EncoderConfig): void {

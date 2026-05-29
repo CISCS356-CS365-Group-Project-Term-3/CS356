@@ -18,15 +18,15 @@ export class InfrastructureService {
 }
 
 const MOCK_CONFIG: InfrastructureConfig = {
-  project_types: [
+  projectTypes: [
     { id: 1, name: 'Encoder Only' },
     { id: 2, name: 'Live Streaming' },
     { id: 3, name: 'Stream & Record' },
   ],
 
-  encoder_types: [
-    { id: 1, name: 'Standard Encoder', active_codecs: [1, 3] },
-    { id: 2, name: 'Scalable Encoder', active_codecs: [2] },
+  encoderTypes: [
+    { id: 1, name: 'Standard Encoder', activeCodecs: [1, 3] },
+    { id: 2, name: 'Scalable Encoder', activeCodecs: [2] },
   ],
 
   codecs: [
@@ -35,33 +35,33 @@ const MOCK_CONFIG: InfrastructureConfig = {
     { id: 3, name: 'HEVC (H.265)' },
   ],
 
-  encoder_modes: [
+  encoderModes: [
     { id: 1, name: 'Random Access' },
     { id: 2, name: 'Low Delay' },
     { id: 3, name: 'Intra Only' },
   ],
 
-  video_files: [
+  videoFiles: [
     {
       id: 1,
       name: 'Beauty',
-      available_spatials: [1, 2, 3],
-      available_temporals: [1, 2],
-      available_depths: [1],
+      availableSpatials: [1, 2, 3],
+      availableTemporals: [1, 2],
+      availableDepths: [1],
     },
     {
       id: 2,
       name: 'Honeybee',
-      available_spatials: [1, 2, 3],
-      available_temporals: [1, 2],
-      available_depths: [1],
+      availableSpatials: [1, 2, 3],
+      availableTemporals: [1, 2],
+      availableDepths: [1],
     },
     {
       id: 3,
       name: 'Bosphorous',
-      available_spatials: [1, 2, 3],
-      available_temporals: [1, 2],
-      available_depths: [1, 2],
+      availableSpatials: [1, 2, 3],
+      availableTemporals: [1, 2],
+      availableDepths: [1, 2],
     },
   ],
 
@@ -71,7 +71,7 @@ const MOCK_CONFIG: InfrastructureConfig = {
     { id: 3, name: 'HD720', value: '1280x720' },
   ],
 
-  frame_rates: [
+  frameRates: [
     { id: 1, name: '20fps', value: '20' },
     { id: 2, name: '24fps', value: '24' },
   ],
@@ -93,8 +93,8 @@ const MOCK_CONFIG: InfrastructureConfig = {
     { id: 2, name: 'Selfnet' },
   ],
 
-  transmission_conditions: [
-    { id: 1, name: 'Delay', lower_bound: '0ms', upper_bound: '1000ms' },
-    { id: 2, name: 'Jitter', lower_bound: '0ms', upper_bound: '1000ms' },
+  transmissionConditions: [
+    { id: 1, name: 'Delay', lowerBound: '0ms', upperBound: '1000ms' },
+    { id: 2, name: 'Jitter', lowerBound: '0ms', upperBound: '1000ms' },
   ],
 };

@@ -35,9 +35,9 @@ export class SequencesStep implements OnInit {
 
   ngOnInit(): void {
     this.infrastructureService.getConfig().subscribe((data) => {
-      this.videoFiles = data.video_files;
+      this.videoFiles = data.videoFiles;
       this.resolutions = data.resolutions;
-      this.frameRates = data.frame_rates;
+      this.frameRates = data.frameRates;
       this.quality = data.quality;
       this.depth = data.depth;
       this.gamut = data.gamut;
@@ -59,10 +59,10 @@ export class SequencesStep implements OnInit {
         const file = this.videoFiles.find((f) => f.id === id)!;
         this.formService.form.sequences.push({
           videoFileId: id,
-          resolutionId: file.available_spatials.length === 1 ? file.available_spatials[0] : null,
-          frameRateId: file.available_temporals.length === 1 ? file.available_temporals[0] : null,
+          resolutionId: file.availableSpatials.length === 1 ? file.availableSpatials[0] : null,
+          frameRateId: file.availableTemporals.length === 1 ? file.availableTemporals[0] : null,
           qualityId: null,
-          depthId: file.available_depths[0] ?? null,
+          depthId: file.availableDepths[0] ?? null,
           gamutId: this.gamut[0]?.id ?? null,
         });
       }
@@ -79,18 +79,18 @@ export class SequencesStep implements OnInit {
   getResolutionOptions(fileId: number): Resolution[] {
     const file = this.getFile(fileId);
     if (!file) return [];
-    return this.resolutions.filter((r) => file.available_spatials.includes(r.id));
+    return this.resolutions.filter((r) => file.availableSpatials.includes(r.id));
   }
 
   getFrameRateOptions(fileId: number): FrameRate[] {
     const file = this.getFile(fileId);
     if (!file) return [];
-    return this.frameRates.filter((fr) => file.available_temporals.includes(fr.id));
+    return this.frameRates.filter((fr) => file.availableTemporals.includes(fr.id));
   }
 
   getDepthOptions(fileId: number): DepthOption[] {
     const file = this.getFile(fileId);
     if (!file) return [];
-    return this.depth.filter((d) => file.available_depths.includes(d.id));
+    return this.depth.filter((d) => file.availableDepths.includes(d.id));
   }
 }
