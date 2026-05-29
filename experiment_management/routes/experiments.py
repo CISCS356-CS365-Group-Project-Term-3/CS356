@@ -5,7 +5,7 @@ from storage import experiment_store
 
 app = Flask(__name__)
 
-CORS(app, origins=["http://localhost:5000"])
+CORS(app)
 @app.route("/experiments", methods=["POST"])
 def create_experiment_endpoint():
     """ create an experiment endpoint """
