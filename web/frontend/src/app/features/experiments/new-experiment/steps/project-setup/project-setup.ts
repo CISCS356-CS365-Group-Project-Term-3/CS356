@@ -17,12 +17,6 @@ import { NewExperimentFormService } from '../../new-experiment-form.service';
 export class ProjectSetup implements OnInit {
   projectTypes: ProjectType[] = [];
 
-  projectTypeDescriptions: Record<string, string> = {
-    'Encoder Only':    'Run encoding experiments without any streaming output',
-    'Live Streaming':  'Encode and stream video output in real time',
-    'Stream & Record': 'Encode, stream, and save output simultaneously',
-  };
-
   constructor(
     private infrastructureService: InfrastructureService,
     public formService: NewExperimentFormService,
