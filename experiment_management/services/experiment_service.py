@@ -7,11 +7,12 @@ from utils.encoding import generate_sequence_code
 def create_experiment(data):
     """ create an experiment """
     user_id = data["user_id"]
+    status = data["status"]
 
     experiment = {
         "user_id": user_id,
         "name": data["name"],
-        "status": data["status"],
+        "status": status,
         "project_type_id": data["project_type_id"],
         "date": datetime.utcnow().isoformat(),
         "encoders": data.get("encoders", []),
@@ -34,10 +35,11 @@ def create_experiment(data):
                 "sequence_code": code
             }
             saved["sequences"].append(stored_sequence)
-            publish_to_queue({
-                "experiment_id": saved["id"],
-                "user_id": user_id,
-                "date": saved["date"],
-                "sequence_code": code
-            })
+            if status == "finalised":
+                publish_to_queue({
+                    "experiment_id": saved["id"],
+                    "user_id": user_id,
+                    "date": saved["date"],
+                    "sequence_code": code
+                })
     return saved
