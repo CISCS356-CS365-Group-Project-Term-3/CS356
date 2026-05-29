@@ -1,5 +1,7 @@
 import subprocess
 
+from .encoding_result import EncodingResult
+
 # builds and runs ffmpeg commands.
 
 

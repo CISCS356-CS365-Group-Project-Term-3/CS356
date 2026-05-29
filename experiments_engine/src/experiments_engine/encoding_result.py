@@ -25,5 +25,9 @@ class EncodingResult:
         self.sequence_name = sequence_name
         # encoding metrics
         self.metrics = metrics
-        # error message if job fails etc. optional.
+
+        #  error message if job fails etc. optional.
         self.error = error
+
+    def to_dict(self):
+        return vars(self)
