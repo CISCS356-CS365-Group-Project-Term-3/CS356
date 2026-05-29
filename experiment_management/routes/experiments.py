@@ -1,23 +1,39 @@
 from flask import Flask, request
+from flask_cors import CORS
 from services import experiment_service
 from storage import experiment_store
 
 app = Flask(__name__)
 
+CORS(app, origins=["http://localhost:5000"])
 @app.route("/experiments", methods=["POST"])
 def create_experiment_endpoint():
     """ create an experiment endpoint """
     data = request.get_json()
-    experiment_service.create_experiment(data)
+    created_experiment = experiment_service.create_experiment(data)
 
-    return "", 204
+    return {
+        "id": created_experiment["id"]
+    }, 201
 
 @app.route("/experiments", methods=["GET"])
 def get_experiments():
-    user_id = int(request.args.get("user_id"))
-    # Ideally we dont want this function to live with the DB logic but should be in the service layer
-    # But I am just going with it for now to test
-    return experiment_store.get_all_by_user(user_id)
+    """ get all experiments or experiments by users id"""
+    user_id = request.args.get("user_id")
+
+    if user_id:
+        return experiment_store.get_all_by_user(int(user_id)), 200
+
+    return experiment_store.get_all(),200
+
+@app.route("/experiments/<int:experiment_id>", methods=["GET"])
+def get_experiment(experiment_id):
+    """ get an experiment by id """
+    experiment = experiment_store.get_by_id(experiment_id)
+
+    if not experiment:
+        return {"error": "Experiment not found"}, 404
+    return experiment, 200
 
 if __name__ == "__main__":
     app.run(debug=True)
