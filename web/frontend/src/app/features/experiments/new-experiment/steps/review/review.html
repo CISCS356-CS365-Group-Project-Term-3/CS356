@@ -1,0 +1,60 @@
+<div class="step-content">
+  <mat-card>
+    <mat-card-content>
+      <p class="section-label">Experiment Summary</p>
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span class="summary-key">Name</span>
+          <span class="summary-value">{{ formService.form.name }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">Project Type</span>
+          <span class="summary-value">{{ projectTypeName }}</span>
+        </div>
+        @for (encoder of formService.form.encoders; track $index; let i = $index) {
+          @let enc = getEncoderDisplay(encoder);
+          <div class="summary-row">
+            <span class="summary-key">Encoder {{ i + 1 }}</span>
+            <span class="summary-value">{{ enc.type }} · {{ enc.codec }} · {{ enc.mode }}</span>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <p class="section-label">Sequences ({{ formService.form.sequences.length }})</p>
+      <div class="sequences">
+        @for (seq of formService.form.sequences; track seq.videoFileId) {
+          @let display = getSequenceDisplay(seq);
+          <div class="sequence-block">
+            <div class="sequence-name">{{ display.videoFile }}</div>
+            <div class="sequence-rows">
+              <div class="sequence-row">
+                <span class="sequence-key">Resolution</span>
+                <span class="sequence-value">{{ display.resolution }}</span>
+              </div>
+              <div class="sequence-row">
+                <span class="sequence-key">Frame Rate</span>
+                <span class="sequence-value">{{ display.frameRate }}</span>
+              </div>
+              <div class="sequence-row">
+                <span class="sequence-key">Quality (QP)</span>
+                <span class="sequence-value">{{ display.quality }}</span>
+              </div>
+              <div class="sequence-row">
+                <span class="sequence-key">Bit Depth</span>
+                <span class="sequence-value">{{ display.depth }}</span>
+              </div>
+              <div class="sequence-row">
+                <span class="sequence-key">Colour Gamut</span>
+                <span class="sequence-value">{{ display.gamut }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
