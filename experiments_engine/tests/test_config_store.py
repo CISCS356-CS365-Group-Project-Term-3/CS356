@@ -1,18 +1,15 @@
 #Tests for Store and OutputStore against MongoDB.
 import pytest
-from experiments_engine.store import Store
+from experiments_engine.config_store import ConfigStore
 from experiments_engine.output_store import OutputStore
 
 
 @pytest.fixture
-def store():
-    s = Store()
-    for coll in ("experiments", "config", "spatial", "codecs", "source_files"):
-        s._db[coll].delete_many({"_id": {"$regex": "^test_"}})
-    yield s
-    for coll in ("experiments", "config", "spatial", "codecs", "source_files"):
-        s._db[coll].delete_many({"_id": {"$regex": "^test_"}})
-
+def config_store():
+    cs = ConfigStore()
+    cs._db.config.delete_one({"_id": "system"})
+    yield cs
+    cs._db.config.delete_one({"_id": "system"})
 
 @pytest.fixture
 def output_store():
@@ -26,38 +23,39 @@ def output_store():
     os_._db.logs.delete_many({"experiment_id": {"$regex": "^test_"}})
 
 
-# ---- Store ----
+# ---- ConfigStore ----
 
-def test_save_and_get_experiment(store):
-    experiment = {
-        "project": {"id": "test_proj_001", "codec": "HEVC"},
-        "sequences": [{"order": 0, "qp": 28}],
-    }
-    store.save_experiment("test_exp_001", experiment)
-    loaded = store.get_experiment("test_exp_001")
+def test_get_config_raises_when_unset(config_store):
+    assert config_store.get_config() is None
+
+
+def test_save_and_get_config(config_store):
+    config_store.save_config({"version": "1.0", "default_codec": "HEVC"})
+    loaded = config_store.get_config()
 
     assert loaded is not None
-    assert loaded["project"]["codec"] == "HEVC"
+    assert loaded["version"] == "1.0"
+    assert loaded["default_codec"] == "HEVC"
 
 
-def test_get_missing_experiment_returns_none(store):
-    assert store.get_experiment("test_nonexistent") is None
+def test_save_config_overwrites_existing(config_store):
+    config_store.save_config({"version": "1.0"})
+    config_store.save_config({"version": "2.0"})
+
+    assert config_store.get_config()["version"] == "2.0"
 
 
-def test_save_experiment_overwrites_existing(store):
-    store.save_experiment("test_exp_002", {"codec": "AVC"})
-    store.save_experiment("test_exp_002", {"codec": "HEVC"})
-    assert store.get_experiment("test_exp_002")["codec"] == "HEVC"
+def test_save_config_preserves_extra_fields(config_store):
+    config_store.save_config({
+        "version": "1.0",
+        "default_codec": "HEVC",
+        "max_layers": 4,
+    })
+    loaded = config_store.get_config()
 
-
-def test_list_experiments_includes_saved(store):
-    store.save_experiment("test_exp_003", {"codec": "AVC"})
-    store.save_experiment("test_exp_004", {"codec": "HEVC"})
-    ids = store.list_experiments()
-
-    assert "test_exp_003" in ids
-    assert "test_exp_004" in ids
-
+    assert loaded["version"] == "1.0"
+    assert loaded["default_codec"] == "HEVC"
+    assert loaded["max_layers"] == 4
 
 # ---- OutputStore ----
 
