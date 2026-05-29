@@ -1,5 +1,5 @@
 import pytest
-from experiments_engine.src.experiments_engine.sequence_decoder import SequenceDecoder, SequenceDecoderError
+from experiments_engine.sequence_decoder import SequenceDecoder, SequenceDecoderError
   
 @pytest.fixture
 def decoder():
