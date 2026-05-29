@@ -39,13 +39,17 @@ class Encoder:
 
         return command
 
-    def run(self, command) -> EncodingResult:
+    def run(self, command) -> dict:
+        process = subprocess.run(command, capture_output=True, text=True)
 
-        # Runs the ffmpeg command
+        return {
+            "return_code": process.returncode,
+            "stderr": process.stderr,
+            "stdout": process.stdout
+        }
 
-        process = subprocess.run(command)
-
-        return EncodingResult(status= process.returncode)
+    def check_output(self, return_code: int, stderr: str) -> bool:
+        return return_code == 0
 
     @classmethod
     def _get_encoder(cls, sequence) -> tuple[str, str, str]:
