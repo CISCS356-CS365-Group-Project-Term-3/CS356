@@ -75,3 +75,25 @@ def verify(authorisation: Optional[str] = Header(None)):
             detail=f"Token verification failed: {str(e)}"
         )
 
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+
+@app.post("/auth/reset_password")
+def reset_password(request: PasswordResetRequest):
+    """
+        - 200: {"message": "If an account exists, a password reset link has been sent."}
+        - 500: {"detail": "Unable to process password reset"}
+    """
+    try:
+        user_portal_service.reset_password(request.email)
+
+        return {"message": "If an account exists, a password reset link has been sent."}
+
+    except Exception as e:
+        print(f"Reset error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to process password reset"
+        )

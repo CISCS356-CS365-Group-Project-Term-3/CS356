@@ -5,6 +5,10 @@ import bcrypt
 import os
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
+from supabase import create_client, Client
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def validate_login(json):
     try:
@@ -13,6 +17,7 @@ def validate_login(json):
         if validate_credentials(user_name, user_password):
             user_details = get_user_info(user_name)
             if user_details is None:
+
                 return False
             try:
                 token = generate_token(user_details)
@@ -150,3 +155,16 @@ def load_public_key():
     except Exception as e:
         print(f"Error loading public key: {e}")
         return None
+
+def reset_password(email):
+    try:
+        supabase.auth.reset_password_for_email(
+            email,
+            {
+                # point this to your local frontend application
+                "redirect_to": "http://localhost:3000/update-password",
+            }
+        )
+    except Exception as e:
+        print(f"Error triggering Supabase password reset: {e}")
+        raise
