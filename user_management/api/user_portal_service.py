@@ -3,12 +3,19 @@ import jwt
 from sqlalchemy import create_engine, text
 import bcrypt
 import os
+import secrets
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
-from supabase import create_client, Client
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+from dotenv import load_dotenv
+
+_env_path = os.path.join(os.path.dirname(__file__), '..', 'db.env')
+load_dotenv(_env_path)
+
 
 def validate_login(json):
     try:
@@ -157,14 +164,78 @@ def load_public_key():
         return None
 
 def reset_password(email):
+    connection = create_db_connection()
+    if connection is None:
+        raise Exception("Database connection failed")
     try:
-        supabase.auth.reset_password_for_email(
-            email,
-            {
-                # point this to your local frontend application
-                "redirect_to": "http://localhost:3000/update-password",
-            }
+        result = connection.execute(
+            text("SELECT user_email FROM users WHERE user_email = :email"),
+            {"email": email}
         )
-    except Exception as e:
-        print(f"Error triggering Supabase password reset: {e}")
-        raise
+        if result.fetchone() is None:
+            return
+
+        token = secrets.token_hex(32)
+        expires_at = datetime.now() + timedelta(hours=1)
+        connection.execute(
+            text("INSERT INTO password_reset_tokens (token, user_email, expires_at) VALUES (:token, :email, :expires_at)"),
+            {"token": token, "email": email, "expires_at": expires_at}
+        )
+        connection.commit()
+        send_reset_email(email, token)
+    finally:
+        connection.close()
+
+
+def confirm_password_reset(token, new_password):
+    connection = create_db_connection()
+    if connection is None:
+        raise Exception("Database connection failed")
+    try:
+        result = connection.execute(
+            text("SELECT user_email, expires_at, used FROM password_reset_tokens WHERE token = :token"),
+            {"token": token}
+        )
+        row = result.fetchone()
+        if row is None:
+            raise ValueError("Invalid or expired reset token")
+
+        user_email, expires_at, used = row
+        if used:
+            raise ValueError("Reset token has already been used")
+        if datetime.now() > expires_at:
+            raise ValueError("Reset token has expired")
+
+        new_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        connection.execute(
+            text("UPDATE users SET password_hash = :hash WHERE user_email = :email"),
+            {"hash": new_hash, "email": user_email}
+        )
+        connection.execute(
+            text("UPDATE password_reset_tokens SET used = TRUE WHERE token = :token"),
+            {"token": token}
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
+def send_reset_email(to_email, token):
+    sender = os.environ.get("GMAIL_SENDER")
+    app_password = os.environ.get("GMAIL_APP_PASSWORD")
+    if not sender or not app_password:
+        raise EnvironmentError("GMAIL_SENDER and GMAIL_APP_PASSWORD must be set in db.env")
+
+    reset_link = f"http://localhost:3000/update-password?token={token}"
+
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Password Reset Request"
+    message["From"] = sender
+    message["To"] = to_email
+    body = f"Click the link below to reset your password (expires in 1 hour):\n\n{reset_link}"
+    message.attach(MIMEText(body, "plain"))
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(sender, app_password)
+        server.sendmail(sender, to_email, message.as_string())

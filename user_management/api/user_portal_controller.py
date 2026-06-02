@@ -1,4 +1,4 @@
-import user_management.api.user_portal_service as user_portal_service
+from . import user_portal_service
 from fastapi import FastAPI, Header, HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
@@ -80,6 +80,11 @@ class PasswordResetRequest(BaseModel):
     email: str
 
 
+class PasswordResetConfirmRequest(BaseModel):
+    token: str
+    new_password: str
+
+
 @app.post("/auth/reset_password")
 def reset_password(request: PasswordResetRequest):
     """
@@ -88,11 +93,32 @@ def reset_password(request: PasswordResetRequest):
     """
     try:
         user_portal_service.reset_password(request.email)
-
         return {"message": "If an account exists, a password reset link has been sent."}
-
     except Exception as e:
         print(f"Reset error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to process password reset"
+        )
+
+
+@app.post("/auth/reset_password/confirm")
+def confirm_reset_password(request: PasswordResetConfirmRequest):
+    """
+        - 200: {"message": "Password has been reset successfully."}
+        - 400: {"detail": "Invalid or expired reset token"}
+        - 500: {"detail": "Unable to process password reset"}
+    """
+    try:
+        user_portal_service.confirm_password_reset(request.token, request.new_password)
+        return {"message": "Password has been reset successfully."}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        print(f"Confirm reset error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process password reset"

@@ -6,3 +6,10 @@ CREATE TABLE users (
     user_role     VARCHAR(50) NOT NULL DEFAULT 'user',
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE password_reset_tokens (
+    token         VARCHAR(64) PRIMARY KEY,
+    user_email    VARCHAR(255) NOT NULL,
+    expires_at    TIMESTAMP NOT NULL,
+    used          BOOLEAN DEFAULT FALSE
+);
