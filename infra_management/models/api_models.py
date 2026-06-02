@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt
 from typing import List
 
 class ProjectType(BaseModel):
@@ -8,7 +8,6 @@ class ProjectType(BaseModel):
 class EncoderType(BaseModel):
     id: int
     name: str
-    active_codecs: List[int]
 
 class Codec(BaseModel):
     id: int
@@ -21,31 +20,18 @@ class EncoderMode(BaseModel):
 class VideoFile(BaseModel):
     id: int
     name: str
-    available_spatials: List[int]
-    available_temporals: List[int]
-    available_depths: List[int]
+    spacial: List[PositiveInt]
+    temporal: PositiveInt
+    depth: PositiveInt
+    filepath: str
+    quality: str
+    gamut: str
 
-class Resolution(BaseModel):
+class Sequences(BaseModel):
     id: int
     name: str
-    value: str
-
-class FrameRate(BaseModel):
-    id: int
-    name: str
-    value: str
-
-class Quality(BaseModel):
-    id: int
-    name: str
-
-class Depth(BaseModel):
-    id: int
-    name: str
-
-class Gamut(BaseModel):
-    id: int
-    name: str
+    description: str
+    video_files: List[VideoFile]
 
 class Topology(BaseModel):
     id: int
@@ -61,4 +47,6 @@ class UiOptions(BaseModel):
     project_types: List[ProjectType]
     encoder_type: List[EncoderType]
     codecs: List[Codec]
+    encoder_modes: List[EncoderMode]
+    sequences: List[VideoFile]
 
