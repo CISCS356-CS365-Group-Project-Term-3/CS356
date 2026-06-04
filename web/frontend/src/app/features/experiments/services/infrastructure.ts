@@ -41,52 +41,37 @@ const MOCK_CONFIG: InfrastructureConfig = {
     { id: 3, name: 'Intra Only' },
   ],
 
-  videoFiles: [
+  sequences: [
     {
       id: 1,
       name: 'Beauty',
-      availableSpatials: [1, 2, 3],
-      availableTemporals: [1, 2],
-      availableDepths: [1],
+      description: 'Close-up of a woman applying makeup.',
+      videoFiles: [
+        { id: 1, name: 'beauty_832x480_24hz_10bit',   spacial: [832,  480],  temporal: 24, depth: 10 },
+        { id: 2, name: 'beauty_1280x720_30hz_10bit',  spacial: [1280, 720],  temporal: 30, depth: 10 },
+        { id: 3, name: 'beauty_1920x1080_60hz_10bit', spacial: [1920, 1080], temporal: 60, depth: 10 },
+      ],
     },
     {
       id: 2,
       name: 'Honeybee',
-      availableSpatials: [1, 2, 3],
-      availableTemporals: [1, 2],
-      availableDepths: [1],
+      description: 'Macro footage of a honeybee in flight.',
+      videoFiles: [
+        { id: 4, name: 'honeybee_832x480_24hz_10bit',   spacial: [832,  480],  temporal: 24, depth: 10 },
+        { id: 5, name: 'honeybee_1920x1080_30hz_10bit', spacial: [1920, 1080], temporal: 30, depth: 10 },
+      ],
     },
     {
       id: 3,
       name: 'Bosphorous',
-      availableSpatials: [1, 2, 3],
-      availableTemporals: [1, 2],
-      availableDepths: [1, 2],
+      description: 'Outdoor scene with complex motion and depth.',
+      videoFiles: [
+        { id: 6, name: 'bosphorous_832x480_24hz_10bit',   spacial: [832,  480],  temporal: 24, depth: 10 },
+        { id: 7, name: 'bosphorous_1280x720_24hz_10bit',  spacial: [1280, 720],  temporal: 24, depth: 10 },
+        { id: 8, name: 'bosphorous_1920x1080_24hz_12bit', spacial: [1920, 1080], temporal: 24, depth: 12 },
+      ],
     },
   ],
-
-  resolutions: [
-    { id: 1, name: 'WVGA', value: '832x480' },
-    { id: 2, name: 'XGA', value: '1024x768' },
-    { id: 3, name: 'HD720', value: '1280x720' },
-  ],
-
-  frameRates: [
-    { id: 1, name: '20fps', value: '20' },
-    { id: 2, name: '24fps', value: '24' },
-  ],
-
-  quality: [
-    { id: 1, name: 'Q20' },
-    { id: 2, name: 'Q21' },
-  ],
-
-  depth: [
-    { id: 1, name: '10 bit' },
-    { id: 2, name: '12 bit' },
-  ],
-
-  gamut: [{ id: 1, name: 'Gamut 1' }],
 
   topologies: [
     { id: 1, name: 'IP to IP' },
@@ -94,7 +79,7 @@ const MOCK_CONFIG: InfrastructureConfig = {
   ],
 
   transmissionConditions: [
-    { id: 1, name: 'Delay', lowerBound: '0ms', upperBound: '1000ms' },
+    { id: 1, name: 'Delay',  lowerBound: '0ms', upperBound: '1000ms' },
     { id: 2, name: 'Jitter', lowerBound: '0ms', upperBound: '1000ms' },
   ],
 };

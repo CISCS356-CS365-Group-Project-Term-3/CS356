@@ -14,9 +14,7 @@ interface SequenceDisplay {
   videoFile: string;
   resolution: string;
   frameRate: string;
-  quality: string;
   depth: string;
-  gamut: string;
 }
 
 @Component({
@@ -52,13 +50,13 @@ export class ReviewStep implements OnInit {
   }
 
   getSequenceDisplay(seq: SequenceConfig): SequenceDisplay {
+    const file = this.config?.sequences.flatMap((s) => s.videoFiles).find((f) => f.id === seq.videoFileId);
+    const seqName = this.config?.sequences.find((s) => s.videoFiles.some((f) => f.id === seq.videoFileId))?.name ?? '—';
     return {
-      videoFile:  this.config?.videoFiles.find((f) => f.id === seq.videoFileId)?.name ?? '—',
-      resolution: this.config?.resolutions.find((r) => r.id === seq.resolutionId)?.name ?? '—',
-      frameRate:  this.config?.frameRates.find((fr) => fr.id === seq.frameRateId)?.name ?? '—',
-      quality:    this.config?.quality.find((q) => q.id === seq.qualityId)?.name ?? '—',
-      depth:      this.config?.depth.find((d) => d.id === seq.depthId)?.name ?? '—',
-      gamut:      this.config?.gamut.find((g) => g.id === seq.gamutId)?.name ?? '—',
+      videoFile:  file ? `${seqName} — ${file.spacial[0]}x${file.spacial[1]} · ${file.temporal}fps · ${file.depth}bit` : seqName,
+      resolution: file ? `${file.spacial[0]}x${file.spacial[1]}` : '—',
+      frameRate:  file ? `${file.temporal}fps` : '—',
+      depth:      file ? `${file.depth}bit` : '—',
     };
   }
 }

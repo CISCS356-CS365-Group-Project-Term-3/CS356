@@ -13,7 +13,7 @@ export class ExperimentsService {
 
   getExperiments() {
     // TODO: swap when abdur GET /experiments is ready
-    // return this.http.get<Experiment[]>(`${API_BASE}/experiments?user_id=1`);
+    // return this.http.get<Experiment[]>(`${API_BASE}/experiments?userId=1`);
     return of(this.mockExperiments);
   }
 
@@ -26,64 +26,59 @@ export class ExperimentsService {
     return this.http.post<{ id: number }>(`${API_BASE}/experiments`, payload);
   }
 
+  patchExperiment(id: string, payload: object) {
+    return this.http.patch<{ id: number }>(`${API_BASE}/experiments/${id}`, payload);
+  }
+
   private mockExperiments: Experiment[] = [
     {
       id: '1',
       name: 'Experiment 1',
-      status: 'Complete',
-      date: 'Today 14:32',
+      status: 'finalised',
+      engineStatus: 'Complete',
+      date: '2026-06-04T14:32:00',
       projectTypeId: 1,
       encoders: [{ encoderTypeId: 1, codecId: 3, encoderModeId: 1 }],
-      sequences: [
-        { videoFileId: 1, resolutionId: 3, frameRateId: 1, qualityId: 1, depthId: 1, gamutId: 1 },
-        { videoFileId: 2, resolutionId: 2, frameRateId: 2, qualityId: 2, depthId: 1, gamutId: 1 },
-      ],
+      sequences: [{ videoFileId: 1 }, { videoFileId: 4 }],
     },
     {
       id: '2',
       name: 'Experiment 2',
-      status: 'Running',
-      date: 'Today 13:10',
+      status: 'finalised',
+      engineStatus: 'Running',
+      date: '2026-06-04T13:10:00',
       projectTypeId: 1,
       encoders: [{ encoderTypeId: 1, codecId: 1, encoderModeId: 2 }],
-      sequences: [
-        { videoFileId: 2, resolutionId: 1, frameRateId: 1, qualityId: 1, depthId: 1, gamutId: 1 },
-        { videoFileId: 3, resolutionId: 2, frameRateId: 2, qualityId: 2, depthId: 1, gamutId: 1 },
-      ],
+      sequences: [{ videoFileId: 2 }, { videoFileId: 6 }],
     },
     {
       id: '3',
       name: 'Experiment 3',
-      status: 'Running',
-      date: 'Today 11:45',
+      status: 'finalised',
+      engineStatus: 'Running',
+      date: '2026-06-04T11:45:00',
       projectTypeId: 1,
       encoders: [{ encoderTypeId: 1, codecId: 2, encoderModeId: 1 }],
-      sequences: [
-        { videoFileId: 3, resolutionId: 3, frameRateId: 1, qualityId: 1, depthId: 2, gamutId: 1 },
-      ],
+      sequences: [{ videoFileId: 8 }],
     },
     {
       id: '4',
       name: 'Experiment 4',
-      status: 'Complete',
-      date: 'Yesterday',
+      status: 'draft',
+      date: '2026-06-03T09:20:00',
       projectTypeId: 1,
       encoders: [{ encoderTypeId: 1, codecId: 3, encoderModeId: 2 }],
-      sequences: [
-        { videoFileId: 1, resolutionId: 2, frameRateId: 2, qualityId: 2, depthId: 1, gamutId: 1 },
-        { videoFileId: 3, resolutionId: 1, frameRateId: 1, qualityId: 1, depthId: 1, gamutId: 1 },
-      ],
+      sequences: [{ videoFileId: 3 }, { videoFileId: 7 }],
     },
     {
       id: '5',
       name: 'Experiment 5',
-      status: 'Failed',
-      date: '03/05/2026',
+      status: 'finalised',
+      engineStatus: 'Failed',
+      date: '2026-05-03T16:00:00',
       projectTypeId: 1,
       encoders: [{ encoderTypeId: 1, codecId: 1, encoderModeId: 1 }],
-      sequences: [
-        { videoFileId: 2, resolutionId: 3, frameRateId: 2, qualityId: 2, depthId: 1, gamutId: 1 },
-      ],
+      sequences: [{ videoFileId: 5 }],
     },
   ];
 }

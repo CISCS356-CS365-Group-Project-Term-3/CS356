@@ -3,16 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import {
-  DepthOption,
-  FrameRate,
-  GamutOption,
-  QualityOption,
-  Resolution,
-  VideoFile,
-} from '../../../models/infrastructure-config.model';
+import { Sequence, VideoFile } from '../../../models/infrastructure-config.model';
 import { InfrastructureService } from '../../../services/infrastructure';
-import { NewExperimentFormService, SequenceConfig } from '../../new-experiment-form.service';
+import { NewExperimentFormService } from '../../new-experiment-form.service';
 
 @Component({
   selector: 'app-sequences',
@@ -21,12 +14,8 @@ import { NewExperimentFormService, SequenceConfig } from '../../new-experiment-f
   styleUrl: './sequences.scss',
 })
 export class SequencesStep implements OnInit {
-  videoFiles: VideoFile[] = [];
-  resolutions: Resolution[] = [];
-  frameRates: FrameRate[] = [];
-  quality: QualityOption[] = [];
-  depth: DepthOption[] = [];
-  gamut: GamutOption[] = [];
+  sequences: Sequence[] = [];
+  selectedFileIds: number[] = [];
 
   constructor(
     private infrastructureService: InfrastructureService,
@@ -35,36 +24,15 @@ export class SequencesStep implements OnInit {
 
   ngOnInit(): void {
     this.infrastructureService.getConfig().subscribe((data) => {
-      this.videoFiles = data.videoFiles;
-      this.resolutions = data.resolutions;
-      this.frameRates = data.frameRates;
-      this.quality = data.quality;
-      this.depth = data.depth;
-      this.gamut = data.gamut;
+      this.sequences = data.sequences;
       this.selectedFileIds = this.formService.form.sequences.map((s) => s.videoFileId);
     });
   }
 
-  get hasIncompleteSequences(): boolean {
-    return this.formService.form.sequences.some(
-      (s) => s.resolutionId === null || s.frameRateId === null || s.qualityId === null,
-    );
-  }
-
-  selectedFileIds: number[] = [];
-
   onFileSelectionChange(selectedIds: number[]): void {
     for (const id of selectedIds) {
       if (!this.formService.form.sequences.some((s) => s.videoFileId === id)) {
-        const file = this.videoFiles.find((f) => f.id === id)!;
-        this.formService.form.sequences.push({
-          videoFileId: id,
-          resolutionId: file.availableSpatials.length === 1 ? file.availableSpatials[0] : null,
-          frameRateId: file.availableTemporals.length === 1 ? file.availableTemporals[0] : null,
-          qualityId: null,
-          depthId: file.availableDepths[0] ?? null,
-          gamutId: this.gamut[0]?.id ?? null,
-        });
+        this.formService.form.sequences.push({ videoFileId: id });
       }
     }
     this.formService.form.sequences = this.formService.form.sequences.filter((s) =>
@@ -73,24 +41,18 @@ export class SequencesStep implements OnInit {
   }
 
   getFile(fileId: number): VideoFile | undefined {
-    return this.videoFiles.find((f) => f.id === fileId);
+    for (const seq of this.sequences) {
+      const file = seq.videoFiles.find((f) => f.id === fileId);
+      if (file) return file;
+    }
+    return undefined;
   }
 
-  getResolutionOptions(fileId: number): Resolution[] {
-    const file = this.getFile(fileId);
-    if (!file) return [];
-    return this.resolutions.filter((r) => file.availableSpatials.includes(r.id));
+  getSequenceName(fileId: number): string {
+    return this.sequences.find((s) => s.videoFiles.some((f) => f.id === fileId))?.name ?? '—';
   }
 
-  getFrameRateOptions(fileId: number): FrameRate[] {
-    const file = this.getFile(fileId);
-    if (!file) return [];
-    return this.frameRates.filter((fr) => file.availableTemporals.includes(fr.id));
-  }
-
-  getDepthOptions(fileId: number): DepthOption[] {
-    const file = this.getFile(fileId);
-    if (!file) return [];
-    return this.depth.filter((d) => file.availableDepths.includes(d.id));
+  getFileLabel(file: VideoFile): string {
+    return `${file.spacial[0]}x${file.spacial[1]} · ${file.temporal}fps · ${file.depth}bit`;
   }
 }

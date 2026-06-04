@@ -38,24 +38,38 @@ export class Dashboard implements OnInit {
     {
       headerName: 'Name',
       valueGetter: (p) => p.data.id + ' ' + p.data.name,
-      flex: 2,
+      flex: 1.5,
     },
     {
       headerName: 'Codec',
-      valueGetter: (p) => this.config?.codecs.find((c) => c.id === p.data.encoders[0]?.codecId)?.name ?? '—',
+      valueGetter: (p) =>
+        this.config?.codecs.find((c) => c.id === p.data.encoders[0]?.codecId)?.name ?? '—',
       flex: 1,
     },
     {
       headerName: 'Sequences',
-      valueGetter: (p) => p.data.sequences.map((s: Experiment['sequences'][0]) => this.config?.videoFiles.find((f) => f.id === s.videoFileId)?.name ?? '—').join(', '),
+      valueGetter: (p) =>
+        p.data.sequences
+          .map(
+            (s: Experiment['sequences'][0]) =>
+              this.config?.sequences.find((seq) => seq.videoFiles.some((f) => f.id === s.videoFileId))?.name ?? '—',
+          )
+          .join(', '),
       flex: 2,
     },
-    { field: 'date', flex: 1 },
     {
-      field: 'status',
+      field: 'date',
       flex: 1,
-      filter: true,
-      cellRenderer: (params: { value: ExperimentStatus }) => this.statusCellRenderer(params),
+      valueFormatter: (p) => {
+        const d = new Date(p.value);
+        return isNaN(d.getTime()) ? p.value : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+      },
+    },
+    {
+      headerName: 'Status',
+      field: 'engineStatus',
+      flex: 1,
+      cellRenderer: (params: { value: ExperimentStatus | undefined }) => this.statusCellRenderer(params),
     },
   ];
 
@@ -63,20 +77,20 @@ export class Dashboard implements OnInit {
 
   get filteredExperiments(): Experiment[] {
     if (!this.activeStatusFilter) return this.experiments;
-    return this.experiments.filter((e) => e.status === this.activeStatusFilter);
+    return this.experiments.filter((e) => e.engineStatus === this.activeStatusFilter);
   }
 
   get totalCount() {
     return this.experiments.length;
   }
   get completedCount() {
-    return this.experiments.filter((e) => e.status === 'Complete').length;
+    return this.experiments.filter((e) => e.engineStatus === 'Complete').length;
   }
   get runningCount() {
-    return this.experiments.filter((e) => e.status === 'Running').length;
+    return this.experiments.filter((e) => e.engineStatus === 'Running').length;
   }
   get failedCount() {
-    return this.experiments.filter((e) => e.status === 'Failed').length;
+    return this.experiments.filter((e) => e.engineStatus === 'Failed').length;
   }
 
   constructor(
@@ -132,7 +146,8 @@ export class Dashboard implements OnInit {
     });
   }
 
-  statusCellRenderer(params: { value: ExperimentStatus }) {
+  statusCellRenderer(params: { value: ExperimentStatus | undefined }) {
+    if (!params.value) return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Pending</span>`;
     const styles: Record<ExperimentStatus, string> = {
       Complete: 'background:#e8f5e9;color:#388e3c',
       Running: 'background:#fff3e0;color:#f57c00',

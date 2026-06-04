@@ -2,77 +2,45 @@
   <mat-card>
     <mat-card-content>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Video sequences</mat-label>
+        <mat-label>Video files</mat-label>
         <mat-select multiple [(ngModel)]="selectedFileIds" (ngModelChange)="onFileSelectionChange($event)">
-          @for (file of videoFiles; track file.id) {
-            <mat-option [value]="file.id">{{ file.name }}</mat-option>
+          @for (seq of sequences; track seq.id) {
+            <mat-optgroup [label]="seq.name">
+              @for (file of seq.videoFiles; track file.id) {
+                <mat-option [value]="file.id">{{ getFileLabel(file) }}</mat-option>
+              }
+            </mat-optgroup>
           }
         </mat-select>
       </mat-form-field>
+      @if (formService.form.sequences.length === 0) {
+        <p class="empty-hint">Select one or more video files to include in this experiment.</p>
+      }
     </mat-card-content>
   </mat-card>
 
-  @if (hasIncompleteSequences) {
-    <p class="validation-hint">Fill in all fields for each selected sequence to continue.</p>
-  }
-
   @for (seq of formService.form.sequences; track seq.videoFileId) {
-    <mat-card>
-      <mat-card-content>
-        <p class="section-label">{{ getFile(seq.videoFileId)?.name }}</p>
-        <div class="config-rows">
-          <div class="config-row">
-            <span class="config-label">Resolution</span>
-            <mat-form-field appearance="outline">
-              <mat-select [(ngModel)]="seq.resolutionId" placeholder="Select resolution">
-                @for (opt of getResolutionOptions(seq.videoFileId); track opt.id) {
-                  <mat-option [value]="opt.id">{{ opt.name }} ({{ opt.value }})</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+    @let file = getFile(seq.videoFileId);
+    @if (file) {
+      <mat-card>
+        <mat-card-content>
+          <p class="section-label">{{ getSequenceName(seq.videoFileId) }}</p>
+          <div class="config-rows">
+            <div class="config-row">
+              <span class="config-label">Resolution</span>
+              <span>{{ file.spacial[0] }}x{{ file.spacial[1] }}</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Frame Rate</span>
+              <span>{{ file.temporal }}fps</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Bit Depth</span>
+              <span>{{ file.depth }}bit</span>
+            </div>
           </div>
-          <div class="config-row">
-            <span class="config-label">Frame Rate</span>
-            <mat-form-field appearance="outline">
-              <mat-select [(ngModel)]="seq.frameRateId" placeholder="Select frame rate">
-                @for (opt of getFrameRateOptions(seq.videoFileId); track opt.id) {
-                  <mat-option [value]="opt.id">{{ opt.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="config-row">
-            <span class="config-label">Quality (QP)</span>
-            <mat-form-field appearance="outline" class="quality-field">
-              <mat-select [(ngModel)]="seq.qualityId" placeholder="Select QP value">
-                @for (opt of quality; track opt.id) {
-                  <mat-option [value]="opt.id">{{ opt.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="config-row">
-            <span class="config-label">Bit Depth</span>
-            <mat-form-field appearance="outline" class="quality-field">
-              <mat-select [(ngModel)]="seq.depthId" placeholder="Select bit depth">
-                @for (opt of getDepthOptions(seq.videoFileId); track opt.id) {
-                  <mat-option [value]="opt.id">{{ opt.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="config-row">
-            <span class="config-label">Colour Gamut</span>
-            <mat-form-field appearance="outline" class="quality-field">
-              <mat-select [(ngModel)]="seq.gamutId" placeholder="Select colour gamut">
-                @for (opt of gamut; track opt.id) {
-                  <mat-option [value]="opt.id">{{ opt.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
+        </mat-card-content>
+      </mat-card>
+    }
   }
 </div>

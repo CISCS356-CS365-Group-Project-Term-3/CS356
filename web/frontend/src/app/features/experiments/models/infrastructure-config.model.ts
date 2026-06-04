@@ -22,36 +22,17 @@ export interface EncoderMode {
 export interface VideoFile {
   id: number;
   name: string;
-  availableSpatials: number[];
-  availableTemporals: number[];
-  availableDepths: number[];
+  spacial: [number, number]; // [width, height] — Fraser's spelling, must match JSON key
+  temporal: number;
+  depth: number;
+  filepath?: string;
 }
 
-export interface Resolution {
+export interface Sequence {
   id: number;
   name: string;
-  value: string;
-}
-
-export interface FrameRate {
-  id: number;
-  name: string;
-  value: string;
-}
-
-export interface QualityOption {
-  id: number;
-  name: string;
-}
-
-export interface DepthOption {
-  id: number;
-  name: string;
-}
-
-export interface GamutOption {
-  id: number;
-  name: string;
+  description?: string;
+  videoFiles: VideoFile[];
 }
 
 export interface Topology {
@@ -71,12 +52,7 @@ export interface InfrastructureConfig {
   encoderTypes: EncoderType[];
   codecs: Codec[];
   encoderModes: EncoderMode[];
-  videoFiles: VideoFile[];
-  resolutions: Resolution[];
-  frameRates: FrameRate[];
-  quality: QualityOption[];
-  depth: DepthOption[];
-  gamut: GamutOption[];
+  sequences: Sequence[];
   topologies: Topology[];
   transmissionConditions: TransmissionCondition[];
 }

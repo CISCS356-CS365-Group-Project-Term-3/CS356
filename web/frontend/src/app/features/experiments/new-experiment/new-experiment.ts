@@ -90,11 +90,7 @@ export class NewExperiment implements OnInit {
   }
 
   isSequencesComplete(): boolean {
-    const seqs = this.formService.form.sequences;
-    return (
-      seqs.length > 0 &&
-      seqs.every((s) => s.resolutionId !== null && s.frameRateId !== null && s.qualityId !== null)
-    );
+    return this.formService.form.sequences.length > 0;
   }
 
   isFormComplete(): boolean {
@@ -117,16 +113,8 @@ export class NewExperiment implements OnInit {
         codecId: e.codecId,
         encoderModeId: e.encoderModeId,
       })),
-      sequences: form.sequences.map((s) => ({
-        videoFileId: s.videoFileId,
-        resolutionId: s.resolutionId,
-        frameRateId: s.frameRateId,
-        qualityId: s.qualityId,
-        depthId: s.depthId,
-        gamutId: s.gamutId,
-      })),
+      sequences: form.sequences.map((s) => ({ videoFileId: s.videoFileId })),
     };
-    console.log('createExperiment payload', payload);
     this.submitError = null;
     this.experimentsService.createExperiment(payload).subscribe({
       next: () => this.router.navigate(['/experiments']),

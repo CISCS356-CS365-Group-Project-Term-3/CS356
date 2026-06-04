@@ -3,11 +3,6 @@ import { Experiment } from '../models/experiment.model';
 
 export interface SequenceConfig {
   videoFileId: number;
-  resolutionId: number | null;
-  frameRateId: number | null;
-  qualityId: number | null;
-  depthId: number | null;
-  gamutId: number | null;
 }
 
 export interface EncoderConfig {
