@@ -1,11 +1,10 @@
 import subprocess
+from coder import Coder
 
-from .encoding_result import EncodingResult
-
+#child class of Coder
 # builds and runs ffmpeg commands.
 
-
-class Encoder:
+class Encoder(Coder):
 
     format_map: dict = {
         'h261': 'h261',
