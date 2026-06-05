@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from user_management.api.user_portal_service import (
     validate_login,
     validate_credentials,
+    hash_password,
+    verify_password,
     get_user_info,
     verify_token,
     get_user_id_and_role,
@@ -56,18 +58,39 @@ class Test(TestCase):
         self.assertFalse(result)
 
     @patch('user_management.api.user_portal_service.create_db_connection')
-    @patch('bcrypt.checkpw')
-    def test_validate_credentials_success(self, mock_bcrypt, mock_db):
+    @patch('user_management.api.user_portal_service.verify_password')
+    def test_validate_credentials_success(self, mock_verify_password, mock_db):
         mock_conn = MagicMock()
         mock_db.return_value = mock_conn
         mock_result = MagicMock()
         mock_result.fetchone.return_value = ("hashed_password",)
         mock_conn.execute.return_value = mock_result
-        mock_bcrypt.return_value = True
+        mock_verify_password.return_value = True
         
         result = validate_credentials("user", "pass")
         self.assertTrue(result)
+        mock_verify_password.assert_called_once_with("pass", "hashed_password")
         mock_conn.close.assert_called_once()
+
+    def test_hash_password_returns_bcrypt_hash_not_plaintext(self):
+        password = "password123"
+        password_hash = hash_password(password)
+
+        self.assertIsInstance(password_hash, str)
+        self.assertNotEqual(password_hash, password)
+        self.assertTrue(password_hash.startswith("$2"))
+        self.assertTrue(verify_password(password, password_hash))
+
+    def test_hash_password_rejects_empty_password(self):
+        self.assertIsNone(hash_password(""))
+        self.assertIsNone(hash_password(None))
+
+    def test_verify_password_rejects_invalid_values(self):
+        password_hash = hash_password("password123")
+
+        self.assertFalse(verify_password("wrong-password", password_hash))
+        self.assertFalse(verify_password("", password_hash))
+        self.assertFalse(verify_password("password123", ""))
 
     @patch('user_management.api.user_portal_service.create_db_connection')
     def test_validate_credentials_user_not_found(self, mock_db):

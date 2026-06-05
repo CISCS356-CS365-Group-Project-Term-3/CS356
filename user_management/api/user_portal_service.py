@@ -56,8 +56,7 @@ def validate_credentials(user_name, user_password):
 
         password_hash = user_row[0]
 
-        # compare provided password with stored hash using bcrypt
-        if bcrypt.checkpw(user_password.encode('utf-8'), password_hash.encode('utf-8')):
+        if verify_password(user_password, password_hash):
             print(f"Password validated successfully for user: {user_name}")
             return True
         else:
@@ -70,6 +69,23 @@ def validate_credentials(user_name, user_password):
     finally:
         if connection:
             connection.close()
+
+def hash_password(password):
+    if not password:
+        return None
+
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed_password.decode('utf-8')
+
+def verify_password(plain_password, password_hash):
+    if not plain_password or not password_hash:
+        return False
+
+    return bcrypt.checkpw(
+        plain_password.encode('utf-8'),
+        password_hash.encode('utf-8')
+    )
 
 def get_user_info(user_name):
     connection = create_db_connection()
