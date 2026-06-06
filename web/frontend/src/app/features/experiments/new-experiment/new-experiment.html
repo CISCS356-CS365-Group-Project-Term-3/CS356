@@ -1,0 +1,100 @@
+<div class="page-wrap">
+  <div class="new-experiment-wrap">
+    <div class="page-header">
+      <button mat-button (click)="router.navigate(['/experiments'])">
+        <mat-icon>arrow_back</mat-icon> Back to Experiments
+      </button>
+      <h1>New Experiment</h1>
+      <p>Configure and launch a new encoding experiment</p>
+    </div>
+
+    <mat-card appearance="outlined">
+      <mat-stepper class="wizard-stepper" [linear]="false" [selectedIndex]="0" #stepper>
+        <ng-template matStepperIcon="edit">
+          <mat-icon>check</mat-icon>
+        </ng-template>
+        <ng-template matStepperIcon="error">
+          <mat-icon>warning</mat-icon>
+        </ng-template>
+
+        <mat-step
+          label="Project Setup"
+          [completed]="isProjectSetupComplete()"
+          [hasError]="isStepError(0)"
+          errorMessage=""
+        >
+          <app-project-setup />
+        </mat-step>
+
+        <mat-step
+          label="Encoders"
+          [completed]="isEncodersComplete()"
+          [hasError]="isStepError(1)"
+          errorMessage=""
+        >
+          <app-encoders />
+        </mat-step>
+
+        <mat-step
+          label="Sequences"
+          [completed]="isSequencesComplete()"
+          [hasError]="isStepError(2)"
+          errorMessage=""
+        >
+          <app-sequences />
+        </mat-step>
+        <!--
+        <mat-step label="Scalability">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Network">
+          <p>Coming soon</p>
+        </mat-step> -->
+
+        <!-- <mat-step label="Analysis">
+          <p>Coming soon</p>
+        </mat-step>
+
+        <mat-step label="Outputs">
+          <p>Coming soon</p>
+        </mat-step> -->
+
+        <mat-step label="Review">
+          <app-review />
+        </mat-step>
+      </mat-stepper>
+
+      @if (submitError) {
+        <p class="submit-error">{{ submitError }}</p>
+      }
+      <div class="actions">
+        <span class="step-counter"
+          >Step {{ stepper.selectedIndex + 1 }} of {{ stepper.steps.length }}</span
+        >
+        <div class="action-buttons">
+          <button mat-stroked-button (click)="onBack()">
+            {{ isFirstStep ? 'Cancel' : 'Back' }}
+          </button>
+          <button mat-raised-button color="primary" (click)="onNext()">
+            {{ isLastStep ? 'Submit' : 'Next' }}
+          </button>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>
+
+@if (showDraftModal) {
+  <div class="modal-backdrop" (click)="showDraftModal = false">
+    <mat-card class="modal-card" appearance="outlined" (click)="$event.stopPropagation()">
+      <mat-icon class="modal-icon">info</mat-icon>
+      <h3>Incomplete experiment</h3>
+      <p>Some steps are incomplete. This experiment will be saved as a draft and can be finalised later.</p>
+      <div class="modal-actions">
+        <button mat-stroked-button (click)="showDraftModal = false">Cancel</button>
+        <button mat-raised-button color="primary" (click)="confirmDraft()">Save as Draft</button>
+      </div>
+    </mat-card>
+  </div>
+}
