@@ -2,9 +2,9 @@ from flask import Flask, request
 from flask_cors import CORS
 from services import experiment_service
 from storage import experiment_store
-
+from storage.db import engine, Base
 app = Flask(__name__)
-
+Base.metadata.create_all(bind=engine)
 CORS(app)
 @app.route("/experiments", methods=["POST"])
 def create_experiment_endpoint():
