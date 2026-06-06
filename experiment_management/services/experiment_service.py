@@ -27,11 +27,6 @@ def create_experiment(data):
 
             stored_sequence = {
                 "video_file_id": seq["video_file_id"],
-                "resolution_id": seq["resolution_id"],
-                "frame_rate_id": seq["frame_rate_id"],
-                "quality_id": seq["quality_id"],
-                "depth_id": seq["depth_id"],
-                "gamut_id": seq["gamut_id"],
                 "sequence_code": code
             }
             saved["sequences"].append(stored_sequence)
