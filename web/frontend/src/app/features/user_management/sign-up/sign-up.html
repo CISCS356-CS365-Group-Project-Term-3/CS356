@@ -1,0 +1,94 @@
+<div class="page-wrap">
+  <div class="page-header">
+      <h1>Create an Account</h1>
+      <p>Register to access the system</p>
+    </div>
+<form [formGroup]="accountForm" (ngSubmit)="submitDetails()">
+  <div class="form-element">
+    <mat-form-field appearance="outline">
+      <mat-label>Enter a username</mat-label>
+      <input
+        matInput
+        placeholder="John123"
+        formControlName="username"
+        (blur)="updateUsernameErrorMessage()"
+        required
+      />
+      @if (accountForm.get('username')?.invalid) {
+        <mat-error>{{usernameErrorMessage()}}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <div class="form-element">
+    <mat-form-field appearance="outline">
+      <mat-label>Enter your email</mat-label>
+      <input
+        matInput
+        placeholder="John@uni.strath.ac.uk.com"
+        formControlName="email"
+        (blur)="updateEmailErrorMessage()"
+        required
+      />
+      @if (accountForm.get('email')?.invalid) {
+        <mat-error>{{emailErrorMessage()}}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <div class="form-element">
+  <mat-form-field appearance="outline">
+    <mat-label>Enter a password</mat-label>
+    <input matInput formControlName="password" (blur)="updatePasswordErrorMessage()" [type]="hide() ? 'password' : 'text'" required />
+    @if (accountForm.get('password')?.invalid) {
+      <mat-error>{{passwordErrorMessage()}}</mat-error>
+    }
+    <mat-hint>Must be at least 8 characters long and include a special character</mat-hint>
+    <button
+      matIconButton
+      matSuffix
+      (click)="clickPasswordEvent($event)"
+      [attr.aria-label]="'Hide password'"
+      [attr.aria-pressed]="hide()"
+    >
+      <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
+    </button>
+  </mat-form-field>
+  </div>
+
+
+  <div class="form-element">
+  <mat-form-field appearance="outline">
+    <mat-label>Re-enter password</mat-label>
+    <input matInput formControlName="reenteredPassword" (blur)="updateReenteredPasswordErrorMessage()" [type]="hide() ? 'password' : 'text'" required />
+    @if (accountForm.get('reenteredPassword')?.invalid || reenteredPasswordErrorMessage()) {
+      <mat-error>{{reenteredPasswordErrorMessage()}}</mat-error>
+    }
+    <button
+      matIconButton
+      matSuffix
+      (click)="clickPasswordEvent($event)"
+      [attr.aria-label]="'Hide password'"
+      [attr.aria-pressed]="hide()"
+    >
+      <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
+    </button>
+  </mat-form-field>
+  </div>
+
+  <div class="form-element">
+    <label>Account type  <span class="required">*</span> </label>
+  <mat-radio-group formControlName="accountType"  aria-label="Account type">
+    <mat-radio-button value="admin">Infrastructure owner</mat-radio-button>
+    <mat-radio-button value="user">General user</mat-radio-button>
+  </mat-radio-group>
+</div>
+
+
+  <div class="form-element">
+  <div class="example-button-row">
+    <button [disabled]="accountForm.invalid" matButton="filled" type="submit">Create account</button>
+  </div>
+  </div>
+  </form>
+  </div>
