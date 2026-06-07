@@ -1,24 +1,25 @@
-# parent class for encoding and decoding. func shared by both encoder and decoder.
+import subprocess
 
+from abc import ABC, abstractmethod
 
-class Coder:
+class Coder(ABC):
 
-    def build_command(self, sequence, config):
-
-        # child classes must provide own implementation
-
-        raise NotImplementedError(
-            "child class must implement build_command()"
-        )
-
-    def run(self, command):
-
-        # run ffmpeg command
-
+    @classmethod
+    @abstractmethod
+    def build_command(cls, sequence) -> list[str]:
         pass
 
-    def check_output(self, return_code, stderr):
+    @staticmethod
+    def run(command) -> dict:
+        process = subprocess.run(command, capture_output=True, text=True)
 
-        # child classes overrides if wanting to.
-
-        pass
+        return {
+            "return_code": process.returncode,
+            "stderr": process.stderr,
+            "stdout": process.stdout
+        }
+    
+    @staticmethod
+    def _get_encoder(sequence) -> tuple[str, str, str]:
+        # hardcoded method until config is available
+        return sequence
