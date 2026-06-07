@@ -250,7 +250,7 @@ def send_reset_email(to_email, token):
     if not sender or not app_password:
         raise EnvironmentError("GMAIL_SENDER and GMAIL_APP_PASSWORD must be set in db.env")
 
-    reset_link = f"http://localhost:3000/update-password?token={token}"
+    reset_link = f"http://localhost:3000/reset-password?token={token}"
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "Password Reset Request"
