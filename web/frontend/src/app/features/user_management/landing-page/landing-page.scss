@@ -18,8 +18,11 @@ mat-card {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.log-out-button {
+.user-actions {
+  display: flex;
+  flex-direction: row;
   position: absolute;
   top: 1rem;
   right: 1rem;
+  gap: 25px;
 }
