@@ -1,6 +1,7 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import { Login} from "./login";
- import { expect, describe, it, beforeEach } from "vitest";
+import { Login } from './login';
+import { expect, describe, it, beforeEach } from "vitest";
+import { provideRouter } from '@angular/router';
 
 
 describe('Login', () => {
@@ -10,6 +11,7 @@ describe('Login', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [Login],
+            providers: [provideRouter([])]
         }).compileComponents();
 
 
