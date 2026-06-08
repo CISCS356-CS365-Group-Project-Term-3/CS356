@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="header-row">
+    <div>
+      <h1>Network Profiles</h1>
+      <p>Manage transmission conditions for streaming tests.</p>
+    </div>
+
+    <div class="actions">
+      <button mat-flat-button color="primary" (click)="addProfile()">
+        <mat-icon>add</mat-icon>
+        Add profile
+      </button>
+      <button mat-stroked-button color="primary" (click)="editSelected()">
+        <mat-icon>edit</mat-icon>
+        Edit selected
+      </button>
+      <button mat-stroked-button color="accent" (click)="applySelected()">
+        <mat-icon>check_circle</mat-icon>
+        Apply selected
+      </button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <mat-card class="panel table-panel">
+      <div class="panel-top">
+        <mat-form-field appearance="outline" class="search-box">
+          <mat-label>Search profiles</mat-label>
+          <input matInput [value]="searchText" (input)="onSearch($event)" />
+        </mat-form-field>
+      </div>
+
+      <div class="ag-theme-quartz grid-wrap">
+        <ag-grid-angular
+          style="width: 100%; height: 100%;"
+          [rowData]="rowData"
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [animateRows]="true"
+          [pagination]="true"
+          [paginationPageSize]="5"
+          rowSelection="single"
+          (gridReady)="onGridReady($event)"
+          (selectionChanged)="onSelectionChanged($event)"
+        >
+        </ag-grid-angular>
+      </div>
+    </mat-card>
+
+    <mat-card class="panel side-panel">
+      <h2>Selected profile</h2>
+
+      <div *ngIf="selectedProfile; else noneSelected" class="selected-box">
+        <div><strong>Name:</strong> {{ selectedProfile.name }}</div>
+        <div><strong>Packet Loss:</strong> {{ selectedProfile.packetLoss }}</div>
+        <div><strong>Delay:</strong> {{ selectedProfile.delay }}</div>
+        <div><strong>Jitter:</strong> {{ selectedProfile.jitter }}</div>
+        <div><strong>Bandwidth:</strong> {{ selectedProfile.bandwidth }}</div>
+        <div><strong>Notes:</strong> {{ selectedProfile.notes }}</div>
+      </div>
+
+      <ng-template #noneSelected>
+        <p class="muted">Select a profile to view or edit it.</p>
+      </ng-template>
+    </mat-card>
+  </div>
+</div>

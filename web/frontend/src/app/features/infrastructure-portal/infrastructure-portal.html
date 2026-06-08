@@ -1,0 +1,47 @@
+<div class="shell">
+  <mat-toolbar class="topbar">
+    <div class="brand">
+      <div class="brand-badge">1Klik</div>
+      <div class="brand-text">
+        <div class="brand-title">Infrastructure</div>
+        <div class="brand-subtitle">Admin portal</div>
+      </div>
+    </div>
+
+    <span class="spacer"></span>
+
+    <nav class="topnav">
+      <a mat-button routerLink="/infrastructurePortal" routerLinkActive="nav-active" [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </a>
+      <a mat-button routerLink="/infrastructurePortal/encoders" routerLinkActive="nav-active">
+        <mat-icon>memory</mat-icon>
+        Encoders
+      </a>
+      <a mat-button routerLink="/infrastructurePortal/network-profiles" routerLinkActive="nav-active">
+        <mat-icon>dns</mat-icon>
+        Network Profiles
+      </a>
+      <a mat-button routerLink="/infrastructurePortal/datasets" routerLinkActive="nav-active">
+        <mat-icon>movie</mat-icon>
+        Datasets
+      </a>
+      <a mat-button routerLink="/infrastructurePortal/running-experiments" routerLinkActive="nav-active">
+        <mat-icon>play_circle</mat-icon>
+        Running Experiments
+      </a>
+    </nav>
+
+    <span class="spacer"></span>
+
+    <button mat-icon-button>
+      <mat-icon>notifications_none</mat-icon>
+    </button>
+    <button mat-icon-button>
+      <mat-icon>account_circle</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <router-outlet></router-outlet>
+</div>
