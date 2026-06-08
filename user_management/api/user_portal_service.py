@@ -283,5 +283,21 @@ def get_all_users():
     finally:
         connection.close()
 
+def delete_user(user_id):
+    connection = create_db_connection()
+    if connection is None:
+        return False
+    try:
+        connection.execute(
+            text("DELETE FROM users WHERE user_id = :user_id"),
+            {"user_id": user_id}
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        return False
+    finally:
+        connection.close()
+
 
 

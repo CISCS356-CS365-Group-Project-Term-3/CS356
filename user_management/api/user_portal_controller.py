@@ -182,3 +182,20 @@ def admin_list_users():
     if role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return user_portal_service.get_all_users()
+
+
+@app.post("/auth/users/delete/{user_id}")
+def admin_delete_user(user_id: str):
+    try:
+        token = get_current_token()
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
+        if not user_portal_service.verify_token(token):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
+        _, role = user_portal_service.get_user_id_and_role(token)
+        if role != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        user_portal_service.delete_user(user_id)
+        return {"message": f"User with ID {user_id} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
