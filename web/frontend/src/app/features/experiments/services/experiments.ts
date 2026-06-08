@@ -12,9 +12,9 @@ export class ExperimentsService {
   constructor(private http: HttpClient) {}
 
   getExperiments() {
-    // TODO: swap when abdur GET /experiments is ready
-    // return this.http.get<Experiment[]>(`${API_BASE}/experiments?userId=1`);
-    return of(this.mockExperiments);
+    // TODO: replace hardcoded userId=1 once auth is wired up
+    return this.http.get<Experiment[]>(`${API_BASE}/experiments?userId=1`);
+    // return of(this.mockExperiments);
   }
 
   getExperimentById(id: string) {
