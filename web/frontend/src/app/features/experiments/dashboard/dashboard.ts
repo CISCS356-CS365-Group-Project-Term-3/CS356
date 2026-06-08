@@ -30,6 +30,7 @@ export class Dashboard implements OnInit {
   selectedExperiment: Experiment | null = null;
   activeStatusFilter: ExperimentStatus | null = null;
   showAllExperiments = false;
+  showDraftsOnly = false;
   isLoading = true;
   isAdmin: boolean = false; // TODO: replace with real auth check once JWT structure is known
   private config: InfrastructureConfig | null = null;
@@ -69,15 +70,24 @@ export class Dashboard implements OnInit {
       headerName: 'Status',
       field: 'engineStatus',
       flex: 1,
-      cellRenderer: (params: { value: ExperimentStatus | undefined }) => this.statusCellRenderer(params),
+      cellRenderer: (params: { value: ExperimentStatus | undefined; data: Experiment }) => this.statusCellRenderer(params),
     },
   ];
 
   getRowId = (params: { data: Experiment }) => String(params.data.id);
 
   get filteredExperiments(): Experiment[] {
-    if (!this.activeStatusFilter) return this.experiments;
-    return this.experiments.filter((e) => e.engineStatus === this.activeStatusFilter);
+    let list = this.showDraftsOnly
+      ? this.experiments.filter((e) => e.status === 'draft')
+      : this.experiments;
+    if (this.activeStatusFilter) list = list.filter((e) => e.engineStatus === this.activeStatusFilter);
+    return list;
+  }
+
+  toggleDrafts(): void {
+    this.showDraftsOnly = !this.showDraftsOnly;
+    this.activeStatusFilter = null;
+    this.selectedExperiment = null;
   }
 
   get totalCount() {
@@ -146,8 +156,21 @@ export class Dashboard implements OnInit {
     });
   }
 
-  statusCellRenderer(params: { value: ExperimentStatus | undefined }) {
-    if (!params.value) return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Pending</span>`;
+  openDraft(): void {
+    if (!this.selectedExperiment) return;
+    this.experimentsService.getExperimentById(this.selectedExperiment.id).subscribe((detail) => {
+      this.formService.setDraft(detail);
+      this.router.navigate(['/experiments/new']);
+    });
+  }
+
+  statusCellRenderer(params: { value: ExperimentStatus | undefined; data: Experiment }) {
+    if (!params.value) {
+      if (params.data.status === 'draft') {
+        return `<span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Draft</span>`;
+      }
+      return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Pending</span>`;
+    }
     const styles: Record<ExperimentStatus, string> = {
       Complete: 'background:#e8f5e9;color:#388e3c',
       Running: 'background:#fff3e0;color:#f57c00',

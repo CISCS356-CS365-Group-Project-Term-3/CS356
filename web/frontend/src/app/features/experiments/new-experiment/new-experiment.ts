@@ -103,8 +103,8 @@ export class NewExperiment implements OnInit {
 
   private doSubmit(status: string): void {
     const form = this.formService.form;
-    const payload = {
-      userId: 1, // TODO: replace with real user ID from JWT
+    const editingId = this.formService.editingId;
+    const basePayload = {
       name: form.name,
       status,
       projectTypeId: form.projectTypeId,
@@ -116,9 +116,12 @@ export class NewExperiment implements OnInit {
       sequences: form.sequences.map((s) => ({ videoFileId: s.videoFileId })),
     };
     this.submitError = null;
-    this.experimentsService.createExperiment(payload).subscribe({
+    const request$ = editingId
+      ? this.experimentsService.patchExperiment(editingId, basePayload)
+      : this.experimentsService.createExperiment({ userId: 1, ...basePayload }); // TODO: replace userId with JWT
+    request$.subscribe({
       next: () => this.router.navigate(['/experiments']),
-      error: () => (this.submitError = 'Failed to create experiment. Please try again.'),
+      error: () => (this.submitError = 'Failed to save experiment. Please try again.'),
     });
   }
 

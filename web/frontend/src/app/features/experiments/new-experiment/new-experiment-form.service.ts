@@ -21,15 +21,32 @@ export interface NewExperimentForm {
 @Injectable({ providedIn: 'root' })
 export class NewExperimentFormService {
   form: NewExperimentForm = this.blankForm();
+  editingId: string | null = null;
   private pendingTemplate: Experiment | null = null;
+  private pendingDraft: Experiment | null = null;
 
   setTemplate(detail: Experiment): void {
     this.pendingTemplate = detail;
   }
 
+  setDraft(detail: Experiment): void {
+    this.pendingDraft = detail;
+  }
+
   applyPendingTemplate(): void {
-    if (this.pendingTemplate) {
+    if (this.pendingDraft) {
+      const draft = this.pendingDraft;
+      this.editingId = draft.id;
+      this.form = {
+        name: draft.name,
+        projectTypeId: draft.projectTypeId,
+        encoders: draft.encoders.map((e) => ({ ...e })),
+        sequences: draft.sequences.map((s) => ({ ...s })),
+      };
+      this.pendingDraft = null;
+    } else if (this.pendingTemplate) {
       const template = this.pendingTemplate;
+      this.editingId = null;
       this.form = {
         name: template.name + ' (copy)',
         projectTypeId: template.projectTypeId,
@@ -38,6 +55,7 @@ export class NewExperimentFormService {
       };
       this.pendingTemplate = null;
     } else {
+      this.editingId = null;
       this.form = this.blankForm();
     }
   }
