@@ -53,11 +53,17 @@
   </div>
 
   <div class="table-actions">
+    <button mat-stroked-button (click)="toggleDrafts()">
+      {{ showDraftsOnly ? 'Show All' : 'Show Drafts' }}
+    </button>
     @if (activeStatusFilter) {
       <span class="filter-label">Filtered by: {{ activeStatusFilter }}</span>
     }
     @if (selectedExperiment) {
       <span class="selected-label">{{ selectedExperiment.id }} {{ selectedExperiment.name }}</span>
+      @if (selectedExperiment.status === 'draft') {
+        <button mat-stroked-button (click)="openDraft()">Edit Draft</button>
+      }
       <button mat-stroked-button (click)="createFromTemplate()">Create from Template</button>
     }
   </div>

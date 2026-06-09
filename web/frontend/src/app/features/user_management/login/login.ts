@@ -7,6 +7,7 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import {RouterLink} from '@angular/router';
 
 /** @title Login page */
 @Component({
@@ -18,7 +19,8 @@ import {MatButtonModule} from '@angular/material/button';
     ReactiveFormsModule,
     MatRadioModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    RouterLink
   ],
   templateUrl: 'login.html',
   styleUrl: 'login.scss',
