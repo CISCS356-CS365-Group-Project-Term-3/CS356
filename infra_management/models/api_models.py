@@ -1,5 +1,6 @@
 from pydantic import BaseModel, PositiveInt
-from typing import List, Union
+from typing import List, Union, Optional, Annotated
+from annotated_types import Len
 
 # class ProjectType(BaseModel):
 #     id: int
@@ -50,15 +51,34 @@ from typing import List, Union
 #     encoder_modes: List[EncoderMode]
 #     sequences: List[VideoFile]
 
-class CreateProjectType(BaseModel):
+class NameIdCreate(BaseModel):
     name: str
 
-class DeleteProjectType(BaseModel):
+class IdDelete(BaseModel):
     id: int
 
-class UpdateProjectType(BaseModel):
-    id: int
+class NameIdPost(BaseModel):
+    id: Optional[int] = None
     name: str
 
-class PostProjectType(BaseModel):
-    root: Union[UpdateProjectType, CreateProjectType]
+class TransmissionConditionPost(BaseModel):
+    id: Optional[int] = None
+    name: str
+    lower_bound: int
+    upper_bound: int
+
+class SequencePost(BaseModel):
+    id: Optional[int] = None
+    name: str
+    description: str
+
+class VideoFilePost(BaseModel):
+    id: Optional[int] = None
+    sequence_id: str
+    name: str
+    filepath: str
+    spacial: Annotated[List, Len(min_length=2, max_length=2)]
+    temporal: int
+    depth: int
+    quality: str
+    gamut: str
