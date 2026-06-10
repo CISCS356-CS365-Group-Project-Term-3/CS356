@@ -2,8 +2,19 @@ from __future__ import annotations
 
 from sqlalchemy import Integer, String, DateTime, Table, Column, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy.dialects.postgresql import POINT
 from util.engine import Base
 from typing import List
+
+
+# class EncoderTypeCodec(Base):
+#     __tablename__ = "encoder_type_codec"
+#     encoder_type_id = mapped_column(int, ForeignKey("encoder_type.id"), primary_key=True)
+#     codec_id = mapped_column(int, ForeignKey("codec.id"), primary_key=True)
+#     active = mapped_column(int, nullable=False, default=1)
+
+#     encoder_types: Mapped["EncoderType"] = relationship("EncoderType", back_populates="codecs")
+#     codecs = Mapped["Codec"] = relationship("")
 
 class ProjectType(Base):
     __tablename__ = "project_type"
@@ -20,7 +31,7 @@ class Codec(Base):
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
 
-class EncoderModes(Base):
+class EncoderMode(Base):
     __tablename__ = "encoder_modes"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
@@ -49,9 +60,8 @@ class VideoFile(Base):
     sequence_id = mapped_column(ForeignKey("sequence.id"))
     name = mapped_column(String(255))
     filepath = mapped_column(String(255))
-    resolution_x = mapped_column(Integer)
-    resolution_y = mapped_column(Integer)
-    framerate = mapped_column(Integer)
+    spacial = mapped_column(POINT)
+    temporal = mapped_column(Integer)
     depth = mapped_column(Integer)
-    quality = mapped_column(Integer)
+    quality = mapped_column(String(64))
     gamut = mapped_column(String)

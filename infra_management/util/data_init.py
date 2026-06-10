@@ -17,7 +17,7 @@ def data_init():
         codec.name = "testCodec"
         session.add(codec)
 
-        encoder_mode = models.EncoderModes()
+        encoder_mode = models.EncoderMode()
         encoder_mode.name = "testEncoderMode"
         session.add(encoder_mode)
 
@@ -39,7 +39,7 @@ def data_init():
         videofile.sequence_id = 1
         videofile.resolution_x = 1920
         videofile.resolution_y = 1080
-        videofile.framerate = 60
+        videofile.temporal = 60
         videofile.depth = 10
         videofile.quality = 20
         videofile.gamut = "Gamut 1"
