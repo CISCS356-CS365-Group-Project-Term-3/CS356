@@ -1,6 +1,7 @@
 # Handles saving videos, logs,metrics, and experiment outputs.
 
 import os 
+import shutil
 from pymongo import MongoClient
 from datetime import datetime
 
@@ -23,6 +24,12 @@ class OutputStore:
         else:
             self._db = store_connection
       
+    def save_file(self, file_path: str, destination: str) -> str:
+        # saves encoded output file
+        # copy file to destination and return the new path
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        shutil.copy2(file_path, destination)
+        return destination
 
     def save_log(self, experiment_id: str, sequence_name: str, log_data: str):
         # saves encoding log entry to the database, with timestamp
@@ -32,12 +39,6 @@ class OutputStore:
             "log_data": log_data,
             "timestamp": datetime.utcnow().isoformat(),
         })
-
-    def save_file(self, file_path, destination):
-
-        # saves encoded output file
-
-        pass
 
     def save_status(self, experiment_id, results):
         #save the current status of an experiment.
@@ -58,10 +59,13 @@ class OutputStore:
         )
 
     def save_video(self, video_path):
-
         # saves encoded video
-
-        pass
+        # saves the video to a destination and returns the path.
+        output_root = os.getenv("OUTPUT_ROOT", "./output")
+        videos_dir = os.path.join(output_root, "videos")
+        filename = os.path.basename(video_path)
+        destination = os.path.join(videos_dir, filename)
+        return self.save_file(video_path, destination)
 
     def save_metrics(self, experiment_id: str, metrics: dict):
         # saves encoding metrics/statistics
@@ -80,11 +84,18 @@ class OutputStore:
         )
 
     def organise_output_directory(self, experiment_id):
-
-        # org experiment output folders
-
-        pass
-
+        # creates experiment output folders and subfolders using experiment_id (if provided)
+        # returns the root output path
+        output_root = os.getenv("OUTPUT_ROOT", "./output")
+        if experiment_id is None:
+            for subdir in ("videos", "logs", "metrics", "configs"):
+                os.makedirs(os.path.join(output_root, subdir), exist_ok=True)
+            return output_root
+        experiment_root = os.path.join(output_root, experiment_id)
+        for subdir in ("videos", "logs", "metrics", "configs"):
+            os.makedirs(os.path.join(experiment_root, subdir), exist_ok=True)
+        return experiment_root
+        
     def get_result(self, experiment_id: str):
         # retrieves results for an experiment
         return self._db.results.find_one({"_id": experiment_id})
