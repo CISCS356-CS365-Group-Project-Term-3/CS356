@@ -6,11 +6,11 @@ def save_experiment(experiment):
     session = SessionLocal()
 
     db_experiment = Experiment(
-        user_id=experiment["user_id"],
+        userId=experiment["userId"],
         name=experiment["name"],
         status=experiment["status"],
-        project_type_id=experiment["project_type_id"],
-        created_at=experiment["date"],
+        projectTypeId=experiment["projectTypeId"],
+        createdAt=experiment["date"],
         data={
             "encoders": experiment["encoders"],
             "sequences": experiment["sequences"]
@@ -52,11 +52,11 @@ def get_by_id(experiment_id):
 
     return serialize(exp)
 
-def get_all_by_user(user_id):
+def get_all_by_user(userId):
     session = SessionLocal()
 
     experiments = session.query(Experiment).filter(
-        Experiment.user_id == user_id
+        Experiment.userId == userId
     ).all()
 
     result = [serialize(e) for e in experiments]
@@ -67,11 +67,11 @@ def get_all_by_user(user_id):
 def serialize(exp):
     return {
         "id": exp.id,
-        "user_id": exp.user_id,
+        "userId": exp.userId,
         "name": exp.name,
         "status": exp.status,
-        "project_type_id": exp.project_type_id,
-        "date": exp.created_at.isoformat() if exp.created_at else None,
+        "projectTypeId": exp.projectTypeId,
+        "date": exp.createdAt.isoformat() if exp.createdAt else None,
         "encoders": exp.data.get("encoders", []),
         "sequences": exp.data.get("sequences", [])
     }

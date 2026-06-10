@@ -9,11 +9,11 @@ class Experiment(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    user_id = Column(Integer, nullable=False)
+    userId = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     status = Column(String, nullable=False)
-    project_type_id = Column(Integer, nullable=False)
+    projectTypeId = Column(Integer, nullable=False)
 
-    created_at = Column(DateTime, nullable=False)
+    createdAt = Column(DateTime, nullable=False)
 
     data = Column(JSONB, nullable=False)

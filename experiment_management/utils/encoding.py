@@ -7,7 +7,7 @@ def generate_sequence_code(sequence, encoder):
         return x
 
     code = ""
-    code += pad(sequence["video_file_id"])
+    code += pad(sequence["videoFileId"])
     code += pad(encoder["encoderTypeId"])
     code += pad(encoder["codecId"])
     code += pad(encoder["encoderModeId"])
