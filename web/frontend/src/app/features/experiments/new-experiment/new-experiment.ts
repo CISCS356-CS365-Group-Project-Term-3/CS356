@@ -30,6 +30,7 @@ export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
   showDraftModal = false;
+  isSubmitting = false;
   visitedSteps = new Set<number>();
 
   constructor(
@@ -102,6 +103,8 @@ export class NewExperiment implements OnInit {
   }
 
   private doSubmit(status: string): void {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
     const form = this.formService.form;
     const editingId = this.formService.editingId;
     const basePayload = {
@@ -121,7 +124,10 @@ export class NewExperiment implements OnInit {
       : this.experimentsService.createExperiment({ userId: 1, ...basePayload }); // TODO: replace userId with JWT
     request$.subscribe({
       next: () => this.router.navigate(['/experiments']),
-      error: () => (this.submitError = 'Failed to save experiment. Please try again.'),
+      error: () => {
+        this.isSubmitting = false;
+        this.submitError = 'Failed to save experiment. Please try again.';
+      },
     });
   }
 

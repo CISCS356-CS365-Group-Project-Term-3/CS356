@@ -49,14 +49,18 @@ export class Dashboard implements OnInit {
     },
     {
       headerName: 'Sequences',
-      valueGetter: (p) =>
-        p.data.sequences
-          .map(
-            (s: Experiment['sequences'][0]) =>
-              this.config?.sequences.find((seq) => seq.videoFiles.some((f) => f.id === s.videoFileId))?.name ?? '—',
-          )
-          .join(', '),
-      flex: 2,
+      valueGetter: (p) => {
+        if (!p.data.sequences.length) return '—';
+        return (p.data.sequences as Experiment['sequences'])
+          .map((s) => this.config?.sequences.flatMap((seq) => seq.videoFiles).find((f) => f.id === s.videoFileId)?.name ?? '—')
+          .join(', ');
+      },
+      cellRenderer: (params: { value: string }) =>
+        params.value === '—'
+          ? '—'
+          : params.value.split(', ').map((n) => `<div>${n}</div>`).join(''),
+      autoHeight: true,
+      flex: 3,
     },
     {
       field: 'date',
