@@ -54,7 +54,8 @@ def video_file_create(table, body):
         sequence_id = body.get("sequence_id"),
         name = body.get("name"),
         filepath = body.get("filepath"),
-        spacial = body.get("spacial"),
+        spacial_x = body.get("spacial")[0],
+        spacial_y = body.get("spacial")[1],
         temporal = body.get("temporal"),
         depth = body.get("depth"),
         quality = body.get("quality"),
@@ -68,13 +69,34 @@ def video_file_update(row, body):
     row.depth = body.get("depth") if body.get("depth") else row.depth
     row.quality = body.get("quality") if body.get("quality") else row.quality
     row.gamut = body.get("gamut") if body.get("gamut") else row.gamut
-    row.spacial = body.get("spacial") if body.get("spacial") else row.spacial
+    if body.get("spacial"):
+        row.spacial_x = body.get("spacial")[0]
+        row.spacial_y = body.get("spacial")[1]
+    row.spacial_x = body.get("spacial") if body.get("spacial") else row.spacial
     return row
 
-def standard_crud(request, table, handle_update, handle_create, post_model, delete_model):
+def codec_update(row, body):
+    row.version = body.get("version") if body.get("version") else row.version
+    row.satus = body.get("status") if body.get("status") else row.status
+    row.filepath = body.get("filepath") if body.get("filepath") else row.filepath
+    row.name = body.get("name") if body.get("name") else row.name
+
+def codec_create(table, body):
+    return table(
+        name = body.get("name"),
+        status = body.get("status"),
+        version = body.get("version")
+    )
+
+def process_spacial(row):
+    row["spacial"] = [row.get("spacial_x"), row.get("spacial_y")]
+
+def standard_crud(request, table, handle_update, handle_create, post_model, delete_model, proc=None):
     with Session(engine) as session:
         if request.method == "GET":
             rows = query_result_as_list(session.query(table).all())
+            if proc:
+                proc(rows)
             return rows
             
         elif request.method == "POST":
@@ -137,9 +159,9 @@ def get_ui_options():
             print(f"Looking for id: {id}")
             videos = query_result_as_list(session.query(VideoFile).filter(VideoFile.sequence_id == id))
             for vid in videos:
-                vid["spacial"] = [vid.get("resolution_x"), vid.get("resolution_y")]
-                vid.pop("resolution_x", None)
-                vid.pop("resolution_x", None)
+                vid["spacial"] = [vid.get("spacial_x"), vid.get("spacial_y")]
+                vid.pop("spacial_x", None)
+                vid.pop("spacial_y", None)
             sequence["video_files"] = videos
 
 
@@ -161,7 +183,7 @@ def project_types():
 
 @app.route("/rest/encoder_types", methods=["GET", "POST", "DELETE"])
 def encoder_types():
-    return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdPost, IdDelete)
+    return standard_crud(request, EncoderType, sequence_update, sequence_create, SequencePost, IdDelete) #Happens to share the same structure as the sequences, no point duplicating.
 
 @app.route("/rest/encoder_modes", methods=["GET", "POST", "DELETE"])
 def encoder_modes():
@@ -169,7 +191,7 @@ def encoder_modes():
             
 @app.route("/rest/codecs", methods=["GET", "POST", "DELETE"])
 def codecs():
-    return standard_crud(request, Codec, name_id_update, name_id_create, NameIdPost, IdDelete)
+    return standard_crud(request, Codec, codec_update, codec_create, CodecPost, IdDelete)
 
 @app.route("/rest/topologies", methods=["GET", "POST", "DELETE"])
 def topologies():
@@ -191,7 +213,7 @@ def main():
     global engine
     engine = get_engine()
     Base.metadata.create_all(engine)
-    #data_init()
+    data_init()
     app.run(host = "0.0.0.0", port=5001)
 
 main()
