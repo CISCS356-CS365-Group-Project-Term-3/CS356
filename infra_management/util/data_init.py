@@ -37,8 +37,8 @@ def data_init():
         videofile.name = "TestVideoFiles"
         videofile.filepath = "TestVideoFile_1920x1080_60hz_10bit"
         videofile.sequence_id = 1
-        videofile.resolution_x = 1920
-        videofile.resolution_y = 1080
+        videofile.spacial_x = 1920
+        videofile.spacial_y = 1080
         videofile.temporal = 60
         videofile.depth = 10
         videofile.quality = 20

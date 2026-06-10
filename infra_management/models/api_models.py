@@ -82,3 +82,9 @@ class VideoFilePost(BaseModel):
     depth: int
     quality: str
     gamut: str
+
+class CodecPost(BaseModel):
+    id: Optional[int] = None
+    version: str
+    status: str
+    name: str
