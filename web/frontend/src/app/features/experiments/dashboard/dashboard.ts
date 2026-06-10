@@ -65,6 +65,7 @@ export class Dashboard implements OnInit {
     {
       field: 'date',
       flex: 1,
+      sort: 'desc',
       valueFormatter: (p) => {
         const d = new Date(p.value);
         return isNaN(d.getTime()) ? p.value : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
@@ -125,9 +126,14 @@ export class Dashboard implements OnInit {
   loadExperiments(): void {
     // const scope = this.isAdmin && this.showAllExperiments ? 'all' : 'mine';
     // this.experimentsService.getExperiments(scope).subscribe(data => { this.experiments = data; });
-    this.experimentsService.getExperiments().subscribe((data) => {
-      this.experiments = data;
-      this.isLoading = false;
+    this.experimentsService.getExperiments().subscribe({
+      next: (data) => {
+        this.experiments = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      },
     });
   }
 
