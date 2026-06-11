@@ -1,9 +1,43 @@
 from . import user_portal_service
-from fastapi import FastAPI, Header, HTTPException, status
+from fastapi import FastAPI, Header, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from typing import Optional
 
 app = FastAPI()
+
+
+def error_response(status_code: int, message: str):
+    return {
+        "error": {
+            "status_code": status_code,
+            "message": message
+        }
+    }
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request: Request, _exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=error_response(
+            status.HTTP_400_BAD_REQUEST,
+            "Invalid request data"
+        )
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(_request: Request, exc: StarletteHTTPException):
+    message = exc.detail if isinstance(exc.detail, str) else "Unable to process request"
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=error_response(exc.status_code, message)
+    )
+
 
 class LoginRequest(BaseModel):
     user_name: str
@@ -13,8 +47,9 @@ class LoginRequest(BaseModel):
 def login(login_details: LoginRequest):
     """
         - 200: {"access_token": "jwt_token", "token_type": "bearer"}
-        - 401: {"error": "Invalid Credentials, please try again"}
-        - 500: {"error": "Login failed: error_message"}
+        - 400: {"error": {"status_code": 400, "message": "Invalid request data"}}
+        - 401: {"error": {"status_code": 401, "message": "Invalid username or password"}}
+        - 500: {"error": {"status_code": 500, "message": "Unable to process login request"}}
     """
     try:
         temp_token = user_portal_service.validate_login(login_details.model_dump())
@@ -23,28 +58,29 @@ def login(login_details: LoginRequest):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid Credentials, please try again"
+                detail="Invalid username or password"
             )
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        print("Login error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {str(e)}"
+            detail="Unable to process login request"
         )
 
 @app.get("/auth/verify")
 def verify(authorisation: Optional[str] = Header(None)):
     """
         - 200: {"user_id": 1, "user_role": "admin"}
-        - 401: {"error": "Unauthorised - missing or invalid token"}
-        - 500: {"error": "Token verification failed: error_message"}
+        - 401: {"error": {"status_code": 401, "message": "Unauthorised - missing or invalid token"}}
+        - 500: {"error": {"status_code": 500, "message": "Unable to verify token"}}
     """
     try:
         if not authorisation:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing Authorisation header"
+                detail="Unauthorised - missing or invalid token"
             )
 
         # Parse Bearer token
@@ -52,7 +88,7 @@ def verify(authorisation: Optional[str] = Header(None)):
         if len(parts) != 2 or parts[0].lower() != "bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - invalid Authorisation header format. Expected: Bearer <token>"
+                detail="Unauthorised - missing or invalid token"
             )
 
         token = parts[1]
@@ -65,14 +101,15 @@ def verify(authorisation: Optional[str] = Header(None)):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - invalid or expired token"
+                detail="Unauthorised - missing or invalid token"
             )
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
+        print("Token verification error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Token verification failed: {str(e)}"
+            detail="Unable to verify token"
         )
 
 
@@ -94,8 +131,8 @@ def reset_password(request: PasswordResetRequest):
     try:
         user_portal_service.reset_password(request.email)
         return {"message": "If an account exists, a password reset link has been sent."}
-    except Exception as e:
-        print(f"Reset error: {e}")
+    except Exception:
+        print("Reset error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process password reset"
@@ -117,8 +154,8 @@ def confirm_reset_password(request: PasswordResetConfirmRequest):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-    except Exception as e:
-        print(f"Confirm reset error: {e}")
+    except Exception:
+        print("Confirm reset error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process password reset"
