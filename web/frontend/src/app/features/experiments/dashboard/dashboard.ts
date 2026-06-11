@@ -49,18 +49,23 @@ export class Dashboard implements OnInit {
     },
     {
       headerName: 'Sequences',
-      valueGetter: (p) =>
-        p.data.sequences
-          .map(
-            (s: Experiment['sequences'][0]) =>
-              this.config?.sequences.find((seq) => seq.videoFiles.some((f) => f.id === s.videoFileId))?.name ?? '—',
-          )
-          .join(', '),
-      flex: 2,
+      valueGetter: (p) => {
+        if (!p.data.sequences.length) return '—';
+        return (p.data.sequences as Experiment['sequences'])
+          .map((s) => this.config?.sequences.flatMap((seq) => seq.videoFiles).find((f) => f.id === s.videoFileId)?.name ?? '—')
+          .join(', ');
+      },
+      cellRenderer: (params: { value: string }) =>
+        params.value === '—'
+          ? '—'
+          : params.value.split(', ').map((n) => `<div>${n}</div>`).join(''),
+      autoHeight: true,
+      flex: 3,
     },
     {
       field: 'date',
       flex: 1,
+      sort: 'desc',
       valueFormatter: (p) => {
         const d = new Date(p.value);
         return isNaN(d.getTime()) ? p.value : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
@@ -121,9 +126,14 @@ export class Dashboard implements OnInit {
   loadExperiments(): void {
     // const scope = this.isAdmin && this.showAllExperiments ? 'all' : 'mine';
     // this.experimentsService.getExperiments(scope).subscribe(data => { this.experiments = data; });
-    this.experimentsService.getExperiments().subscribe((data) => {
-      this.experiments = data;
-      this.isLoading = false;
+    this.experimentsService.getExperiments().subscribe({
+      next: (data) => {
+        this.experiments = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
+      },
     });
   }
 

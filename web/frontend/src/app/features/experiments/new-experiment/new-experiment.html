@@ -76,8 +76,8 @@
           <button mat-stroked-button (click)="onBack()">
             {{ isFirstStep ? 'Cancel' : 'Back' }}
           </button>
-          <button mat-raised-button color="primary" (click)="onNext()">
-            {{ isLastStep ? 'Submit' : 'Next' }}
+          <button mat-raised-button color="primary" (click)="onNext()" [disabled]="isLastStep && isSubmitting">
+            {{ isLastStep && isSubmitting ? 'Submitting…' : isLastStep ? 'Submit' : 'Next' }}
           </button>
         </div>
       </div>
