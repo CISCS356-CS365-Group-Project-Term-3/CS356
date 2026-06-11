@@ -1,16 +1,28 @@
 import { Injectable } from '@angular/core';
-// import { HttpClient } from '@angular/common/http';
-import { Observable, of, shareReplay } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, shareReplay, map } from 'rxjs';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
+import { camelizeKeys } from 'humps';
+
+const API_BASE = 'http://localhost:5001';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InfrastructureService {
-  // constructor(private http: HttpClient) {}
+  private config$: Observable<InfrastructureConfig>;
 
-  // private config$ = this.http.get<InfrastructureConfig>('/api/config').pipe(shareReplay(1));
-  private config$ = of(MOCK_CONFIG).pipe(shareReplay(1));
+  constructor(private http: HttpClient) {
+    this.config$ = this.http.get(`${API_BASE}/rest/get_ui_options`).pipe(
+      map(data => {
+        const config = camelizeKeys(data) as InfrastructureConfig;
+        // activeCodecs not yet returned by backend — being added next sprint
+        config.encoderTypes = config.encoderTypes?.map(et => ({ ...et, activeCodecs: et.activeCodecs ?? [] }));
+        return config;
+      }),
+      shareReplay(1)
+    );
+  }
 
   getConfig(): Observable<InfrastructureConfig> {
     return this.config$;

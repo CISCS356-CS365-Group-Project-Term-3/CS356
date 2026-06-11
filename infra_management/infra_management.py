@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 from models.api_models import *
 from models.sql_models import *
 from util.engine import get_engine, Base, query_result_as_list
@@ -7,6 +8,7 @@ from sqlalchemy.orm import Session
 
 
 app = Flask(__name__)
+CORS(app)
 engine = None
 
 def name_id_create(table, body):
