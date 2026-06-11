@@ -3,6 +3,8 @@ from datetime import datetime
 from queue_setup.publisher import publish_to_queue
 from storage.experiment_store import save_experiment
 from utils.encoding import generate_sequence_code
+from storage.experiment_store import get_by_id
+from storage.experiment_store import update_experiment_by_id
 
 
 def create_experiment(data):
@@ -53,3 +55,47 @@ def create_experiment(data):
                 print("Publishing to queue:", payload)
                 publish_to_queue(payload)
         return last_saved
+
+def update_experiment(experiment_id, data):
+    """ update an experiment """
+    existing = get_by_id(experiment_id)
+    if not existing:
+        return None
+    updated = {
+        "userId": data.get("userId", existing["userId"]),
+        "name": data.get("name", existing["name"]),
+        "status": data.get("status", existing["status"]),
+        "projectTypeId": data.get("projectTypeId", existing["projectTypeId"]),
+        "encoders": data.get("encoders", existing.get("encoders", [])),
+        "sequences": data.get("sequences", existing.get("sequences", [])),
+        "date": datetime.utcnow().isoformat()
+    }
+    saved = update_experiment_by_id(experiment_id, updated)
+    if updated["status"] == "draft":
+        return saved
+    if updated["status"] == "finalised":
+        last_saved = None
+        for encoder in updated["encoders"]:
+            for seq in updated["sequences"]:
+                code = generate_sequence_code(seq, encoder)
+                job = {
+                    "userId": updated["userId"],
+                    "name": updated["name"],
+                    "status": "finalised",
+                    "projectTypeId": updated["projectTypeId"],
+                    "date": updated["date"],
+                    "encoders": [encoder],
+                    "sequences": [{"videoFileId": seq["videoFileId"],"sequence_code": code}]
+                }
+                last_saved = update_experiment_by_id(experiment_id, job)
+                payload = {
+                    "experiment_id": experiment_id,
+                    "date": updated["date"],
+                    "sequence_code": code,
+                    "videoFileId": seq["videoFileId"],
+                    "userId": updated["userId"]
+                }
+                print("Publishing to queue:", payload)
+                publish_to_queue(payload)
+        return last_saved
+    return saved
