@@ -64,6 +64,25 @@ def get_all_by_user(userId):
     session.close()
     return result
 
+def update_experiment_by_id(experiment_id, experiment):
+    session = SessionLocal()
+    exp = session.query(Experiment).filter(Experiment.id == experiment_id).first()
+    if not exp:
+        session.close()
+        return None
+    exp.userId = experiment["userId"]
+    exp.name = experiment["name"]
+    exp.status = experiment["status"]
+    exp.projectTypeId = experiment["projectTypeId"]
+    exp.createdAt = experiment["date"]
+    exp.data = {
+        "encoders": experiment["encoders"],
+        "sequences": experiment["sequences"]
+    }
+    session.commit()
+    session.refresh(exp)
+    session.close()
+    return serialize(exp)
 def serialize(exp):
     return {
         "id": exp.id,

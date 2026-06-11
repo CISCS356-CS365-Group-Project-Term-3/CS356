@@ -35,5 +35,14 @@ def get_experiment(experiment_id):
         return {"error": "Experiment not found"}, 404
     return experiment, 200
 
+@app.route("/experiments/<int:experiment_id>", methods=["PATCH"])
+def update_experiment(experiment_id):
+    """ update an experiment """
+    data = request.get_json()
+    updated_experiment = experiment_service.update_experiment(experiment_id, data)
+    if not updated_experiment:
+        return {"error": "Experiment not found"}, 404
+    return updated_experiment, 200
+
 if __name__ == "__main__":
     app.run(debug=True)
