@@ -299,5 +299,22 @@ def delete_user(user_id):
     finally:
         connection.close()
 
+def update_user_role(user_id, role):
+    connection = create_db_connection()
+    if connection is None:
+        return False
+    try:
+        connection.execute(
+            text("UPDATE users SET user_role = :role WHERE user_id = :user_id"),
+            {"role": role, "user_id": user_id}
+        )
+        connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error updating user role: {e}")
+        return False
+    finally:
+        connection.close()
+
 
 

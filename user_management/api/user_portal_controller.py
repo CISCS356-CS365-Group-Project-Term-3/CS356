@@ -237,3 +237,18 @@ def admin_delete_user(user_id: str):
         return {"message": f"User with ID {user_id} deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+
+@app.post("/auth/users/update/{user_id}/{role:path}")
+def admin_update_user_role(user_id: str, role: str):
+    try:
+        token = get_current_token()
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
+        if not user_portal_service.verify_token(token):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
+        _, user_role = user_portal_service.get_user_id_and_role(token)
+        if user_role != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        user_portal_service.update_user_role(user_id, role)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error updating user role: {str(e)}")
