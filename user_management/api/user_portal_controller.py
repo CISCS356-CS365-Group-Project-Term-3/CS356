@@ -250,5 +250,6 @@ def admin_update_user_role(user_id: str, role: str):
         if user_role != "admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
         user_portal_service.update_user_role(user_id, role)
+        return {"message": f"User with ID {user_id} role updated to {role} successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error updating user role: {str(e)}")
