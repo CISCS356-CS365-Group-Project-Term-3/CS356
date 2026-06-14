@@ -2,11 +2,58 @@ from . import user_portal_service
 from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Header, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from typing import Optional
+from contextlib import asynccontextmanager
+import configparser
+import os
 
-app = FastAPI()
+_PROPERTIES_PATH = os.path.join(os.path.dirname(__file__), '..', 'user.properties')
+_SECTION = 'tokens'
+_SESSION_SECTION = 'session'
+
+
+def save_token(user_name: str, token: str) -> None:
+    config = configparser.RawConfigParser()
+    config.read(_PROPERTIES_PATH)
+    if not config.has_section(_SECTION):
+        config.add_section(_SECTION)
+    config.set(_SECTION, user_name, token)
+    if not config.has_section(_SESSION_SECTION):
+        config.add_section(_SESSION_SECTION)
+    config.set(_SESSION_SECTION, 'token', token)
+    with open(_PROPERTIES_PATH, 'w') as f:
+        config.write(f)
+
+
+def get_current_token() -> str | None:
+    config = configparser.RawConfigParser()
+    config.read(_PROPERTIES_PATH)
+    return config.get(_SESSION_SECTION, 'token', fallback=None)
+
+
+def _reset_properties() -> None:
+    with open(_PROPERTIES_PATH, 'w') as f:
+        f.write(f'[{_SECTION}]\n\n[{_SESSION_SECTION}]\n')
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    _reset_properties()
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def error_response(status_code: int, message: str):
@@ -54,6 +101,7 @@ def login(login_details: LoginRequest):
     try:
         temp_token = user_portal_service.validate_login(login_details.model_dump())
         if temp_token:
+            save_token(login_details.user_name, temp_token)
             return {"access_token": temp_token, "token_type": "bearer"}
         else:
             raise HTTPException(
@@ -160,3 +208,15 @@ def confirm_reset_password(request: PasswordResetConfirmRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process password reset"
         )
+
+@app.get("/auth/users")
+def admin_list_users():
+    token = get_current_token()
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
+    if not user_portal_service.verify_token(token):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
+    _, role = user_portal_service.get_user_id_and_role(token)
+    if role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return user_portal_service.get_all_users()
