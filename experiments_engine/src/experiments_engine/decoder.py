@@ -4,7 +4,7 @@ class Decoder(Coder):
 
     @classmethod
     def build_command(cls, sequence) -> list[str]:
-        (_, input_file, output_file) = cls._get_encoder(sequence=sequence)
+        (_, input_file, output_file) = cls._get_codec(sequence=sequence)
 
         command = ['ffmpeg', 
                    # select input file
@@ -19,6 +19,8 @@ class Decoder(Coder):
                    # select output format
                    '-f',
                    'yuv4mpegpipe',
+                   # overwrite if already exists
+                   '-y',
                    output_file]
 
         return command

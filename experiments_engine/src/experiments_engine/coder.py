@@ -10,7 +10,7 @@ class Coder(ABC):
         pass
 
     @staticmethod
-    def run(command) -> dict:
+    def run(command, timeout=None) -> dict:
         process = subprocess.run(command, capture_output=True, text=True)
 
         return {
@@ -20,6 +20,6 @@ class Coder(ABC):
         }
     
     @staticmethod
-    def _get_encoder(sequence) -> tuple[str, str, str]:
+    def _get_codec(sequence) -> tuple[str, str, str]:
         # hardcoded method until config is available
         return sequence
