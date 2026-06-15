@@ -2,8 +2,11 @@
 
 import os 
 import shutil
+import json
 from pymongo import MongoClient
 from datetime import datetime
+
+from .config import Settings
 
 class OutputStore:
 
@@ -14,16 +17,17 @@ class OutputStore:
         (or a local default).
         """
         if store_connection is None:
-            uri = os.getenv(
-                "MONGO_URI",
-                "mongodb://admin:admin@localhost:27017/",
-            )
-            db_name = os.getenv("MONGO_DB_NAME", "experiment_storage")
+            uri = Settings.output_mongo_uri
+            db_name = Settings.output_mongo_db_name
             self._client = MongoClient(uri)
             self._db = self._client[db_name]
         else:
             self._db = store_connection
-      
+    
+    def store_experiment_result(self, experiment_result):
+        self._db.experiment_results.insert_one((experiment_result))
+
+
     def save_file(self, file_path: str, destination: str) -> str:
         # saves encoded output file
         # copy file to destination and return the new path
@@ -61,7 +65,7 @@ class OutputStore:
     def save_video(self, video_path):
         # saves encoded video
         # saves the video to a destination and returns the path.
-        output_root = os.getenv("OUTPUT_ROOT", "./output")
+        output_root = Settings.output_directory
         videos_dir = os.path.join(output_root, "videos")
         filename = os.path.basename(video_path)
         destination = os.path.join(videos_dir, filename)
@@ -86,7 +90,7 @@ class OutputStore:
     def organise_output_directory(self, experiment_id):
         # creates experiment output folders and subfolders using experiment_id (if provided)
         # returns the root output path
-        output_root = os.getenv("OUTPUT_ROOT", "./output")
+        output_root = Settings.output_directory
         if experiment_id is None:
             for subdir in ("videos", "logs", "metrics", "configs"):
                 os.makedirs(os.path.join(output_root, subdir), exist_ok=True)

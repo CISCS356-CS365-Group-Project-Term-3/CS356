@@ -1,123 +1,72 @@
+import json
+
 import logging
 import os
 import subprocess
-import tempfile
 import re
- 
+import tempfile
+
 from .encoding_result import EncodingResult
- 
+from .sequence_decoder import SequenceDecoder
+from .config import Settings
+from .encoder import Encoder
+from .decoder import Decoder
+from .output_store import OutputStore
+from .config_store import ConfigStore
+
 # Main orchestration class
  
 logger = logging.getLogger(__name__)
- 
-# Valid codecs
-VALID_CODEC_PAIRS = {
-    "AVC": "standard",
-    "HEVC": "standard",
-    "FVC": "standard",
-    #"SVC": "scalable",
-    #"SHVC": "scalable",
-}
- 
  
 class Engine:
  
     def __init__(
         self,
-        store,
-        encoder,
+        config_store,
         output_store,
-        decoder
     ):
-  
-        self.store = store
-        self.encoder = encoder
-        self.output_store = output_store
-        self.decoder = decoder
- 
-    def process(self, experiment_id):
+
+        self.config_store: ConfigStore = config_store
+        self.output_store: OutputStore = output_store
+
+    def process(self, experiment):
+        (success, id, result) = self.run(experiment)
+        self.send_result(id, result)
+        return success
+    
+    def run(self, experiment):
         self.status = "PENDING"
- 
+
+        experiment_id = ''
+
         try:
-            experiment = self.fetch_experiment(experiment_id)
-            config = self.store.get_config()
+
+            config = self.config_store.get_config()
  
             if not self.validate_request(experiment, config):
-                self.status = "FAILED"
-                self.send_results(experiment_id, [EncodingResult(
-                    status="FAILED",
-                    error="Validation failed"
-                )])
-                return None
+                raise RuntimeError("invalid request")
+            
+            experiment_id = experiment['project']['experiment_id']
  
             self.status = "RUNNING"
  
-            sequences = experiment.get("sequences", [])
-            results = self.run_sequences(sequences, config, experiment_id)
- 
-            all_failed = all(r.status == "FAILED" for r in results)
-            all_completed = all(r.status == "COMPLETED" for r in results)
- 
-            if all_failed:
-                self.status = "FAILED"
-            elif all_completed:
-                self.status = "COMPLETED"
-            else:
-                self.status = "PARTIAL"
- 
-            self.send_results(experiment_id, results)
-            return results
+            sequence = experiment.get("sequence") # don't need default, already validated
+            (success, result) = self.run_sequence(sequence, config, experiment_id)
+
+            experiment['success'] = success
+            experiment['result'] = result
+
+
+            return (success, experiment_id, experiment)
  
         except Exception as e:
             # prevents encoder crashes killing worker
-            logger.critical(
-                f"Unhandled error processing experiment {experiment_id}: {e}"
-            )
-            self.status = "FAILED"
-            self.send_results(experiment_id, [EncodingResult(
-                status="FAILED",
-                error=f"Unhandled error: {str(e)}"
-            )])
-            return None
+            experiment['success'] = False
+            experiment['result'] = {}
+            experiment['result']['reason'] = f'experiment run failed: {str(e)}'
+            
+            return (False, experiment_id, experiment)
  
-    def fetch_experiment(self, experiment_id):
-        experiment = self.store.get_experiment(experiment_id)
- 
-        if experiment is None:
-            logger.error(f"Experiment {experiment_id} not found in store.")
- 
-        return experiment
- 
-    def generate_script(self, sequences, config):
-        commands = []
- 
-        for sequence in sequences:
-            if sequence.get("pre_encoded", False):
-                continue
- 
-            code = sequence["code"]
-            decoded_layers = self.decoder.decode(code, config)
- 
-            # handle single and multi-layer safely
-            if isinstance(decoded_layers, dict):
-                decoded_layers = [decoded_layers]
- 
-            for layer in decoded_layers:
-                command = self.encoder.build_command(layer, config)
-                commands.append(" ".join(command))
- 
-        # create a bash script
-        script_lines = ["#!/bin/bash", ""]
-        script_lines.append("# Auto-generated encoding script")
-        script_lines.append(f"# Sequences: {len(commands)}")
-        script_lines.append("")
- 
-        for i, cmd in enumerate(commands):
-            script_lines.append(f"# Sequence {i}")
-            script_lines.append(cmd)
-            script_lines.append("")
- 
-        return "\n".join(script_lines)
   
     def validate_request(self, experiment, config):
         if experiment is None:
@@ -128,214 +77,118 @@ class Engine:
             logger.error("Validation failed: config is None.")
             return False
  
-        sequences = experiment.get("sequences", [])
-        if len(sequences) == 0:
-            logger.error("Validation failed: no sequences in experiment.")
+        sequence = experiment.get("sequence", {})
+        if sequence == {}:
+            logger.error("Validation failed: no sequence in experiment.")
             return False
  
         project = experiment.get("project", {})
-        codec = project.get("codec")
-        encoder_type = project.get("encoder_type")
- 
-        # Validate codec/encoder_type pairing
-        if codec and encoder_type:
-            expected_type = VALID_CODEC_PAIRS.get(codec)
-            if expected_type and expected_type != encoder_type:
-                logger.error(
-                    f"Validation failed: codec '{codec}' requires "
-                    f"encoder_type '{expected_type}', got '{encoder_type}'."
-                )
-                return False
- 
-        if encoder_type == "scalable" and "scalability" not in project:
-            logger.error(
-                "Validation failed: scalable encoder requires 'scalability' field."
-            )
+        if project == {}:
+            logger.error("Validation failed: no project info")
             return False
- 
-        for seq in sequences:
-            is_pre_encoded = seq.get("pre_encoded", False)
- 
-            if is_pre_encoded:
-                if "pre_encoded_id" not in seq:
-                    logger.error(
-                        "Validation failed: pre_encoded sequence missing pre_encoded_id."
-                    )
-                    return False
-            else:
-                if "code" not in seq or not seq["code"]:
-                    logger.error("Validation failed: sequence missing code.")
-                    return False
- 
-                code = seq["code"]
-                code_segments = code.split("_")
-                layers = len(code_segments)
- 
-                for segment in code_segments:
-                    if len(segment) != 30:
-                        logger.error(
-                            f"Validation failed: code segment '{segment}' "
-                            f"is {len(segment)} chars, expected 30."
-                        )
-                        return False
- 
-            if encoder_type == "standard" and len(seq.get("code", "").split("_")) > 1:
-                logger.error(
-                    "Validation failed: standard encoder cannot have multi-layer sequences."
-                )
-                return False
- 
+
+        id = project.get("experiment_id", '')
+        if id == '':
+            logger.error("Validation failed: no experiment_id")
+            return False
+
         return True
  
-    def call_encoder(self, decoded_sequence, config, timeout=None):
-        command = self.encoder.build_command(decoded_sequence, config)
-        result = self.encoder.run(command, timeout=timeout)
- 
-        success = self.encoder.check_output(
-            result["return_code"],
-            result["stderr"]
-        )
+    def call_encoder(self, decoded_sequence, timeout=None):
+        command = Encoder.build_command(decoded_sequence)
+        logger.info(f'encoder command: {command}')
+        result = Encoder.run(command, timeout=timeout)
+
+        return self.transcoder_result(result, 'encoding')
+    
+    def call_decoder(self, decoded_sequence, timeout=None):
+        command = Decoder.build_command(decoded_sequence)
+        result = Decoder.run(command, timeout=timeout)
+
+        return self.transcoder_result(result, 'decoding')
+    
+    def transcoder_result(self, result, type):
+        success = result['return_code'] == 0
  
         if not success:
             raise RuntimeError(
-                f"Encoding failed with return code {result['return_code']}: "
+                f"{type} failed with return code {result['return_code']}: "
                 f"{result.get('stderr', 'unknown error')}"
             )
  
         return result
  
-    def run_sequences(self, sequences, config, experiment_id):
-        results = []
+    def run_sequence(self, sequence, config, experiment_id):
  
-        for sequence in sequences:
-            sequence_name = sequence.get("name", "unknown")
- 
-            if sequence.get("pre_encoded", False):
-                logger.info(
-                    f"Sequence '{sequence_name}' is pre-encoded. Skipping."
-                )
-                results.append(EncodingResult(
-                    status="COMPLETED",
-                    video_path=None,
-                    log_path=None,
-                    metrics={},
-                    error=None,
-                ))
-                continue
- 
-            code = sequence["code"]
- 
-            try:
-                code_segments = code.split("_")
-                layers = len(code_segments)
-                layer_results = []
- 
-                for layer_code in code_segments:
-                    decoded = self.decoder.decode(layer_code, config)
+        result = {}
 
-                    encoder_payload = (
-                        decoded.get("codec_library", "libx264"), 
-                        decoded.get("raw_file"), 
-                        "output.mp4"
-                    )
+        try:
+            #code_segments = code.split("_")
+            #layers = len(code_segments)
+            #layer_results = []
 
-                    result = self.call_encoder(encoder_payload, config)
+            #for layer_code in code_segments:
+            decoded = SequenceDecoder.decode(sequence, config)
 
-                    result["output_path"] = "output.mp4" 
-                    result["log_path"] = None
-                    result["config_path"] = None
-                    
-                    layer_results.append(result)
- 
-                final_result = layer_results[-1]
-                source_path = decoded.get("raw_file")
+            input_path =  os.path.join(Settings.input_directory, str(decoded.get("raw_file")))
+            temp_path = os.path.join(Settings.temp_directory, "temp")
+            output_path = os.path.join(Settings.output_directory, sequence)
 
-                encoding_result = self.build_result(
-                    sequence, final_result, source_path
-                )
-                results.append(encoding_result)
- 
-                self.output_store.save_log(
-                    experiment_id,
-                    sequence_name,
-                    f"COMPLETED: {layers} layer(s) encoded successfully."
-                )
-                logger.info(
-                    f"Sequence '{sequence_name}' completed successfully."
-                )
- 
-            except Exception as e:
-                logger.error(
-                    f"Sequence '{sequence_name}' failed: {str(e)}. "
-                    f"Skipping to next."
-                )
- 
-                encoding_result = EncodingResult(
-                    status="FAILED",
-                    video_path=None,
-                    log_path=None,
-                    metrics={},
-                    error=str(e),
-                )
-                results.append(encoding_result)
- 
-                self.output_store.save_log(
-                    experiment_id,
-                    sequence_name,
-                    f"FAILED: {str(e)}"
-                )
-                continue
- 
-        return results
- 
-    def build_result(self, sequence, encoder_output, source_path):
-        sequence_name = sequence.get("name", "unknown")
-        encoded_path = encoder_output.get("output_path")
-        log_path = encoder_output.get("log_path")
-        config_path = encoder_output.get("config_path")
- 
-        metrics = {}
- 
-        if encoded_path and source_path:
-            # decode to raw pixels to calculate metrics
-            decoded_path = self.call_decoder(encoded_path, sequence, encoder_output)
-            metrics = self._calculate_metrics(source_path, decoded_path)
- 
-        result = EncodingResult(
-            status="COMPLETED",
-            video_path=encoded_path,
-            log_path=log_path,
-            metrics=metrics,
-            error=None,
-        )
- 
-        return result
- 
-    # Call decoder for encoded bitstream/video
-    def call_decoder(self, encoded_path, sequence=None, encoder_output=None, timeout=120):
-        if not self.decoder:
-            return encoded_path
- 
-        decode_video_method = getattr(self.decoder, "decode_video", None)
-        if callable(decode_video_method):
-            decoded_output = decode_video_method(
-                encoded_path,
-                sequence=sequence,
-                encoder_output=encoder_output,
-                timeout=timeout,
+            encoder_payload = (
+                decoded.get("codec"), 
+                input_path,
+                temp_path
             )
+
+            decoder_payload = (
+                decoded.get("codec"),
+                temp_path,
+                output_path
+            )
+
+            logger.info(f"sequence starting for {experiment_id}")
+
+            encoding_result = self.call_encoder(encoder_payload)
+            logger.debug(encoding_result)
+
+            logger.info("encoding complete")
+
+            ## run network simulation here
+
+            logger.info("simulation complete")
+
+            decoding_result = self.call_decoder(decoder_payload)
+            logger.debug(decoding_result)
+
+            logger.info("decoding complete")
+
+            metrics = self._calculate_metrics(input_path, output_path)
+
+            logger.info("metrics complete")
+            
+            logger.info(
+                f"Sequence '{sequence}' completed successfully."
+            )
+
+            result = metrics
+
+            return (True, result)
+
+        except Exception as e:
+            msg = f"Experiment {experiment_id} error, sequence '{sequence}' failed: {str(e)}. "
+            logger.error(
+                msg
+            )
+
+            result['reason'] = msg
+
+            return (False, result)
  
-            if isinstance(decoded_output, dict):
-                decoded_path = decoded_output.get("output_path")
-                if decoded_path:
-                    return decoded_path
-            elif isinstance(decoded_output, str):
-                return decoded_output
+        
  
-            raise RuntimeError("Decoder did not return a usable decoded output path.")
  
-        return encoded_path
- 
+    ### might as well make this a seperate class that pulls frame by frame data for metrics
+    
     def _calculate_metrics(self, reference_path, decoded_path):
         metrics = {}
  
@@ -356,6 +209,9 @@ class Engine:
             psnr_result = subprocess.run(
                 psnr_cmd, capture_output=True, text=True, timeout=120
             )
+
+            print(psnr_result)
+
             if psnr_result.returncode == 0:
                 combined_output = (psnr_result.stdout or "") + (psnr_result.stderr or "")
                 psnr_value = self._parse_psnr(combined_output)
@@ -379,6 +235,9 @@ class Engine:
             ssim_result = subprocess.run(
                 ssim_cmd, capture_output=True, text=True, timeout=120
             )
+
+            print(ssim_result)
+
             if ssim_result.returncode == 0:
                 combined_output = (ssim_result.stdout or "") + (ssim_result.stderr or "")
                 ssim_value = self._parse_ssim(combined_output)
@@ -429,34 +288,11 @@ class Engine:
         
         return None
  
-    def send_results(self, experiment_id, results):
-        if isinstance(results, EncodingResult):
-            results = [results]
- 
-        for r in results:
-            if r.status == "COMPLETED":
-                if r.video_path:
-                    self.output_store.save_video(r.video_path)
- 
-                if r.metrics:
-                    self.output_store.save_metrics(
-                        experiment_id, r.metrics
-                    )
- 
-                if r.config_path:
-                    self.output_store.save_configs(
-                        experiment_id, {"config_path": r.config_path}
-                    )
- 
-        self.output_store.save_status(experiment_id, {
-            "status": self.status,
-            "results": [vars(r) for r in results],
-        })
- 
+    def send_result(self, experiment_id, result):
+
+        self.output_store.store_experiment_result(result)
+        
         logger.info(
             f"Results sent to output store for experiment "
             f"{experiment_id}: {self.status}"
         )
- 
-    def get_status(self):
-        return self.status
