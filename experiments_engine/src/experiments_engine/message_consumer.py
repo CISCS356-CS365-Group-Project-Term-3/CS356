@@ -1,7 +1,8 @@
 import json
 import pika
-from experiments_engine.config import Settings
-from experiments_engine.runner import experiment
+from .config import Settings
+from .runner import run
+from .engine import Engine
 
 # RabbitMQ consumer class.
 # this whole class listens for experiment messages and passes them into the encoding system
@@ -12,13 +13,10 @@ class MessageConsumer:
     def __init__(self, engine):
 
         # RabbitMQ connection object
-        self.connection = None
-
-        # RabbitMQ communication channel
-        self.channel = None
+        self.connection: pika.BlockingConnection
 
         # used to start experiment processing
-        self.engine = engine
+        self.engine: Engine = engine
 
     def connect(self):
 
@@ -28,7 +26,7 @@ class MessageConsumer:
 
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                Settings.queue_container
+                Settings.queue_address
             )
         )
 
@@ -72,22 +70,14 @@ class MessageConsumer:
         #automatically runs whenever RabbitMQ sends a message
 
         try:
-
-            # runner.py logic.
-
-            experiment(body)
-
             # convert JSON message into python dictionary.
 
-            data = json.loads(body)
 
-            # get experiment id from incoming message.
-
-            experiment_id = data["experiment_id"]
+            experiment = json.loads(body)
 
             # passes experiment into Engine workflow.
 
-            self.engine.process(experiment_id)
+            self.engine.process(experiment)
 
             # only acknowledge message AFTER processing completes successfully
 
