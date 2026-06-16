@@ -8,6 +8,7 @@ import { ProjectSetup } from './steps/project-setup/project-setup';
 import { EncodersStep } from './steps/encoders/encoders';
 import { SequencesStep } from './steps/sequences/sequences';
 import { ReviewStep } from './steps/review/review';
+import { NetworkEmulationStep } from './steps/network-emulation/network-emulation';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -19,6 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
     ProjectSetup,
     EncodersStep,
     SequencesStep,
+    NetworkEmulationStep,
     ReviewStep,
     MatCardModule,
     MatIconModule,
@@ -98,6 +100,11 @@ export class NewExperiment implements OnInit {
     return this.isProjectSetupComplete() && this.isEncodersComplete() && this.isSequencesComplete();
   }
 
+  isNetworkComplete(): boolean {
+    const net = this.formService.form.networkEmulation;
+    return net.packetLoss !== null && net.delay !== null && net.jitter !== null;
+  }
+
   isStepError(stepIndex: number): boolean {
     return this.visitedSteps.has(stepIndex) && !this.canProceed(stepIndex);
   }
@@ -107,6 +114,16 @@ export class NewExperiment implements OnInit {
     this.isSubmitting = true;
     const form = this.formService.form;
     const editingId = this.formService.editingId;
+    const net = form.networkEmulation;
+    const networkEmulation =
+      net.packetLoss !== null && net.delay !== null && net.jitter !== null
+        ? {
+            packetLoss: String(Math.round(net.packetLoss! * 10)).padStart(3, '0'),
+            delay: String(net.delay).padStart(3, '0'),
+            jitter: String(net.jitter).padStart(3, '0'),
+          }
+        : undefined;
+
     const basePayload = {
       name: form.name,
       status,
@@ -117,6 +134,7 @@ export class NewExperiment implements OnInit {
         encoderModeId: e.encoderModeId,
       })),
       sequences: form.sequences.map((s) => ({ videoFileId: s.videoFileId })),
+      ...(networkEmulation && { networkEmulation }),
     };
     this.submitError = null;
     const request$ = editingId
@@ -139,6 +157,8 @@ export class NewExperiment implements OnInit {
         return this.isEncodersComplete();
       case 2:
         return this.isSequencesComplete();
+      case 3:
+        return true; // network emulation is optional
       default:
         return true;
     }
