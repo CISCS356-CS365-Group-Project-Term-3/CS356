@@ -31,7 +31,6 @@ import { MatIconModule } from '@angular/material/icon';
 export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
-  showDraftModal = false;
   isSubmitting = false;
   visitedSteps = new Set<number>();
 
@@ -63,19 +62,14 @@ export class NewExperiment implements OnInit {
 
   onNext(): void {
     if (this.isLastStep) {
-      if (this.isFormComplete()) {
-        this.doSubmit('finalised');
-      } else {
-        this.showDraftModal = true;
-      }
+      this.doSubmit('finalised');
     } else {
       this.visitedSteps.add(this.stepper.selectedIndex);
       this.stepper.next();
     }
   }
 
-  confirmDraft(): void {
-    this.showDraftModal = false;
+  onSaveDraft(): void {
     this.doSubmit('draft');
   }
 
@@ -109,7 +103,7 @@ export class NewExperiment implements OnInit {
     return this.visitedSteps.has(stepIndex) && !this.canProceed(stepIndex);
   }
 
-  private doSubmit(status: string): void {
+  doSubmit(status: string): void {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
     const form = this.formService.form;
