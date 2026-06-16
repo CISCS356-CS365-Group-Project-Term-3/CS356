@@ -1,16 +1,3 @@
-.step-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.section-label {
-  margin: 0 0 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #555;
-}
-
 .summary-rows {
   display: flex;
   flex-direction: column;
@@ -27,7 +14,7 @@
   font-size: 13px;
   font-weight: 500;
   color: #555;
-  min-width: 130px;
+  min-width: 120px;
 }
 
 .summary-value {
@@ -67,7 +54,7 @@
 
 .sequence-key {
   font-size: 13px;
-  color: #777;
+  color: #888;
   min-width: 120px;
 }
 

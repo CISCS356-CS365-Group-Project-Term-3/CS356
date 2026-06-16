@@ -11,11 +11,18 @@ export interface EncoderConfig {
   encoderModeId: number | null;
 }
 
+export interface NetworkEmulationConfig {
+  packetLoss: number | null;
+  delay: number | null;
+  jitter: number | null;
+}
+
 export interface NewExperimentForm {
   name: string;
   projectTypeId: number | null;
   encoders: EncoderConfig[];
   sequences: SequenceConfig[];
+  networkEmulation: NetworkEmulationConfig;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +49,9 @@ export class NewExperimentFormService {
         projectTypeId: draft.projectTypeId,
         encoders: draft.encoders.map((e) => ({ ...e })),
         sequences: draft.sequences.map((s) => ({ ...s })),
+        networkEmulation: draft.networkEmulation
+          ? { ...draft.networkEmulation }
+          : { packetLoss: null, delay: null, jitter: null },
       };
       this.pendingDraft = null;
     } else if (this.pendingTemplate) {
@@ -52,6 +62,9 @@ export class NewExperimentFormService {
         projectTypeId: template.projectTypeId,
         encoders: template.encoders.map((e) => ({ ...e })),
         sequences: template.sequences.map((s) => ({ ...s })),
+        networkEmulation: template.networkEmulation
+          ? { ...template.networkEmulation }
+          : { packetLoss: null, delay: null, jitter: null },
       };
       this.pendingTemplate = null;
     } else {
@@ -66,6 +79,7 @@ export class NewExperimentFormService {
       projectTypeId: null,
       encoders: [{ encoderTypeId: null, codecId: null, encoderModeId: null }],
       sequences: [],
+      networkEmulation: { packetLoss: null, delay: null, jitter: null },
     };
   }
 }

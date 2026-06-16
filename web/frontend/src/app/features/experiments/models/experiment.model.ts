@@ -9,4 +9,5 @@ export interface Experiment {
   projectTypeId: number;
   encoders: { encoderTypeId: number; codecId: number; encoderModeId: number }[];
   sequences: { videoFileId: number }[];
+  networkEmulation?: { packetLoss: number | null; delay: number | null; jitter: number | null };
 }
