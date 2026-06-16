@@ -1,36 +1,33 @@
 import logging
  
-# used to log errors and warnings during decoding
+# Used to log errors and warnings during decoding
 logger = logging.getLogger(__name__)
- 
  
 # Custom exception class for sequence decoding errors
 class SequenceDecoderError(Exception):
     pass
  
- 
-# SequenceDecoder takes a 30-character sequence code and decodes it
-# into a dictionary of encoding parameters.
+# SequenceDecoder takes a sequence code and decodes it into a dictionary of encoding parameters.
  
 class SequenceDecoder:
  
-    # This dictionary maps each segment position (0-9) to the field it represents
+    # This dictionary maps each segment position to the field it represents
     FIELD_NAMES = {
         0: "raw_file",
-        1: "codec",
-        2: "encoder_type",
-        3: "loss",
-        4: "delay",
-        5: "jitter",
+        1: "encoder_type",
+        2: "codec",
+        3: "encoder_mode",
+        4: "loss",
+        5: "delay",
     }
 
     SEGMENT_LENGTH = 3
     SEGMENTS_PER_LAYER = len(FIELD_NAMES)
-    CODE_LENGTH = SEGMENT_LENGTH * SEGMENTS_PER_LAYER  # 30
+    CODE_LENGTH = SEGMENT_LENGTH * SEGMENTS_PER_LAYER 
 
     @classmethod
     def decode(cls, code, config):
-        # Takes the raw 30-char code and a config lookup table.
+        # Takes the code and a config lookup table.
         # Returns a dictionary of decoded field names to their human-readable values
  
         # Check the code is valid, not empty
@@ -39,7 +36,7 @@ class SequenceDecoder:
         # Separate the layer, single will return the code as is
         layer_code = cls.separate_layer(code)
  
-        # Split the 30-char code into 10 segments of 3 chars each
+        # Split the code into segments of 3 chars each
         segments = cls.segment_code(layer_code)
  
         # Map each segment to its field name based on position
@@ -76,7 +73,7 @@ class SequenceDecoder:
  
     @classmethod
     def segment_code(cls, layer_code):
-        # Takes the full 30-char layer code and splits it into 10 segments of 3 characters each
+        # Takes the full layer code and splits it into segments of 3 characters each
  
         segments = [
             layer_code[i:i + cls.SEGMENT_LENGTH]
@@ -87,7 +84,7 @@ class SequenceDecoder:
  
     @classmethod
     def map_segments_to_fields(cls, segments):
-        # Takes the list of 10 segments and maps each one to its field name using the FIELD_NAMES dictionary
+        # Takes the list of segments and maps each one to its field name using the FIELD_NAMES dictionary
  
         field_map = {}
  
