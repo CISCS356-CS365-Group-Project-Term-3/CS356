@@ -1,5 +1,5 @@
 from pydantic import BaseModel, PositiveInt
-from typing import List, Union, Optional, Annotated
+from typing import List, Union, Optional, Annotated, Literal
 from annotated_types import Len
 
 # class ProjectType(BaseModel):
@@ -86,5 +86,5 @@ class VideoFilePost(BaseModel):
 class CodecPost(BaseModel):
     id: Optional[int] = None
     version: str
-    status: str
+    active: Literal[0, 1]
     name: str

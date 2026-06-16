@@ -15,6 +15,8 @@ def data_init():
 
         codec = models.Codec()
         codec.name = "testCodec"
+        codec.active = 1
+        codec.encoder_type = 1
         session.add(codec)
 
         encoder_mode = models.EncoderMode()
