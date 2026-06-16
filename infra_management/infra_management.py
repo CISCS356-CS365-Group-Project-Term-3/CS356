@@ -5,6 +5,7 @@ from models.sql_models import *
 from util.engine import get_engine, Base, query_result_as_list
 from util.data_init import data_init
 from sqlalchemy.orm import Session
+from flask_cors import CORS
 
 
 app = Flask(__name__)
@@ -86,7 +87,7 @@ def codec_update(row, body):
 def codec_create(table, body):
     return table(
         name = body.get("name"),
-        status = body.get("status"),
+        active = body.get("active"),
         version = body.get("version")
     )
 
@@ -158,13 +159,18 @@ def get_ui_options():
         transmission_conditions = query_result_as_list(session.query(TransmissionCondition).all())
         for sequence in sequences:
             id = sequence.get("id")
-            print(f"Looking for id: {id}")
             videos = query_result_as_list(session.query(VideoFile).filter(VideoFile.sequence_id == id))
             for vid in videos:
                 vid["spacial"] = [vid.get("spacial_x"), vid.get("spacial_y")]
                 vid.pop("spacial_x", None)
                 vid.pop("spacial_y", None)
             sequence["video_files"] = videos
+        
+        all_codecs = session.query(Codec)
+        for encoder_type in encoder_types:
+            id = encoder_type.get("id")
+            codecs = all_codecs.filter(Codec.encoder_type == id).all()
+            encoder_type["active_codecs"] = [c.id for c in codecs]
 
 
         output = {

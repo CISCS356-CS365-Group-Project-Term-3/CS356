@@ -5,16 +5,6 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from util.engine import Base
 from typing import List
 
-
-# class EncoderTypeCodec(Base):
-#     __tablename__ = "encoder_type_codec"
-#     encoder_type_id = mapped_column(int, ForeignKey("encoder_type.id"), primary_key=True)
-#     codec_id = mapped_column(int, ForeignKey("codec.id"), primary_key=True)
-#     active = mapped_column(int, nullable=False, default=1)
-
-#     encoder_types: Mapped["EncoderType"] = relationship("EncoderType", back_populates="codecs")
-#     codecs = Mapped["Codec"] = relationship("")
-
 class ProjectType(Base):
     __tablename__ = "project_type"
     id = mapped_column(Integer, primary_key=True)
@@ -30,7 +20,8 @@ class Codec(Base):
     __tablename__ = "codec"
     id = mapped_column(Integer, primary_key=True)
     version = mapped_column(String(64))
-    status = mapped_column(Integer)
+    active = mapped_column(Integer)
+    encoder_type = mapped_column(Integer, ForeignKey("encoder_type.id"))
     name = mapped_column(String(255))
 
 class EncoderMode(Base):
