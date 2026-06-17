@@ -1,7 +1,7 @@
 {
     "raw_file": {"000": "Beauty", "001": "Bosphorus", "003": "HoneyBee", "005": "Jockey"},
-    "codec": {"000": "h261", "001": "h263", "002": "h264", "003": "h265", "004": "h266"},
-    "encoder_type": {"000": "standard", "001": "scalable"},
+    "codec": {"001": "h264", "002": "h265", "003": "h266"},
+    "encoder_type": {"001": "standard", "002": "scalable"},
     "loss": "DECIMAL",
     "delay": "INTEGER",
     "jitter": "INTEGER"
