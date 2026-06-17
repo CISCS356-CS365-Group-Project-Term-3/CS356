@@ -108,10 +108,12 @@ export class NewExperiment implements OnInit {
     const form = this.formService.form;
     const editingId = this.formService.editingId;
     const net = form.networkEmulation;
+    const encodePacketLoss = (v: number) => String(Math.round(v * 10)).padStart(3, '0');
+    const encodeMs = (v: number) => String(Math.round(v)).padStart(3, '0');
     const networkEmulation = {
-      packetLoss: net.packetLoss !== null ? String(Math.round(net.packetLoss * 10)).padStart(3, '0') : '000',
-      delay: net.delay !== null ? String(net.delay).padStart(3, '0') : '000',
-      jitter: net.jitter !== null ? String(net.jitter).padStart(3, '0') : '000',
+      packetLoss: net.packetLoss.length > 0 ? net.packetLoss.map(encodePacketLoss) : ['000'],
+      delay: net.delay.length > 0 ? net.delay.map(encodeMs) : ['000'],
+      jitter: net.jitter.length > 0 ? net.jitter.map(encodeMs) : ['000'],
     };
 
     const basePayload = {

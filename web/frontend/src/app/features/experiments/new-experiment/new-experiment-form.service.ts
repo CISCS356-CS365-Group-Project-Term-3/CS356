@@ -12,9 +12,9 @@ export interface EncoderConfig {
 }
 
 export interface NetworkEmulationConfig {
-  packetLoss: number | null;
-  delay: number | null;
-  jitter: number | null;
+  packetLoss: number[];
+  delay: number[];
+  jitter: number[];
 }
 
 export interface NewExperimentForm {
@@ -50,8 +50,12 @@ export class NewExperimentFormService {
         encoders: draft.encoders.map((e) => ({ ...e })),
         sequences: draft.sequences.map((s) => ({ ...s })),
         networkEmulation: draft.networkEmulation
-          ? { ...draft.networkEmulation }
-          : { packetLoss: null, delay: null, jitter: null },
+          ? {
+              packetLoss: [...draft.networkEmulation.packetLoss],
+              delay: [...draft.networkEmulation.delay],
+              jitter: [...draft.networkEmulation.jitter],
+            }
+          : { packetLoss: [], delay: [], jitter: [] },
       };
       this.pendingDraft = null;
     } else if (this.pendingTemplate) {
@@ -63,8 +67,12 @@ export class NewExperimentFormService {
         encoders: template.encoders.map((e) => ({ ...e })),
         sequences: template.sequences.map((s) => ({ ...s })),
         networkEmulation: template.networkEmulation
-          ? { ...template.networkEmulation }
-          : { packetLoss: null, delay: null, jitter: null },
+          ? {
+              packetLoss: [...template.networkEmulation.packetLoss],
+              delay: [...template.networkEmulation.delay],
+              jitter: [...template.networkEmulation.jitter],
+            }
+          : { packetLoss: [], delay: [], jitter: [] },
       };
       this.pendingTemplate = null;
     } else {
@@ -79,7 +87,7 @@ export class NewExperimentFormService {
       projectTypeId: null,
       encoders: [{ encoderTypeId: null, codecId: null, encoderModeId: null }],
       sequences: [],
-      networkEmulation: { packetLoss: null, delay: null, jitter: null },
+      networkEmulation: { packetLoss: [], delay: [], jitter: [] },
     };
   }
 }
