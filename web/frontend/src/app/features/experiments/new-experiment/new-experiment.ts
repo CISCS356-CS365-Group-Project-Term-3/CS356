@@ -95,8 +95,7 @@ export class NewExperiment implements OnInit {
   }
 
   isNetworkComplete(): boolean {
-    const net = this.formService.form.networkEmulation;
-    return net.packetLoss !== null && net.delay !== null && net.jitter !== null;
+    return true;
   }
 
   isStepError(stepIndex: number): boolean {
@@ -109,14 +108,11 @@ export class NewExperiment implements OnInit {
     const form = this.formService.form;
     const editingId = this.formService.editingId;
     const net = form.networkEmulation;
-    const networkEmulation =
-      net.packetLoss !== null && net.delay !== null && net.jitter !== null
-        ? {
-            packetLoss: String(Math.round(net.packetLoss! * 10)).padStart(3, '0'),
-            delay: String(net.delay).padStart(3, '0'),
-            jitter: String(net.jitter).padStart(3, '0'),
-          }
-        : undefined;
+    const networkEmulation = {
+      packetLoss: net.packetLoss !== null ? String(Math.round(net.packetLoss * 10)).padStart(3, '0') : '000',
+      delay: net.delay !== null ? String(net.delay).padStart(3, '0') : '000',
+      jitter: net.jitter !== null ? String(net.jitter).padStart(3, '0') : '000',
+    };
 
     const basePayload = {
       name: form.name,
@@ -128,7 +124,7 @@ export class NewExperiment implements OnInit {
         encoderModeId: e.encoderModeId,
       })),
       sequences: form.sequences.map((s) => ({ videoFileId: s.videoFileId })),
-      ...(networkEmulation && { networkEmulation }),
+      networkEmulation,
     };
     this.submitError = null;
     const request$ = editingId
