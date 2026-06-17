@@ -1,0 +1,104 @@
+.page {
+  padding: 24px;
+}
+
+.notice-card {
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  background: #fff5d6;
+  color: #7c5b00;
+  border-radius: 16px;
+}
+
+.heading-row {
+  margin-bottom: 42px;
+  padding-top: 12px;
+}
+
+.heading-row h1 {
+  margin: 0;
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #111827;
+}
+
+.heading-row p {
+  margin: 14px 0 0;
+  color: #6b7280;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.quick-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.quick-card {
+  min-height: 220px;
+  padding: 28px;
+  border-radius: 22px;
+  transition: all 0.18s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.quick-card:hover {
+  transform: translateY(-4px);
+}
+
+.quick-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quick-header h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #111827;
+}
+
+.quick-header mat-icon {
+  color: #0b3a6f;
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.quick-card p {
+  margin-top: 18px;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.disabled-card {
+  opacity: 0.82;
+}
+
+.coming-soon {
+  margin-top: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0b3a6f;
+}
+
+@media (max-width: 900px) {
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-card {
+    min-height: 180px;
+  }
+}
