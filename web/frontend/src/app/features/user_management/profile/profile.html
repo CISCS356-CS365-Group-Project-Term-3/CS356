@@ -1,0 +1,18 @@
+<app-navbar></app-navbar>
+
+<main class="profile-page">
+  <section class="profile-header" aria-labelledby="profile-title">
+    <h1 id="profile-title">Your profile details</h1>
+  </section>
+
+  <section class="profile-details" aria-label="User details">
+    <dl>
+      @for (detail of profileDetails; track detail.label) {
+        <div class="profile-detail">
+          <dt>{{ detail.label }}</dt>
+          <dd>{{ detail.value }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+</main>
