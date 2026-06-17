@@ -13,7 +13,8 @@ class MessageConsumer:
     def __init__(self, engine):
 
         # RabbitMQ connection object
-        self.connection: pika.BlockingConnection
+        self.connection: pika.BlockingConnection | None = None
+        self.channel = None
 
         # used to start experiment processing
         self.engine: Engine = engine
@@ -53,7 +54,9 @@ class MessageConsumer:
         # set up message consumption
         # auto_ack=False means messages are only acknowledged AFTER processing is completed successfully
 
-        self.channel.basic_consume(
+        channel = self._get_channel()
+
+        channel.basic_consume(
             queue=Settings.experiment_queue,
             on_message_callback=self.on_message,
             auto_ack=False
@@ -63,7 +66,7 @@ class MessageConsumer:
 
         # starts listening for new experiment messages- continuous process
 
-        self.channel.start_consuming()
+        channel.start_consuming()
 
     def on_message(self, ch, method, properties, body):
 
@@ -93,7 +96,7 @@ class MessageConsumer:
 
         # acknowledge successful processing- tells RabbitMQ the message can now be removed from the queue
 
-        self.channel.basic_ack(
+        self._get_channel().basic_ack(
             delivery_tag=method.delivery_tag
         )
 
@@ -101,7 +104,7 @@ class MessageConsumer:
 
         # reject failed processing- tells RabbitMQ processing failed.
 
-        self.channel.basic_nack(
+        self._get_channel().basic_nack(
             delivery_tag=method.delivery_tag
         )
 
@@ -111,3 +114,10 @@ class MessageConsumer:
 
         if self.connection:
             self.connection.close()
+
+    def _get_channel(self):
+
+        if self.channel is None:
+            raise RuntimeError("MessageConsumer is not connected")
+
+        return self.channel

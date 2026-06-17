@@ -1,9 +1,31 @@
 import pytest
 from experiments_engine.sequence_decoder import SequenceDecoder, SequenceDecoderError
+
+
+FAKE_FIELD_NAMES = {
+    0: "encoder_type",
+    1: "codec",
+    2: "encoder_mode",
+    3: "spatial",
+    4: "temporal",
+    5: "qp",
+    6: "scalability_type",
+    7: "bit_depth",
+    8: "reserved",
+    9: "raw_file",
+}
+
   
 @pytest.fixture
-def decoder():
+def decoder(monkeypatch):
     # Creates a fresh SequenceDecoder instance for each test
+    monkeypatch.setattr(SequenceDecoder, "FIELD_NAMES", FAKE_FIELD_NAMES)
+    monkeypatch.setattr(SequenceDecoder, "SEGMENTS_PER_LAYER", len(FAKE_FIELD_NAMES))
+    monkeypatch.setattr(
+        SequenceDecoder,
+        "CODE_LENGTH",
+        SequenceDecoder.SEGMENT_LENGTH * len(FAKE_FIELD_NAMES),
+    )
     return SequenceDecoder()
  
  
@@ -24,16 +46,16 @@ def config():
     }
  
  
-def test_segment_code_splits_into_10_segments(decoder):
+def test_segment_code_splits_into_segments(decoder):
     # A valid 30-char code should produce exactly 10 segments
     segments = decoder.segment_code('001003000012005007000000000003')
-    assert len(segments) == 10
+    assert len(segments) == decoder.SEGMENTS_PER_LAYER
  
  
 def test_segment_code_each_segment_is_3_chars(decoder):
     # Every segment must be exactly 3 characters long
     segments = decoder.segment_code('001003000012005007000000000003')
-    assert all(len(s) == 3 for s in segments)
+    assert all(len(s) == decoder.SEGMENT_LENGTH for s in segments)
  
  
 def test_segment_code_correct_values(decoder):

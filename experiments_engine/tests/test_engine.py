@@ -1,293 +1,196 @@
 import pytest
+
+from experiments_engine.config import Settings
 from experiments_engine.engine import Engine
-from experiments_engine.encoding_result import EncodingResult
 
 
-class FakeStore:
-    """Simulates database interactions for experiments and system configurations."""
-    def __init__(self, experiment=None, config=None):
-        self.experiment = experiment
+VALID_SEQUENCE = "000000000000000000"
+
+
+class FakeConfigStore:
+    def __init__(self, config=None):
         self.config = config
-
-    def get_experiment(self, experiment_id):
-        return self.experiment
 
     def get_config(self):
         return self.config
 
 
-class FakeEncoder:
-    """Mocks backend hardware encoding profiles and shell execution pipelines."""
-    def __init__(self, should_fail=False):
-        self.should_fail = should_fail
-        self.commands_built = []
-        self.commands_run = []
-
-    def build_command(self, decoded_sequence, config):
-        cmd = ["ffmpeg", "-i", "input.y4m", "-o", "output.mp4"]
-        self.commands_built.append(cmd)
-        return cmd
-
-    def run(self, command, timeout=None):
-        self.commands_run.append(command)
-        if self.should_fail:
-            return {
-                "return_code": 1, 
-                "stderr": "encoding error", 
-                "output_path": None, 
-                "log_path": None, 
-                "config_path": None
-            }
-        return {
-            "return_code": 0, 
-            "stderr": "", 
-            "output_path": "experiments_engine/tests/test_data/akiyo_qcif.y4m",
-            "log_path": "/output/log.txt",
-            "config_path": "/output/config.json"
-        }
-
-    def check_output(self, return_code, stderr):
-        return return_code == 0
-
-
 class FakeOutputStore:
-    """Tracks state updates and target metrics without filesystem I/O overhead."""
     def __init__(self):
-        self.statuses = []
-        self.logs = []
+        self.results = []
 
-    def save_status(self, experiment_id, status_dict):
-        self.statuses.append({"experiment_id": experiment_id, "results": status_dict})
-
-    def save_log(self, experiment_id, sequence_name, log_data):
-        self.logs.append({
-            "experiment_id": experiment_id, 
-            "sequence_name": sequence_name, 
-            "log_data": log_data
-        })
-        
-    def save_video(self, path): pass
-    def save_metrics(self, experiment_id, metrics): pass
-    def save_configs(self, experiment_id, config_path): pass
-
-
-class FakeDecoder:
-    """Mocks code bitstream processing and structural parameters."""
-    def __init__(self, should_fail=False):
-        self.should_fail = should_fail
-
-    def decode(self, code, config):
-        if self.should_fail:
-            raise ValueError(f"Invalid code: {code}")
-        return {
-            "encoder_type": "standard", 
-            "codec": "AVC", 
-            "spatial": "HD1080", 
-            "raw_file": "experiments_engine/tests/test_data/akiyo_qcif.y4m"
-        }
-
-    def decode_video(self, encoded_path, **kwargs):
-        return "experiments_engine/tests/test_data/akiyo_qcif.y4m"
+    def store_experiment_result(self, result):
+        self.results.append(result)
 
 
 @pytest.fixture
-def valid_experiment():
+def config():
     return {
-        "_id": "exp_001",
-        "project": {"codec": "AVC", "encoder_type": "standard"},
-        "sequences": [
-            {"name": "seq_1", "code": "0" * 30},
-            {"name": "seq_2", "code": "1" * 30},
-        ]
-    }
-
-
-@pytest.fixture
-def valid_config():
-    return {
+        "raw_file": {"000": "input.y4m"},
+        "codec": {"000": "h264"},
         "encoder_type": {"000": "standard"},
-        "codec": {"000": "AVC"},
+        "loss": "DECIMAL",
+        "delay": "INTEGER",
+        "jitter": "INTEGER",
     }
 
 
 @pytest.fixture
-def engine(valid_experiment, valid_config):
-    store = FakeStore(experiment=valid_experiment, config=valid_config)
-    encoder = FakeEncoder()
+def experiment():
+    return {
+        "project": {"experiment_id": "exp_001"},
+        "sequence": VALID_SEQUENCE,
+    }
+
+
+@pytest.fixture
+def engine(config):
+    return Engine(FakeConfigStore(config), FakeOutputStore())
+
+
+def test_validate_request_accepts_current_experiment_shape(
+    engine, experiment, config
+):
+    assert engine.validate_request(experiment, config) is True
+
+
+@pytest.mark.parametrize(
+    "bad_experiment",
+    [
+        None,
+        {},
+        {"project": {"experiment_id": "exp_001"}},
+        {"sequence": VALID_SEQUENCE},
+        {"project": {"experiment_id": ""}, "sequence": VALID_SEQUENCE},
+    ],
+)
+def test_validate_request_rejects_missing_required_fields(
+    engine, bad_experiment, config
+):
+    assert engine.validate_request(bad_experiment, config) is False
+
+
+def test_validate_request_rejects_missing_config(engine, experiment):
+    assert engine.validate_request(experiment, None) is False
+
+
+def test_run_adds_sequence_result(monkeypatch, config, experiment):
+    engine = Engine(FakeConfigStore(config), FakeOutputStore())
+
+    def run_sequence(sequence, run_config, experiment_id):
+        assert sequence == VALID_SEQUENCE
+        assert run_config == config
+        assert experiment_id == "exp_001"
+        return True, {"psnr": 31.5}
+
+    monkeypatch.setattr(engine, "run_sequence", run_sequence)
+
+    success, experiment_id, result = engine.run(experiment)
+
+    assert success is True
+    assert experiment_id == "exp_001"
+    assert result["success"] is True
+    assert result["result"] == {"psnr": 31.5}
+
+
+def test_run_returns_failure_for_invalid_request(experiment):
+    engine = Engine(FakeConfigStore(None), FakeOutputStore())
+
+    success, experiment_id, result = engine.run(experiment)
+
+    assert success is False
+    assert experiment_id == ""
+    assert result["success"] is False
+    assert result["result"]["reason"] == "experiment run failed: invalid request"
+
+
+def test_process_stores_result_and_returns_success(monkeypatch, experiment):
     output_store = FakeOutputStore()
-    decoder = FakeDecoder()
-    return Engine(store=store, encoder=encoder, output_store=output_store, decoder=decoder)
+    engine = Engine(FakeConfigStore({}), output_store)
+
+    def run(experiment):
+        engine.status = "RUNNING"
+        return True, "exp_001", {"success": True, "result": {"psnr": 31.5}}
+
+    monkeypatch.setattr(engine, "run", run)
+
+    assert engine.process(experiment) is True
+    assert output_store.results == [{"success": True, "result": {"psnr": 31.5}}]
 
 
-class TestValidation:
-    def test_valid_experiment_passes(self, engine, valid_experiment, valid_config):
-        assert engine.validate_request(valid_experiment, valid_config) is True
+def test_run_sequence_calls_transcoders_and_metrics(
+    monkeypatch, tmp_path, config, engine
+):
+    input_dir = tmp_path / "input"
+    temp_dir = tmp_path / "temp"
+    output_dir = tmp_path / "output"
+    calls = []
 
-    def test_none_experiment_fails(self, engine, valid_config):
-        assert engine.validate_request(None, valid_config) is False
+    monkeypatch.setattr(Settings, "input_directory", str(input_dir))
+    monkeypatch.setattr(Settings, "temp_directory", str(temp_dir))
+    monkeypatch.setattr(Settings, "output_directory", str(output_dir))
 
-    def test_missing_sequences_fails(self, engine, valid_config):
-        assert engine.validate_request({}, valid_config) is False
+    def call_encoder(payload):
+        calls.append(("encoder", payload))
+        return {"return_code": 0}
 
-    def test_empty_sequences_fails(self, engine, valid_config):
-        assert engine.validate_request({"sequences": []}, valid_config) is False
+    def call_decoder(payload):
+        calls.append(("decoder", payload))
+        return {"return_code": 0}
 
-    def test_sequence_missing_code_fails(self, engine, valid_config):
-        experiment = {"sequences": [{"name": "test"}]}
-        assert engine.validate_request(experiment, valid_config) is False
+    def calculate_metrics(reference_path, decoded_path):
+        assert reference_path == str(input_dir / "input.y4m")
+        assert decoded_path == str(output_dir / VALID_SEQUENCE)
+        return {"psnr": 31.5, "ssim": 0.98}
 
-    def test_none_config_fails(self, engine, valid_experiment):
-        assert engine.validate_request(valid_experiment, None) is False
+    monkeypatch.setattr(engine, "call_encoder", call_encoder)
+    monkeypatch.setattr(engine, "call_decoder", call_decoder)
+    monkeypatch.setattr(engine, "_calculate_metrics", calculate_metrics)
 
+    success, result = engine.run_sequence(VALID_SEQUENCE, config, "exp_001")
 
-class TestFetchExperiment:
-    def test_fetches_from_store(self, engine, valid_experiment):
-        result = engine.fetch_experiment("exp_001")
-        assert result == valid_experiment
-
-    def test_returns_none_if_not_found(self, valid_config):
-        store = FakeStore(experiment=None, config=valid_config)
-        eng = Engine(store=store, encoder=FakeEncoder(), output_store=FakeOutputStore(), decoder=FakeDecoder())
-        assert eng.fetch_experiment("nonexistent") is None
-
-
-class TestRunSequences:
-    def test_runs_all_sequences(self, engine, valid_experiment, valid_config):
-        sequences = valid_experiment["sequences"]
-        results = engine.run_sequences(sequences, valid_config, "exp_001")
-        assert len(results) == 2
-
-    def test_successful_sequences_have_completed_status(self, engine, valid_experiment, valid_config):
-        sequences = valid_experiment["sequences"]
-        results = engine.run_sequences(sequences, valid_config, "exp_001")
-        assert all(r.status == "COMPLETED" for r in results)
-
-    def test_encoder_is_called_for_each_sequence(self, valid_experiment, valid_config):
-        store = FakeStore(experiment=valid_experiment, config=valid_config)
-        encoder = FakeEncoder()
-        output_store = FakeOutputStore()
-        eng = Engine(store=store, encoder=encoder, output_store=output_store, decoder=FakeDecoder())
-
-        eng.run_sequences(valid_experiment["sequences"], valid_config, "exp_001")
-        assert len(encoder.commands_run) == 2
+    assert success is True
+    assert result == {"psnr": 31.5, "ssim": 0.98}
+    assert calls == [
+        (
+            "encoder",
+            ("h264", str(input_dir / "input.y4m"), str(temp_dir / "temp")),
+        ),
+        (
+            "decoder",
+            ("h264", str(temp_dir / "temp"), str(output_dir / VALID_SEQUENCE)),
+        ),
+    ]
 
 
-class TestFailureSkipping:
-    def test_continues_after_failed_sequence(self, valid_experiment, valid_config):
-        store = FakeStore(experiment=valid_experiment, config=valid_config)
-        encoder = FakeEncoder()
-        output_store = FakeOutputStore()
-        decoder = FakeDecoder(should_fail=True)
-        eng = Engine(store=store, encoder=encoder, output_store=output_store, decoder=decoder)
+def test_run_sequence_returns_failure_reason(monkeypatch, config, engine):
+    def call_encoder(payload):
+        raise RuntimeError("encoding failed")
 
-        results = eng.run_sequences(valid_experiment["sequences"], valid_config, "exp_001")
-        assert len(results) == 2
-        assert all(r.status == "FAILED" for r in results)
+    monkeypatch.setattr(engine, "call_encoder", call_encoder)
 
-    def test_failed_sequence_logs_error(self, valid_experiment, valid_config):
-        store = FakeStore(experiment=valid_experiment, config=valid_config)
-        encoder = FakeEncoder()
-        output_store = FakeOutputStore()
-        decoder = FakeDecoder(should_fail=True)
-        eng = Engine(store=store, encoder=encoder, output_store=output_store, decoder=decoder)
+    success, result = engine.run_sequence(VALID_SEQUENCE, config, "exp_001")
 
-        eng.run_sequences(valid_experiment["sequences"], valid_config, "exp_001")
-        assert len(output_store.logs) == 2
-
-    def test_encoder_failure_skips_to_next(self, valid_experiment, valid_config):
-        store = FakeStore(experiment=valid_experiment, config=valid_config)
-        encoder = FakeEncoder(should_fail=True)
-        output_store = FakeOutputStore()
-        decoder = FakeDecoder()
-        eng = Engine(store=store, encoder=encoder, output_store=output_store, decoder=decoder)
-
-        results = eng.run_sequences(valid_experiment["sequences"], valid_config, "exp_001")
-        assert len(results) == 2
-        assert all(r.status == "FAILED" for r in results)
+    assert success is False
+    assert "Experiment exp_001 error" in result["reason"]
+    assert "encoding failed" in result["reason"]
 
 
-class TestSendResults:
-    def test_sends_completed_status(self, valid_config):
-        store = FakeStore(experiment=None, config=valid_config)
-        output_store = FakeOutputStore()
-        eng = Engine(store=store, encoder=FakeEncoder(), output_store=output_store, decoder=FakeDecoder())
-        
-        eng.status = "COMPLETED"
-        results = [
-            EncodingResult(status="COMPLETED", sequence_name="seq1", video_path="/a.mp4", log_path="/a.log"),
-            EncodingResult(status="COMPLETED", sequence_name="seq2", video_path="/b.mp4", log_path="/b.log"),
-        ]
-        eng.send_results("exp_001", results)
+def test_transcoder_result_returns_success(engine):
+    result = {"return_code": 0, "stderr": ""}
 
-        last = output_store.statuses[-1]
-        assert last["results"]["status"] == "COMPLETED"
-
-    def test_sends_failed_status_when_all_fail(self, valid_config):
-        store = FakeStore(experiment=None, config=valid_config)
-        output_store = FakeOutputStore()
-        eng = Engine(store=store, encoder=FakeEncoder(), output_store=output_store, decoder=FakeDecoder())
-
-        eng.status = "FAILED"
-        results = [
-            EncodingResult(status="FAILED", sequence_name="seq1", video_path=None, log_path=None, error="err"),
-        ]
-        eng.send_results("exp_001", results)
-
-        last = output_store.statuses[-1]
-        assert last["results"]["status"] == "FAILED"
-
-    def test_accepts_single_encoding_result(self, valid_config):
-        store = FakeStore(experiment=None, config=valid_config)
-        output_store = FakeOutputStore()
-        eng = Engine(store=store, encoder=FakeEncoder(), output_store=output_store, decoder=FakeDecoder())
-
-        eng.status = "FAILED"
-        single_result = EncodingResult(status="FAILED", sequence_name="seq1", video_path=None, log_path=None, error="validation")
-        eng.send_results("exp_001", single_result)
-
-        last = output_store.statuses[-1]
-        assert last["results"]["status"] == "FAILED"
+    assert engine.transcoder_result(result, "encoding") == result
 
 
-class TestProcess:
-    def test_successful_process(self, valid_experiment, valid_config):
-        store = FakeStore(experiment=valid_experiment, config=valid_config)
-        encoder = FakeEncoder()
-        output_store = FakeOutputStore()
-        decoder = FakeDecoder()
-        eng = Engine(store=store, encoder=encoder, output_store=output_store, decoder=decoder)
-
-        results = eng.process("exp_001")
-
-        assert results is not None
-        assert len(results) == 2
-        assert all(r.status == "COMPLETED" for r in results)
-
-    def test_failed_validation_returns_none(self, valid_config):
-        store = FakeStore(experiment=None, config=valid_config)
-        output_store = FakeOutputStore()
-        eng = Engine(store=store, encoder=FakeEncoder(), output_store=output_store, decoder=FakeDecoder())
-
-        result = eng.process("nonexistent")
-        assert result is None
-
-    def test_status_updates_are_saved(self, valid_experiment, valid_config):
-        store = FakeStore(experiment=valid_experiment, config=valid_config)
-        output_store = FakeOutputStore()
-        eng = Engine(store=store, encoder=FakeEncoder(), output_store=output_store, decoder=FakeDecoder())
-
-        eng.process("exp_001")
-
-        saved_statuses = [s["results"]["status"] for s in output_store.statuses]
-        assert "COMPLETED" in saved_statuses
+def test_transcoder_result_raises_for_failure(engine):
+    with pytest.raises(RuntimeError, match="encoding failed"):
+        engine.transcoder_result(
+            {"return_code": 1, "stderr": "bad input"},
+            "encoding",
+        )
 
 
-class TestGenerateScript:
-    def test_generates_bash_script(self, engine, valid_experiment, valid_config):
-        script = engine.generate_script(valid_experiment["sequences"], valid_config)
-        assert script.startswith("#!/bin/bash")
-
-    def test_script_has_command_per_sequence(self, engine, valid_experiment, valid_config):
-        script = engine.generate_script(valid_experiment["sequences"], valid_config)
-        assert "# Sequence 0" in script
-        assert "# Sequence 1" in script
+def test_parse_metric_values(engine):
+    assert engine._parse_psnr("average:37.25 min:30.0") == 37.25
+    assert engine._parse_psnr("average:inf min:30.0") == float("inf")
+    assert engine._parse_ssim("All:0.987654 (19.12)") == 0.987654

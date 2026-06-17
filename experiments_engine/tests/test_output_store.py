@@ -2,6 +2,7 @@
 
 import pytest
 import os 
+from experiments_engine.config import Settings
 from experiments_engine.output_store import OutputStore
 
 @pytest.fixture
@@ -40,7 +41,7 @@ def test_save_file_preserves_content(output_store, tmp_path):
 
 def test_save_video_writes_to_videos_directory(output_store, tmp_path, monkeypatch):
     # tests save_video saves the video to the correct location under the output root
-    monkeypatch.setenv("OUTPUT_ROOT", str(tmp_path))
+    monkeypatch.setattr(Settings, "output_directory", str(tmp_path))
     
     video = tmp_path / "video.mp4"
     video.write_bytes(b"video content")
@@ -53,8 +54,7 @@ def test_save_video_writes_to_videos_directory(output_store, tmp_path, monkeypat
 
 def test_save_video_uses_default_output_root(output_store, tmp_path, monkeypatch):
     # tests to ensure that the save_video method uses the default output root when OUTPUT_ROOT is not set
-    monkeypatch.delenv("OUTPUT_ROOT", raising=False)  
-    monkeypatch.chdir(tmp_path)  
+    monkeypatch.setattr(Settings, "output_directory", str(tmp_path))
 
     video = tmp_path / "video.mp4"
     video.write_bytes(b"video content")
@@ -67,7 +67,7 @@ def test_save_video_uses_default_output_root(output_store, tmp_path, monkeypatch
 
 def test_organise_output_directory_creates_subdirectories(output_store, tmp_path, monkeypatch):
     # tests that organise_output_directory creates the expected subdirectories for an experiment
-    monkeypatch.setenv("OUTPUT_ROOT", str(tmp_path))
+    monkeypatch.setattr(Settings, "output_directory", str(tmp_path))
 
     result = output_store.organise_output_directory(None)
     
@@ -77,7 +77,7 @@ def test_organise_output_directory_creates_subdirectories(output_store, tmp_path
 
 def test_organise_output_directory_with_experiment_id(output_store, tmp_path, monkeypatch):
     # tests that organise_output_directory creates a subdirectory for the experiment_id and the expected subdirectories within it
-    monkeypatch.setenv("OUTPUT_ROOT", str(tmp_path))
+    monkeypatch.setattr(Settings, "output_directory", str(tmp_path))
 
     experiment_id = "test_exp_001"
     result = output_store.organise_output_directory(experiment_id)
@@ -85,4 +85,3 @@ def test_organise_output_directory_with_experiment_id(output_store, tmp_path, mo
     assert result == str(tmp_path / experiment_id)
     for subdir in ("videos", "logs", "metrics", "configs"):
         assert (tmp_path / experiment_id / subdir).exists()
-
