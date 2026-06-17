@@ -21,6 +21,18 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+// this.uiOptionsService.getUiOptions()
+//   .subscribe(data => {
+//
+//     this.rowData = data.transmission_conditions.map(
+//       (condition: any) => ({
+//         name: condition.name,
+//         lowerBound: condition.lower_bound,
+//         upperBound: condition.upper_bound
+//       })
+//     );
+//
+//   });
 interface NetworkProfileRow {
   name: string;
   packetLoss: string;

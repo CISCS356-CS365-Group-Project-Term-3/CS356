@@ -1,8 +1,8 @@
 <div class="page">
   <div class="header-row">
     <div>
-      <h1>Encoders</h1>
-      <p>Manage the codec options available to researchers.</p>
+      <h1>Encoder Types</h1>
+      <p>Manage encoder types available to researchers</p>
     </div>
 
     <div class="actions">
@@ -37,9 +37,10 @@
         [defaultColDef]="defaultColDef"
         [animateRows]="true"
         [pagination]="true"
-        [paginationPageSize]="5"
+        [paginationPageSize]="10"
         rowSelection="single"
         (gridReady)="onGridReady($event)"
+        (selectionChanged)="onSelectionChanged($event)"
       >
       </ag-grid-angular>
     </div>

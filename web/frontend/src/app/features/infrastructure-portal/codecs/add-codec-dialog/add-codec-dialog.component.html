@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>Add Codec</h2>
+
+<mat-dialog-content>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Codec</mat-label>
+    <input
+      matInput
+      formControlName="codec">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Version</mat-label>
+    <input
+      matInput
+      formControlName="version">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Status</mat-label>
+    <input
+      matInput
+      formControlName="status">
+  </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-button
+    (click)="cancel()">
+    Cancel
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="save()">
+    Save
+  </button>
+
+</mat-dialog-actions>
