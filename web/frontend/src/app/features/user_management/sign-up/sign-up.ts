@@ -1,4 +1,5 @@
 import { Component, signal} from '@angular/core';
+import { UserManagementService } from '../user-management-service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -71,7 +72,7 @@ export class SignUp {
   reenteredPasswordErrorMessage = signal('');
   hide = signal(true);
 
-  constructor() {
+  constructor(private userSvc: UserManagementService) {
     merge(
       this.accountForm.valueChanges,
       this.accountForm.statusChanges
@@ -141,9 +142,10 @@ export class SignUp {
 
 submitDetails(){
 
-  const username = this.accountForm.get('username');
-  const password = this.accountForm.get('password');
-  const accountType = this.accountForm.get('accountType');
+  const username = this.accountForm.get('username')?.value;
+  const email = this.accountForm.get('email')?.value;
+  const password = this.accountForm.get('password')?.value;
+  const accountType = this.accountForm.get('accountType')?.value;
 
   // submit details to API endpoint
   // check if username exists

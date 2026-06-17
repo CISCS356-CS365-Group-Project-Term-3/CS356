@@ -1,4 +1,6 @@
 import { Component, signal} from '@angular/core';
+import { UserManagementService } from '../user-management-service';
+import { Router } from '@angular/router';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -40,7 +42,7 @@ export class Login {
   passwordErrorMessage = signal('');
   hide = signal(true);
 
-  constructor() {
+  constructor(private userManagementService: UserManagementService, private router: Router) {
     merge(
       this.loginForm.valueChanges,
       this.loginForm.statusChanges
@@ -75,15 +77,32 @@ export class Login {
 
   submitDetails(){
 
-    // const username = this.loginForm.get('username');
-    // const password = this.loginForm.get('password');
+    const username = this.loginForm.get('username')?.value;
+    const password = this.loginForm.get('password')?.value;
 
-    // submit details to API endpoint
+    if (!username || !password) {
+      return;
+    }
 
-    // return error if username does not exist
+    this.userManagementService.loginUser(username, password).subscribe({
+      next: (data: unknown) => {
+        if (!data || data === false) {
+          console.error('Login failed');
+          return;
+        }
 
-    // return error if password is incorrect
+        const token = data as string;
 
+        localStorage.setItem('access_token', token);
+        console.log('Login successful');
+        this.router.navigate(['/landing-page']);
+        // pass username to landing page? or fetch via new API
+
+      },
+      error: (err) => {
+        console.error('Login request failed', err);
+      }
+    });
 
   }
 }
