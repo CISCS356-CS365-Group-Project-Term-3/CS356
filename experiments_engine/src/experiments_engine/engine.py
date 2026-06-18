@@ -6,7 +6,7 @@ import subprocess
 import re
 import tempfile
 
-from .encoding_result import EncodingResult
+from .metric import Ssim, Psnr
 from .sequence_decoder import SequenceDecoder
 from .config import Settings
 from .encoder import Encoder
@@ -190,73 +190,12 @@ class Engine:
     ### might as well make this a seperate class that pulls frame by frame data for metrics
     
     def _calculate_metrics(self, reference_path, decoded_path):
-        metrics = {}
- 
-        # store logs locally to prevent memory leaks in ffmpeg
-        psnr_fd, psnr_stats_path = tempfile.mkstemp(prefix="psnr_", suffix=".log")
-        ssim_fd, ssim_stats_path = tempfile.mkstemp(prefix="ssim_", suffix=".log")
-        os.close(psnr_fd)
-        os.close(ssim_fd)
- 
-        # Calculate PSNR 
-        psnr_cmd = [
-            "ffmpeg", "-i", decoded_path, "-i", reference_path,
-            "-lavfi", f"psnr=stats_file={psnr_stats_path}",
-            "-f", "null", "-"
-        ]
- 
-        try:
-            psnr_result = subprocess.run(
-                psnr_cmd, capture_output=True, text=True, timeout=120
-            )
+        metrics = {}   
 
-            print(psnr_result)
+        metrics["psnr"] = Psnr().calculate_metric(reference_path=reference_path, experiment_path=decoded_path)
 
-            if psnr_result.returncode == 0:
-                combined_output = (psnr_result.stdout or "") + (psnr_result.stderr or "")
-                psnr_value = self._parse_psnr(combined_output)
-                if psnr_value is not None:
-                    metrics["psnr"] = psnr_value
-            else:
-                logger.warning(
-                    f"PSNR command failed with code {psnr_result.returncode}: {psnr_result.stderr}"
-                )
-        except (subprocess.TimeoutExpired, OSError) as e:
-            logger.warning(f"PSNR calculation failed: {e}")
- 
-        # Calculate SSIM
-        ssim_cmd = [
-            "ffmpeg", "-i", decoded_path, "-i", reference_path,
-            "-lavfi", f"ssim=stats_file={ssim_stats_path}",
-            "-f", "null", "-"
-        ]
- 
-        try:
-            ssim_result = subprocess.run(
-                ssim_cmd, capture_output=True, text=True, timeout=120
-            )
+        metrics["ssim"] = Ssim().calculate_metric(reference_path=reference_path, experiment_path=decoded_path)
 
-            print(ssim_result)
-
-            if ssim_result.returncode == 0:
-                combined_output = (ssim_result.stdout or "") + (ssim_result.stderr or "")
-                ssim_value = self._parse_ssim(combined_output)
-                if ssim_value is not None:
-                    metrics["ssim"] = ssim_value
-            else:
-                logger.warning(
-                    f"SSIM command failed with code {ssim_result.returncode}: {ssim_result.stderr}"
-                )
-        except (subprocess.TimeoutExpired, OSError) as e:
-            logger.warning(f"SSIM calculation failed: {e}")
-        finally:
-            for stats_path in (psnr_stats_path, ssim_stats_path):
-                try:
-                    if os.path.exists(stats_path):
-                        os.remove(stats_path)
-                except OSError:
-                    logger.warning(f"Failed to remove temporary stats file: {stats_path}")
- 
         return metrics
  
     def _parse_psnr(self, ffmpeg_output):
