@@ -12,6 +12,7 @@ def data_init():
         encoder_type = models.EncoderType()
         encoder_type.name = "testEncoderType"
         session.add(encoder_type)
+        session.commit()
 
         codec = models.Codec()
         codec.name = "testCodec"
