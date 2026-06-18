@@ -173,6 +173,10 @@ class PasswordResetConfirmRequest(BaseModel):
     new_password: str
 
 
+class UserInfoRequest(BaseModel):
+    user_name: str
+
+
 @app.post("/auth/reset_password")
 def reset_password(request: PasswordResetRequest):
     """
@@ -240,3 +244,45 @@ def admin_delete_user(user_id: str):
         return {"message": f"User with ID {user_id} deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+
+
+@app.post("/users/me")
+def getUserDetails(request: UserInfoRequest, authorisation: Optional[str] = Header(None)):
+    try:
+        if not authorisation:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorised - missing or invalid token"
+            )
+
+        # Parse Bearer token
+        parts = authorisation.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorised - missing or invalid token"
+            )
+
+        token = parts[1]
+
+        # Verify token
+        is_valid = user_portal_service.verify_token(token)
+        if is_valid:
+            # Fetch requested user's details
+            user_info = user_portal_service.get_user_info(request.user_name)
+            if user_info is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            return user_info
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorised - missing or invalid token"
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        print("Token verification error")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to verify token"
+        )
