@@ -1,4 +1,4 @@
-def generate_sequence_code(sequence, encoder):
+def generate_sequence_code(sequence, encoder, network):
     def pad(x):
         """ Pad with zeros """
         x = str(x)
@@ -7,8 +7,11 @@ def generate_sequence_code(sequence, encoder):
         return x
 
     code = ""
-    code += pad(sequence["videoFileId"])
-    code += pad(encoder["encoderTypeId"])
-    code += pad(encoder["codecId"])
-    code += pad(encoder["encoderModeId"])
+    code += pad(sequence.get("videoFileId", 0))
+    code += pad(encoder.get("encoderTypeId", 0))
+    code += pad(encoder.get("codecId", 0))
+    code += pad(encoder.get("encoderModeId", 0))
+    code += network.get("packetLoss")
+    code += network.get("delay")
+    code += network.get("jitter")
     return code
