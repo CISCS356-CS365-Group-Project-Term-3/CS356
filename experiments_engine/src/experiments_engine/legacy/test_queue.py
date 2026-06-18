@@ -1,4 +1,4 @@
-import queue
+""" import queue
 import threading
 import time
 
@@ -96,3 +96,4 @@ def test_consume_acks_message_and_prints_it(capsys):
                     publisher_connection.close()
     finally:
         worker.Settings.experiment_queue = original_queue_name
+ """

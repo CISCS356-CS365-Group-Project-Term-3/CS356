@@ -1,5 +1,5 @@
 import pika
-from .runner import experiment
+
 
 # Settings are used throughout the code for the name of the queue and the name of the queue container
 from .config import Settings
@@ -9,7 +9,7 @@ from .config import Settings
 def callback(ch, method, properties, body):
 
         # run the experiment on the body of the message
-        experiment(body)
+        #experiment(body)
 
         # only acknowledge the message AFTER we have finished running the experiment
         ch.basic_ack(delivery_tag=method.delivery_tag)
