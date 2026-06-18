@@ -1,0 +1,14 @@
+.step-description {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.fields-row {
+  display: flex;
+  gap: 16px;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
