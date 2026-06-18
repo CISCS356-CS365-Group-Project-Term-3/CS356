@@ -5,6 +5,7 @@ from util.engine import get_engine, Base, query_result_as_list
 from util.data_init import data_init
 from sqlalchemy.orm import Session
 from flask_cors import CORS
+from pydantic import ValidationError
 
 
 app = Flask(__name__)
@@ -102,7 +103,9 @@ def standard_crud(request, table, handle_update, handle_create, post_model, dele
             return rows
             
         elif request.method == "POST":
-            if not post_model.model_validate(request.json):
+            try: 
+                post_model.model_validate(request.json)
+            except ValidationError as e:
                 print("Json not in correct form")
                 return {"status": False, "message": "Error, request malformed."}
             print("Got a POST request")
@@ -128,7 +131,9 @@ def standard_crud(request, table, handle_update, handle_create, post_model, dele
 
         elif request.method == "DELETE":
             body = request.json
-            if not delete_model.model_validate(body):
+            try:
+                delete_model.model_validate(body)
+            except ValidationError:
                 print("JSON not in correct format")
                 return {"status": False, "message": "Error, request malformed."}
             id = body.get("id")
@@ -168,8 +173,8 @@ def get_ui_options():
         all_codecs = session.query(Codec)
         for encoder_type in encoder_types:
             id = encoder_type.get("id")
-            codecs = all_codecs.filter(Codec.encoder_type == id).all()
-            encoder_type["active_codecs"] = [c.id for c in codecs]
+            filtered_codecs = all_codecs.filter(Codec.encoder_type == id).all()
+            encoder_type["active_codecs"] = [c.id for c in filtered_codecs]
 
 
         output = {
