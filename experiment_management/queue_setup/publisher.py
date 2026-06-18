@@ -89,8 +89,3 @@ def publish_to_queue(message: object):
         logging.info("Published message to queue %s", QUEUE_NAME)
     except Exception:
         logging.exception("Failed to publish message to RabbitMQ; event printed instead")
-
-
-
-def publish_to_queue(message):
-    print("EVENT:", message)

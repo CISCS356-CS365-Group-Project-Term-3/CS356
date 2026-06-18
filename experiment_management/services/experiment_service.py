@@ -1,46 +1,127 @@
+from datetime import datetime
+
 from queue_setup.publisher import publish_to_queue
 from storage.experiment_store import save_experiment
 from utils.encoding import generate_sequence_code
+from storage.experiment_store import get_by_id
+from storage.experiment_store import update_experiment_by_id
 
-""" 
-This is what I have come up with initially but I am not following the final API contract
-I will make changes as the API contract changes but this is for just so we can start getting
-the frontend and backend connected
-
-Based on an example output scott sent me from what he expects the frontend to send the backend
-
-1. Create experiment 
-2. Store it 
-3. Publish it to a queue 
-
-Initial Message definition involves three fields
-A user id to map experiments together 
-A sequence code defining a users choices 
-A id for easy greater than or less than logic to check order of experiments if necessary
-(this might be removed if unnecessary or smarter logic may be implemented)
-
-"""
 
 def create_experiment(data):
-    user_id = data["user_id"]
+    """ create an experiment """
+    user_id = data.get("userId")
+    status = data.get("status", "draft")
+    name = data.get("name")
+    project_type_id = data.get("projectTypeId")
+    encoders = data.get("encoders") or []
+    sequences = data.get("sequences") or []
+    networkEmulation = data.get("networkEmulation") or {}
+    date = datetime.utcnow().isoformat()
 
-    experiment = {
-        "user_id": user_id,
-        "name": data["name"],
-        "status": data["status"],
-        "project_type_id": data["project_type_id"],
-        "sequences": []
+    if status == "draft":
+        job = {
+            "userId": user_id,
+            "name": name,
+            "status": "draft",
+            "projectTypeId": project_type_id,
+            "date": date,
+            "encoders": encoders,
+            "sequences": sequences,
+            "networkEmulation": networkEmulation
+        }
+
+        saved = save_experiment(job)
+        return saved
+    if status == "finalised":
+        last_saved = None
+        packet_losses = networkEmulation.get("packetLoss", [])
+        delays = networkEmulation.get("delay", [])
+        jitters = networkEmulation.get("jitter", [])
+        for encoder in encoders:
+            for seq in sequences:
+                for i in range(max(len(packet_losses), len(delays), len(jitters))):
+                    condition = {
+                        "packetLoss": packet_losses[i] if i < len(packet_losses) else "000",
+                        "delay": delays[i] if i < len(delays) else "000",
+                        "jitter": jitters[i] if i < len(jitters) else "000"
+                    }
+                    code = generate_sequence_code(seq, encoder, condition)
+                    job = {
+                        "userId": data["userId"],
+                        "name": data["name"],
+                        "status": status,
+                        "projectTypeId": data["projectTypeId"],
+                        "date": date,
+                        "encoders": [encoder],
+                        "sequences": [{"videoFileId": seq["videoFileId"], "sequence_code": code}],
+                        "networkEmulation": [condition]
+                    }
+                    last_saved = save_experiment(job)
+                    payload = {
+                        "experiment_id": last_saved["id"],
+                        "date": last_saved["date"],
+                        "sequence_code": code,
+                        "userId": data["userId"]
+                    }
+                    print("Publishing to queue:", payload)
+                    publish_to_queue(payload)
+        return last_saved
+
+def update_experiment(experiment_id, data):
+    """ update an experiment """
+    existing = get_by_id(experiment_id)
+    if not existing:
+        return None
+    updated = {
+        "userId": data.get("userId", existing["userId"]),
+        "name": data.get("name", existing["name"]),
+        "status": data.get("status", existing["status"]),
+        "projectTypeId": data.get("projectTypeId", existing["projectTypeId"]),
+        "encoders": data.get("encoders", existing.get("encoders", [])),
+        "sequences": data.get("sequences", existing.get("sequences", [])),
+        "networkEmulation": data.get("networkEmulation",existing.get("networkEmulation", {})),
+        "date": datetime.utcnow().isoformat()
     }
-    saved = save_experiment(experiment)
+    saved = update_experiment_by_id(experiment_id, updated)
+    if updated["status"] == "draft":
+        return saved
+    last_saved = None
+    network_emulation = updated["networkEmulation"]
+    packet_losses = network_emulation.get("packetLoss", [])
+    delays = network_emulation.get("delay", [])
+    jitters = network_emulation.get("jitter", [])
 
-    for seq in data.get("sequences", []):
-        code = generate_sequence_code(seq)
-        saved["sequences"].append({
-            "sequence_code": code
-        })
-        publish_to_queue({
-            "experiment_id": saved["id"],
-            "user_id": user_id,
-            "sequence_code": code
-        })
+    for encoder in updated["encoders"]:
+        for seq in updated["sequences"]:
+
+            for i in range(max(len(packet_losses), len(delays), len(jitters))):
+
+                condition = {
+                    "packetLoss": packet_losses[i] if i < len(packet_losses) else "000",
+                    "delay": delays[i] if i < len(delays) else "000",
+                    "jitter": jitters[i] if i < len(jitters) else "000"
+                }
+
+                code = generate_sequence_code(seq, encoder, condition)
+
+                job = {
+                    "userId": updated["userId"],
+                    "name": updated["name"],
+                    "status": "finalised",
+                    "projectTypeId": updated["projectTypeId"],
+                    "date": updated["date"],
+                    "encoders": [encoder],
+                    "sequences": [{"videoFileId": seq["videoFileId"],"sequence_code": code}],
+                    "networkEmulation": condition
+                }
+                last_saved = update_experiment_by_id(experiment_id, job)
+                payload = {
+                    "experiment_id": experiment_id,
+                    "date": updated["date"],
+                    "sequence_code": code,
+                    "userId": updated["userId"]
+                }
+                print("Publishing to queue:", payload)
+                publish_to_queue(payload)
+        return last_saved
     return saved
