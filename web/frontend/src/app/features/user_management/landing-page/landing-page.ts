@@ -5,6 +5,7 @@ import {NgOptimizedImage} from '@angular/common';
 import {Router, RouterLink} from '@angular/router';
 import { ConfirmLogoutDialog} from '../confirm-logout-dialog/confirm-logout-dialog';
 import {MatDialog} from '@angular/material/dialog';
+import { UserManagementService } from '../user-management-service';
 
 /** @title Landing page */
 @Component({
@@ -17,11 +18,30 @@ import {MatDialog} from '@angular/material/dialog';
 })
 
 export class LandingPage {
+  token: string | null = null;
+  username: string = '';
 
   constructor(
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private userManagementService: UserManagementService,
   ) {}
+
+  ngOnInit() {
+     this.token = localStorage.getItem('access_token');
+     this.getUserName()
+  }
+
+  getUserName() {
+    this.userManagementService.getUserInfo().subscribe({
+      next: (data: any) => {
+        this.username = data.username;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
 
   openConfirm() {
     const ref = this.dialog.open(ConfirmLogoutDialog);

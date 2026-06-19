@@ -57,4 +57,15 @@ export class UserManagementService {
       };
       return this.http.post(url, body)
     }
+
+    getUserInfo() {
+      const url = 'http://127.0.0.1:8000/users/me';
+      const token = localStorage.getItem('access_token');
+      if (!token) throw new Error('Missing token');
+
+      const headers = new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      });
+      return this.http.get(url, { headers });
+    }
 }
