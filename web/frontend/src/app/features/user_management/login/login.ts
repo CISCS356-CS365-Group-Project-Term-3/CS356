@@ -7,7 +7,9 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {RouterLink} from '@angular/router';
+import {RouterLink, Router} from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../services/auth.service';
 
 /** @title Login page */
 @Component({
@@ -40,7 +42,7 @@ export class Login {
   passwordErrorMessage = signal('');
   hide = signal(true);
 
-  constructor() {
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {
     merge(
       this.loginForm.valueChanges,
       this.loginForm.statusChanges
@@ -75,15 +77,23 @@ export class Login {
 
   submitDetails(){
 
-    // const username = this.loginForm.get('username');
-    // const password = this.loginForm.get('password');
+    const username = this.loginForm.get('username')?.value;
+    const password = this.loginForm.get('password')?.value;
 
-    // submit details to API endpoint
+    if (!username || !password) return;
 
-    // return error if username does not exist
-
-    // return error if password is incorrect
-
-
+    // call backend login endpoint
+    this.http.post<{ access_token: string }>('http://localhost:8000/auth/login', { user_name: username, password })
+      .subscribe({
+        next: (res) => {
+          if (res && res.access_token) {
+            this.authService.setToken(res.access_token);
+            this.router.navigate(['/experiments']);
+          }
+        },
+        error: (err) => {
+          console.error('Login failed', err);
+        }
+      });
   }
 }
