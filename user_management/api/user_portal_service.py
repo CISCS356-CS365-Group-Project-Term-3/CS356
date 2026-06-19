@@ -1,3 +1,5 @@
+import configparser
+
 from user_management.authentication.token_generation import main as generate_token
 import jwt
 from sqlalchemy import create_engine, text
@@ -15,7 +17,13 @@ from dotenv import load_dotenv
 
 _env_path = os.path.join(os.path.dirname(__file__), '..', 'db.env')
 load_dotenv(_env_path)
+_PROPERTIES_PATH = os.path.join(os.path.dirname(__file__), '..', 'user.properties')
+_SECTION = 'tokens'
 
+def get_stored_token(user_name: str) -> str | None:
+    config = configparser.RawConfigParser()
+    config.read(_PROPERTIES_PATH)
+    return config.get(_SECTION, user_name, fallback=None)
 
 def validate_login(json):
     try:
@@ -154,6 +162,25 @@ def get_user_id_and_role(token):
         print(f"Error decoding token: {e}")
         return None, None
 
+def get_user_details(token):
+    try:
+        public_key = load_public_key()
+        if public_key is None:
+            print("Error: Public key not found")
+            return None, None, None
+
+        decoded_token = jwt.decode(token, public_key, algorithms=['RS256'])
+        return decoded_token.get('user_role'), decoded_token.get('user_name'), decoded_token.get('user_email')
+    except jwt.ExpiredSignatureError:
+        print("Token has expired")
+        return None, None, None
+    except jwt.InvalidTokenError as e:
+        print(f"Invalid token: {e}")
+        return None, None, None
+    except Exception as e:
+        print(f"Error decoding token: {e}")
+        return None, None, None
+
 def create_db_connection():
     try:
         engine = create_engine("postgresql://admin:admin123@localhost:5432/user_management")
@@ -242,7 +269,7 @@ def send_reset_email(to_email, token):
     if not sender or not app_password:
         raise EnvironmentError("GMAIL_SENDER and GMAIL_APP_PASSWORD must be set in db.env")
 
-    reset_link = f"http://localhost:3000/update-password?token={token}"
+    reset_link = f"http://localhost:4200/reset-password?token={token}"
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "Password Reset Request"
@@ -255,3 +282,41 @@ def send_reset_email(to_email, token):
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(sender, app_password)
         server.sendmail(sender, to_email, message.as_string())
+
+def get_all_users():
+    connection = create_db_connection()
+    if connection is None:
+        return []
+    try:
+        result = connection.execute(
+            text("SELECT user_id, user_name, user_email, user_role FROM users")
+        )
+        rows = result.fetchall()
+        return [
+            {"user_id": r[0], "user_name": r[1], "user_email": r[2], "user_role": r[3]}
+            for r in rows
+        ]
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return []
+    finally:
+        connection.close()
+
+def delete_user(user_id):
+    connection = create_db_connection()
+    if connection is None:
+        return False
+    try:
+        connection.execute(
+            text("DELETE FROM users WHERE user_id = :user_id"),
+            {"user_id": user_id}
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        return False
+    finally:
+        connection.close()
+
+
+

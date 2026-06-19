@@ -14,6 +14,7 @@ from user_management.api.user_portal_service import (
     reset_password,
     confirm_password_reset,
     send_reset_email,
+    delete_user,
 )
 
 class Test(TestCase):
@@ -259,6 +260,36 @@ class Test(TestCase):
             with self.assertRaises(EnvironmentError) as ctx:
                 send_reset_email("user@example.com", "token123")
             self.assertIn("GMAIL_SENDER", str(ctx.exception))
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_delete_user_success(self, mock_db):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+
+        delete_user(42)
+
+        mock_conn.execute.assert_called_once()
+        mock_conn.commit.assert_called_once()
+        mock_conn.close.assert_called_once()
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_delete_user_db_connection_failure(self, mock_db):
+        mock_db.return_value = None
+
+        result = delete_user(42)
+
+        self.assertFalse(result)
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_delete_user_db_error(self, mock_db):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+        mock_conn.execute.side_effect = Exception("DB error")
+
+        result = delete_user(42)
+
+        self.assertFalse(result)
+        mock_conn.close.assert_called_once()
 
     @patch('user_management.api.user_portal_service.smtplib.SMTP_SSL')
     def test_send_reset_email_success(self, mock_smtp_cls):
