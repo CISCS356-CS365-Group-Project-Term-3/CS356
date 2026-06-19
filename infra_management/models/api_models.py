@@ -51,40 +51,6 @@ from annotated_types import Len
 #     encoder_modes: List[EncoderMode]
 #     sequences: List[VideoFile]
 
-class NameIdCreate(BaseModel):
-    name: str
-
-class IdDelete(BaseModel):
-    id: int
-
-class NameIdPost(BaseModel):
-    id: Optional[int] = None
-    name: str
-
-class TransmissionConditionPost(BaseModel):
-    id: Optional[int] = None
-    name: str
-    lower_bound: int
-    upper_bound: int
-
-class SequencePost(BaseModel):
-    id: Optional[int] = None
-    name: str
-    description: str
-
-class VideoFilePost(BaseModel):
-    id: Optional[int] = None
-    sequence_id: str
-    name: str
-    filepath: str
-    spacial: Annotated[List, Len(min_length=2, max_length=2)]
-    temporal: int
-    depth: int
-    quality: str
-    gamut: str
-
-class CodecPost(BaseModel):
-    id: Optional[int] = None
-    version: str
+class ToggleActiveRequest(BaseModel):
     active: Literal[0, 1]
-    name: str
+    id: int

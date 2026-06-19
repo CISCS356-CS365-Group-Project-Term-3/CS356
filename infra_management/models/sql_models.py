@@ -9,30 +9,37 @@ class ProjectType(Base):
     __tablename__ = "project_type"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
+    active = mapped_column(Integer)
 
 class EncoderType(Base):
     __tablename__ = "encoder_type"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
     description = mapped_column(String(255))
+    codecs = relationship("Codec", back_populates="encoder_type", cascade="all, delete-orphan")
+    active = mapped_column(Integer)
 
 class Codec(Base):
     __tablename__ = "codec"
     id = mapped_column(Integer, primary_key=True)
     version = mapped_column(String(64))
     active = mapped_column(Integer)
-    encoder_type = mapped_column(Integer, ForeignKey("encoder_type.id"))
+    encoder_type_id = mapped_column(Integer, ForeignKey("encoder_type.id"))
     name = mapped_column(String(255))
+    encoder_type = relationship("EncoderType", back_populates="codecs")
+    active = mapped_column(Integer)
 
 class EncoderMode(Base):
     __tablename__ = "encoder_modes"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
+    active = mapped_column(Integer)
 
 class Topology(Base):
     __tablename__ = "topology"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
+    active = mapped_column(Integer)
 
 class TransmissionCondition(Base):
     __tablename__ = "transmission_conditions"
@@ -40,12 +47,15 @@ class TransmissionCondition(Base):
     name = mapped_column(String(255))
     lower_bound = mapped_column(Integer)
     upper_bound = mapped_column(Integer)
+    unit = mapped_column(String(255))
+    active = mapped_column(Integer)
 
 class Sequence(Base):
     __tablename__ = "sequence"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(64))
     description = mapped_column(String(255))
+    active = mapped_column(Integer)
 
 class VideoFile(Base):
     __tablename__ = "video_file"
@@ -59,3 +69,4 @@ class VideoFile(Base):
     depth = mapped_column(Integer)
     quality = mapped_column(String(64))
     gamut = mapped_column(String(64))
+    active = mapped_column(Integer)
