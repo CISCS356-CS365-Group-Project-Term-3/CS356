@@ -32,6 +32,8 @@ export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
   isSubmitting = false;
+  showDraftModal = false;
+  isSubmitting = false;
   visitedSteps = new Set<number>();
 
   constructor(
@@ -103,6 +105,9 @@ export class NewExperiment implements OnInit {
   }
 
   doSubmit(status: string): void {
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
+  private doSubmit(status: string): void {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
     const form = this.formService.form;
