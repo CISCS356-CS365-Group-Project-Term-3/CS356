@@ -10,6 +10,5 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   standalone: true,
   imports: [CommonModule, RouterModule, MatToolbarModule, MatButtonModule, MatIconModule],
   templateUrl: './infrastructure-portal.html',
-  styleUrls: ['./infrastructure-portal.scss'],
 })
 export class InfrastructurePortalComponent {}

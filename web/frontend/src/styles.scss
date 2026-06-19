@@ -58,6 +58,19 @@ body {
   }
 }
 
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-label {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
 @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
 
