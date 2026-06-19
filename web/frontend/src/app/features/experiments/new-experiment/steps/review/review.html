@@ -49,4 +49,26 @@
       </div>
     </mat-card-content>
   </mat-card>
+
+  @if (hasNetworkEmulation) {
+  <mat-card>
+    <mat-card-content>
+      <p class="section-label">Network Emulation</p>
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span class="summary-key">Packet Loss</span>
+          <span class="summary-value">{{ packetLossDisplay }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">Delay</span>
+          <span class="summary-value">{{ delayDisplay }}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">Jitter</span>
+          <span class="summary-value">{{ jitterDisplay }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
 </div>
