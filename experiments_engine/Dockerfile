@@ -25,8 +25,8 @@ RUN pip install .
 FROM jrottenberg/ffmpeg:8.1-ubuntu2404 as runner
 
 # install python on runner
-RUN apt-get update && apt-get install --no-install-recommends -y python3.12 python3.12-venv && \
-	apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y python3.12 python3.12-venv iproute2 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/venv /opt/venv
 
