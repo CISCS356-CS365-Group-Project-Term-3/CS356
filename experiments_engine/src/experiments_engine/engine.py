@@ -9,8 +9,7 @@ import tempfile
 from .metric import Ssim, Psnr
 from .sequence_decoder import SequenceDecoder
 from .config import Settings
-from .encoder import Encoder
-from .decoder import Decoder
+from .coder import Decoder, Encoder
 from .output_store import OutputStore
 from .config_store import ConfigStore
 

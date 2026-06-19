@@ -6,17 +6,9 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 
+from .metric_targets import MetricTargets
+
 logger = logging.getLogger(__name__)
-
-class MetricTargets:
-    def __init__(self, average, y, u, v):
-        self.average: str = average
-        self.y: str = y
-        self.u: str = u
-        self.v: str = v
-
-    def get_tuple(self):
-        return (self.average, self.y, self.u, self.v)
 
 # I think this will break for PSNR values greater than 100 or lower than 10
 class Metric(ABC):
@@ -135,50 +127,3 @@ class Metric(ABC):
         start_target = line.find(self.file_prefix)
         start = line.find(self.file_delimiter, start_target) + 1
         return line[start:]
-
-
-class Psnr(Metric):
-    
-    def __init__(self):
-
-        self.metric_name = 'psnr'
-
-        self.sterr_targets = MetricTargets(
-            'average:',
-            'y:',
-            'u:',
-            'v:'
-        )
-
-        self.file_targets = MetricTargets(
-            'psnr_avg:',
-            'psnr_y:',
-            'psnr_u:',
-            'psnr_v:',
-        )
-
-        self.file_prefix = 'mse_v:'
-        self.file_delimiter = ' '
-
-class Ssim(Metric):
-
-    def __init__(self):
-
-        self.metric_name = 'ssim'
-
-        self.sterr_targets = MetricTargets(
-            'All:',
-            'Y:',
-            'U:',
-            'V:'
-        )
-
-        self.file_targets = MetricTargets(
-            'All:',
-            'Y:',
-            'U:',
-            'V:'
-        )
-
-        self.file_prefix = 'n:'
-        self.file_delimiter = ' '
