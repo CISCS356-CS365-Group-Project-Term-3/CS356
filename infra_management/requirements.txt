@@ -1,0 +1,7 @@
+Flask
+Flask-Cors
+pydantic
+sqlalchemy
+psycopg2
+PyYAML
+annotated-types
