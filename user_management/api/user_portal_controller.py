@@ -1,4 +1,7 @@
 from . import user_portal_service
+from fastapi import FastAPI, Header, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Header, HTTPException, Request, status
@@ -170,6 +173,10 @@ class PasswordResetConfirmRequest(BaseModel):
     new_password: str
 
 
+class UserInfoRequest(BaseModel):
+    user_name: str
+
+
 @app.post("/auth/reset_password")
 def reset_password(request: PasswordResetRequest):
     """
@@ -237,6 +244,45 @@ def admin_delete_user(user_id: str):
         return {"message": f"User with ID {user_id} deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+
+
+@app.post("/users/me")
+def getUserDetails(authorisation: Optional[str] = Header(None)):
+    try:
+        if not authorisation:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorised - missing or invalid token"
+            )
+
+        # Parse Bearer token
+        parts = authorisation.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorised - missing or invalid token"
+            )
+
+        token = parts[1]
+
+        # Verify token
+        is_valid = user_portal_service.verify_token(token)
+        if is_valid:
+            user_role, user_name, user_email = user_portal_service.get_user_details(token)
+            return {"user_name": user_name, "user_role": user_role, "user_email": user_email}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorised - missing or invalid token"
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        print("Token verification error")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to verify token"
+        )
 
 @app.post("/auth/users/update/{user_id}/{role:path}")
 def admin_update_user_role(user_id: str, role: str):
