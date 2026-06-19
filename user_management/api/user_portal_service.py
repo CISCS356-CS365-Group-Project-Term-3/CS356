@@ -167,19 +167,19 @@ def get_user_details(token):
         public_key = load_public_key()
         if public_key is None:
             print("Error: Public key not found")
-            return None, None, None
+            return None, None, None, None
 
         decoded_token = jwt.decode(token, public_key, algorithms=['RS256'])
-        return decoded_token.get('user_role'), decoded_token.get('user_name'), decoded_token.get('user_email')
+        return decoded_token.get('user_id'), decoded_token.get('user_role'), decoded_token.get('user_name'), decoded_token.get('user_email')
     except jwt.ExpiredSignatureError:
         print("Token has expired")
-        return None, None, None
+        return None, None, None, None
     except jwt.InvalidTokenError as e:
         print(f"Invalid token: {e}")
-        return None, None, None
+        return None, None, None, None
     except Exception as e:
         print(f"Error decoding token: {e}")
-        return None, None, None
+        return None, None, None, None
 
 def create_db_connection():
     try:
@@ -314,6 +314,23 @@ def delete_user(user_id):
         connection.commit()
     except Exception as e:
         print(f"Error deleting user: {e}")
+        return False
+    finally:
+        connection.close()
+
+def update_user_role(user_id, role):
+    connection = create_db_connection()
+    if connection is None:
+        return False
+    try:
+        connection.execute(
+            text("UPDATE users SET user_role = :role WHERE user_id = :user_id"),
+            {"role": role, "user_id": user_id}
+        )
+        connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error updating user role: {e}")
         return False
     finally:
         connection.close()

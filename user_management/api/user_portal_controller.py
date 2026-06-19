@@ -2,11 +2,7 @@ from . import user_portal_service
 from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Header, HTTPException, Request, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from typing import Optional
@@ -114,7 +110,6 @@ def login(login_details: LoginRequest):
     except HTTPException:
         raise
     except Exception:
-        print("Login error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process login request"
@@ -157,7 +152,6 @@ def verify(authorisation: Optional[str] = Header(None)):
     except HTTPException:
         raise
     except Exception:
-        print("Token verification error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to verify token"
@@ -246,7 +240,7 @@ def admin_delete_user(user_id: str):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
 
 
-@app.post("/users/me")
+@app.get("/users/me")
 def getUserDetails(authorisation: Optional[str] = Header(None)):
     try:
         if not authorisation:
@@ -268,8 +262,8 @@ def getUserDetails(authorisation: Optional[str] = Header(None)):
         # Verify token
         is_valid = user_portal_service.verify_token(token)
         if is_valid:
-            user_role, user_name, user_email = user_portal_service.get_user_details(token)
-            return {"user_name": user_name, "user_role": user_role, "user_email": user_email}
+            user_id, user_role, user_name, user_email = user_portal_service.get_user_details(token)
+            return {"user_id": user_id, "user_name": user_name, "user_role": user_role, "user_email": user_email}
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -283,3 +277,28 @@ def getUserDetails(authorisation: Optional[str] = Header(None)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to verify token"
         )
+
+@app.post("/auth/users/update/{user_id}/{role:path}")
+def admin_update_user_role(user_id: str, role: str):
+    try:
+        token = get_current_token()
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
+        if not user_portal_service.verify_token(token):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
+        _, user_role = user_portal_service.get_user_id_and_role(token)
+        if user_role != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+        updated = user_portal_service.update_user_role(user_id, role)
+        if updated:
+            return {"message": f"User with ID {user_id} updated to role {role} successfully"}
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {user_id} not found")
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error updating user role: {str(e)}")

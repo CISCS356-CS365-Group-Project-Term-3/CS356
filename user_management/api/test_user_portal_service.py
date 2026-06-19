@@ -15,6 +15,7 @@ from user_management.api.user_portal_service import (
     confirm_password_reset,
     send_reset_email,
     delete_user,
+    update_user_role,
 )
 
 class Test(TestCase):
@@ -303,3 +304,57 @@ class Test(TestCase):
 
         mock_server.login.assert_called_once_with("sender@gmail.com", "apppass")
         mock_server.sendmail.assert_called_once()
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_update_user_role_success(self, mock_db):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+
+        result = update_user_role(42, "admin")
+
+        mock_conn.execute.assert_called_once()
+        mock_conn.commit.assert_called_once()
+        mock_conn.close.assert_called_once()
+        self.assertTrue(result)
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_update_user_role_db_connection_failure(self, mock_db):
+        mock_db.return_value = None
+
+        result = update_user_role(42, "admin")
+
+        self.assertFalse(result)
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_update_user_role_db_error(self, mock_db):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+        mock_conn.execute.side_effect = Exception("DB error")
+
+        result = update_user_role(42, "admin")
+
+        self.assertFalse(result)
+        mock_conn.close.assert_called_once()
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_update_user_role_passes_correct_parameters(self, mock_db):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+
+        update_user_role(99, "moderator")
+
+        # Verify execute was called with correct SQL and parameters
+        call_args = mock_conn.execute.call_args
+        self.assertIsNotNone(call_args)
+
+        # First argument should be a text() object with UPDATE query
+        sql_call = call_args[0][0]
+        self.assertIn("UPDATE users", str(sql_call))
+        self.assertIn("user_role", str(sql_call))
+        self.assertIn("user_id", str(sql_call))
+
+        # Second argument should be the parameters dict
+        params = call_args[0][1]
+        self.assertEqual(params["role"], "moderator")
+        self.assertEqual(params["user_id"], 99)
+
