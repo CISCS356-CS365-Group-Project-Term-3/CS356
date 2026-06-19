@@ -247,7 +247,7 @@ def admin_delete_user(user_id: str):
 
 
 @app.post("/users/me")
-def getUserDetails(request: UserInfoRequest, authorisation: Optional[str] = Header(None)):
+def getUserDetails(authorisation: Optional[str] = Header(None)):
     try:
         if not authorisation:
             raise HTTPException(
@@ -268,11 +268,8 @@ def getUserDetails(request: UserInfoRequest, authorisation: Optional[str] = Head
         # Verify token
         is_valid = user_portal_service.verify_token(token)
         if is_valid:
-            # Fetch requested user's details
-            user_info = user_portal_service.get_user_info(request.user_name)
-            if user_info is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-            return user_info
+            user_role, user_name, user_email = user_portal_service.get_user_details(token)
+            return {"user_name": user_name, "user_role": user_role, "user_email": user_email}
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
