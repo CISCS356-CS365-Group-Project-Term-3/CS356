@@ -1,15 +1,15 @@
-from .coder import Coder
+from .coder import Transcoder
 
-class Decoder(Coder):
+class Decoder(Transcoder):
 
     @classmethod
     def build_command(cls, sequence) -> list[str]:
-        (_, input_file, output_file) = cls._get_codec(sequence=sequence)
+        (_, endpoint, output_file) = cls._get_codec(sequence=sequence)
 
         command = ['ffmpeg', 
-                   # select input file
+                   # select input
                    '-i', 
-                   input_file, 
+                   endpoint, 
                    # select video stream to apply encoder (simple raw video so it is the only stream)
                    '-map', 
                    '0:v', 

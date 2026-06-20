@@ -1,9 +1,9 @@
-from .coder import Coder
+from .coder import Transcoder
 
 # builds and runs ffmpeg commands.
 
 
-class Encoder(Coder):
+class Encoder(Transcoder):
 
     format_map: dict = {
         'h261': 'h261',
@@ -23,7 +23,7 @@ class Encoder(Coder):
     def build_command(cls, sequence) -> list[str]:
         # builds ffmeg command from decoded sequence/config
 
-        (encoder, input_file, output_file) = cls._get_codec(sequence=sequence)
+        (encoder, input_file, endpoint) = cls._get_codec(sequence=sequence)
 
         codec: str = cls.format_map[encoder]
         format: str = cls.format_map[encoder]
@@ -41,9 +41,7 @@ class Encoder(Coder):
                    # select output format
                    '-f',
                    format,
-                   # overwrite if already exists
-                   '-y',
-                   output_file]
+                   endpoint]
 
         return command
     
