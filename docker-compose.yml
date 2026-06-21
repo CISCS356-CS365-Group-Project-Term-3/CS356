@@ -1,5 +1,6 @@
 services:
   engine:
+    privileged: true
     build: ./experiments_engine
     depends_on:
       queue: 

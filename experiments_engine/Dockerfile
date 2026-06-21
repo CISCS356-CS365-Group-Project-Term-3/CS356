@@ -39,7 +39,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN ls -lh -a
 
-USER ubuntu
+USER root
 WORKDIR /home/ubuntu
 
 # Override default entrypoint
