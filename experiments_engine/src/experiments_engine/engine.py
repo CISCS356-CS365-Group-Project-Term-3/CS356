@@ -167,12 +167,15 @@ class Engine:
             encoding_result = self.run_transcode(encoder_payload, decoder_payload)
             logger.debug(encoding_result)
 
+            logger.info("experiment run complete")
 
-            logger.info("simulation complete")
+            teardown_network()
+
+            logger.info("network namespaces removed")
 
             metrics = self._calculate_metrics(input_path, output_path)
 
-            logger.info("metrics complete")
+            logger.info("metrics extract complete")
 
             logger.info(
                 f"Sequence '{sequence}' completed successfully."
