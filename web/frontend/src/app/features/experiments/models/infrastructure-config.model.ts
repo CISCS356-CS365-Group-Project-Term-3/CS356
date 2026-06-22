@@ -43,8 +43,9 @@ export interface Topology {
 export interface TransmissionCondition {
   id: number;
   name: string;
-  lowerBound: string;
-  upperBound: string;
+  lowerBound: number;
+  upperBound: number;
+  unit?: string | null;
 }
 
 export interface InfrastructureConfig {

@@ -7,7 +7,14 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCardModule } from '@angular/material/card';
 import { filter } from 'rxjs';
 
-const NO_NAVBAR_ROUTES = ['/login', '/sign-up', '/forgot-password', '/reset-password', '/home'];
+const NO_NAVBAR_ROUTES = [
+  '/login',
+  '/sign-up',
+  '/forgot-password',
+  '/reset-password',
+  '/home',
+  'landing-page',
+];
 
 @Component({
   selector: 'app-root',
