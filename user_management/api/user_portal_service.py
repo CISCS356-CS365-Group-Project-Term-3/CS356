@@ -335,5 +335,35 @@ def update_user_role(user_id, role):
     finally:
         connection.close()
 
+def create_user(user_name, user_email, role, password):
+    connection = create_db_connection()
 
+    if connection is None:
+        return False
 
+    try:
+        hashed_password = hash_password(password)
+
+        connection.execute(
+            text(
+                "INSERT INTO users (user_name, user_email, password_hash, user_role) "
+                "VALUES (:user_name, :user_email, :password_hash, :user_role)"
+            ),
+            {
+                "user_name": user_name,
+                "user_email": user_email,
+                "password_hash": hashed_password,
+                "user_role": role
+            }
+        )
+
+        connection.commit()
+        return True
+
+    except Exception as e:
+        print(f"Error creating user: {e}")
+        return False
+
+    finally:
+        connection.close()
+    

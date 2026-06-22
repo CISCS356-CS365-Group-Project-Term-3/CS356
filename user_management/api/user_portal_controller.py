@@ -3,7 +3,7 @@ from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from typing import Optional
 from contextlib import asynccontextmanager
@@ -83,6 +83,64 @@ async def http_exception_handler(_request: Request, exc: StarletteHTTPException)
         status_code=exc.status_code,
         content=error_response(exc.status_code, message)
     )
+
+
+class RegisterUser(BaseModel):
+    user_name: str
+    password: str
+    user_email: EmailStr
+    confirm_password: str
+    user_role: str
+
+@app.post("/auth/register")
+def register(register_details: RegisterUser):
+    if register_details.password != register_details.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match"
+        )
+
+    allowed_roles = ["General user", "Infrastructure owner"]
+
+    if register_details.user_role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User role is not valid"
+        )
+
+    existing_user = user_portal_service.get_user_info(register_details.user_name)
+
+    if existing_user is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists"
+        )
+
+    user_created = user_portal_service.create_user(
+        register_details.user_name,
+        register_details.user_email,
+        register_details.user_role,
+        register_details.password
+    )
+
+    if not user_created:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="User could not be created"
+        )
+
+    return {"message": "Account created successfully"}
+
+    
+
+
+
+
+
+
+
+
+
 
 
 class LoginRequest(BaseModel):
