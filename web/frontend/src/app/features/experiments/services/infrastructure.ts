@@ -13,7 +13,7 @@ export class InfrastructureService {
   private config$: Observable<InfrastructureConfig>;
 
   constructor(private http: HttpClient) {
-    this.config$ = this.http.get(`${API_BASE}/rest/get_ui_options`).pipe(
+    this.config$ = this.http.get(`${API_BASE}/rest/get_active_ui_options`).pipe(
       map((data) => {
         const config = camelizeKeys(data) as InfrastructureConfig;
         // activeCodecs not yet returned by backend — being added next sprint
