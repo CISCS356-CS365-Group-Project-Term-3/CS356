@@ -42,6 +42,8 @@ export class Login {
   passwordErrorMessage = signal('');
   hide = signal(true);
 
+  loginErrorMessage: string = '';
+
   constructor(private userManagementService: UserManagementService, private router: Router) {
     merge(
       this.loginForm.valueChanges,
@@ -91,16 +93,16 @@ export class Login {
           return;
         }
 
-        const token = data as string;
+        const token = (data as any).access_token;
 
         localStorage.setItem('access_token', token);
         console.log('Login successful');
         this.router.navigate(['/landing-page']);
-        // pass username to landing page? or fetch via new API
-
       },
       error: (err) => {
-        console.error('Login request failed', err);
+       console.error('Login request failed', err);
+        this.loginErrorMessage = err?.error?.error?.message || 'Login failed';
+
       }
     });
 

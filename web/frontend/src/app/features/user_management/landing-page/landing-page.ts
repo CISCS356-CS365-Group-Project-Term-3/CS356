@@ -6,6 +6,11 @@ import {Router, RouterLink} from '@angular/router';
 import { ConfirmLogoutDialog} from '../confirm-logout-dialog/confirm-logout-dialog';
 import {MatDialog} from '@angular/material/dialog';
 import { UserManagementService } from '../user-management-service';
+import { OnInit } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+
 
 /** @title Landing page */
 @Component({
@@ -17,25 +22,26 @@ import { UserManagementService } from '../user-management-service';
   standalone: true
 })
 
-export class LandingPage {
-  token: string | null = null;
+export class LandingPage implements OnInit {
   username: string = '';
 
   constructor(
     private dialog: MatDialog,
     private router: Router,
     private userManagementService: UserManagementService,
+    private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
-     this.token = localStorage.getItem('access_token');
      this.getUserName()
   }
 
   getUserName() {
     this.userManagementService.getUserInfo().subscribe({
       next: (data: any) => {
-        this.username = data.username;
+        this.username = data.user_name;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error(err);
@@ -56,6 +62,12 @@ export class LandingPage {
   onConfirmed() {
 
     // end user session
+    localStorage.clear()
+
+    this.snackBar.open(
+      "You've been logged out successfully",
+      'Close', { duration: 3500});
+
     // take back to home page
     this.router.navigate(['/home']);
   }

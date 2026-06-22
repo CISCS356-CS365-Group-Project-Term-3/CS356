@@ -254,7 +254,7 @@ def admin_delete_user(user_id: str):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
 
 
-@app.post("/users/me")
+@app.get("/users/me")
 def getUserDetails(authorisation: Optional[str] = Header(None)):
     try:
         if not authorisation:
@@ -276,8 +276,8 @@ def getUserDetails(authorisation: Optional[str] = Header(None)):
         # Verify token
         is_valid = user_portal_service.verify_token(token)
         if is_valid:
-            user_role, user_name, user_email = user_portal_service.get_user_details(token)
-            return {"user_name": user_name, "user_role": user_role, "user_email": user_email}
+            user_id, user_role, user_name, user_email = user_portal_service.get_user_details(token)
+            return {"user_id": user_id, "user_name": user_name, "user_role": user_role, "user_email": user_email}
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

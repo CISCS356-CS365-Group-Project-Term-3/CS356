@@ -23,7 +23,7 @@ export class UserManagementService {
       if (!token) throw new Error('Missing token');
 
         const headers = new HttpHeaders({
-          Authorization: `Bearer ${token}`
+          Authorisation: `Bearer ${token}`
         });
         return this.http.get(url, { headers });
       }
@@ -47,9 +47,8 @@ export class UserManagementService {
       return this.http.post(url, body)
     }
 
-    resetPasswordConfirm(new_password: string) {
-      const url = 'http://127.0.0.1:8000/auth/reset_password';
-      const token = localStorage.getItem('access_token');
+    resetPasswordConfirm(token: any, new_password: string) {
+      const url = 'http://127.0.0.1:8000/auth/reset_password/confirm';
       if (!token) throw new Error('Missing token');
       const body = {
         token,
@@ -64,7 +63,7 @@ export class UserManagementService {
       if (!token) throw new Error('Missing token');
 
       const headers = new HttpHeaders({
-        Authorization: `Bearer ${token}`
+        Authorisation: `Bearer ${token}`
       });
       return this.http.get(url, { headers });
     }

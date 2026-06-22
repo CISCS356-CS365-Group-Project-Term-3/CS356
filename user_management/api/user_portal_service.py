@@ -167,19 +167,19 @@ def get_user_details(token):
         public_key = load_public_key()
         if public_key is None:
             print("Error: Public key not found")
-            return None, None, None
+            return None, None, None, None
 
         decoded_token = jwt.decode(token, public_key, algorithms=['RS256'])
-        return decoded_token.get('user_role'), decoded_token.get('user_name'), decoded_token.get('user_email')
+        return decoded_token.get('user_id'), decoded_token.get('user_role'), decoded_token.get('user_name'), decoded_token.get('user_email')
     except jwt.ExpiredSignatureError:
         print("Token has expired")
-        return None, None, None
+        return None, None, None, None
     except jwt.InvalidTokenError as e:
         print(f"Invalid token: {e}")
-        return None, None, None
+        return None, None, None, None
     except Exception as e:
         print(f"Error decoding token: {e}")
-        return None, None, None
+        return None, None, None, None
 
 def create_db_connection():
     try:
