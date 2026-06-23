@@ -2,11 +2,10 @@ from . import user_portal_service
 from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, Header, HTTPException, status
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from typing import Optional
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import configparser
 import os
@@ -97,6 +96,64 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class RegisterUser(BaseModel):
+    user_name: str
+    password: str
+    user_email: EmailStr
+    confirm_password: str
+    user_role: str
+
+@app.post("/auth/register")
+def register(register_details: RegisterUser):
+    if register_details.password != register_details.confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match"
+        )
+
+    allowed_roles = ["General user", "Infrastructure owner"]
+
+    if register_details.user_role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User role is not valid"
+        )
+
+    existing_user = user_portal_service.get_user_info(register_details.user_name)
+
+    if existing_user is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists"
+        )
+
+    user_created = user_portal_service.create_user(
+        register_details.user_name,
+        register_details.user_email,
+        register_details.user_role,
+        register_details.password
+    )
+
+    if not user_created:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="User could not be created"
+        )
+
+    return {"message": "Account created successfully"}
+
+
+
+
+
+
+
+
+
+
+
+
+
 class LoginRequest(BaseModel):
     user_name: str
     password: str
@@ -122,7 +179,6 @@ def login(login_details: LoginRequest):
     except HTTPException:
         raise
     except Exception:
-        print("Login error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to process login request"
@@ -165,7 +221,6 @@ def verify(authorisation: Optional[str] = Header(None)):
     except HTTPException:
         raise
     except Exception:
-        print("Token verification error")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to verify token"
@@ -291,3 +346,28 @@ def getUserDetails(authorisation: Optional[str] = Header(None)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to verify token"
         )
+
+@app.post("/auth/users/update/{user_id}/{role:path}")
+def admin_update_user_role(user_id: str, role: str):
+    try:
+        token = get_current_token()
+        if not token:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
+        if not user_portal_service.verify_token(token):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
+        _, user_role = user_portal_service.get_user_id_and_role(token)
+        if user_role != "admin":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+        updated = user_portal_service.update_user_role(user_id, role)
+        if updated:
+            return {"message": f"User with ID {user_id} updated to role {role} successfully"}
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {user_id} not found")
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error updating user role: {str(e)}")
