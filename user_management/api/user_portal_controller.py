@@ -111,7 +111,7 @@ def register(register_details: RegisterUser):
             detail="Passwords do not match"
         )
 
-    allowed_roles = ["General user", "Infrastructure owner"]
+    allowed_roles = ["user", "admin"]
 
     if register_details.user_role not in allowed_roles:
         raise HTTPException(
