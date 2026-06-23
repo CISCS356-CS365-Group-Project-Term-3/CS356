@@ -8,7 +8,6 @@ export interface SequenceConfig {
 export interface EncoderConfig {
   encoderTypeId: number | null;
   codecId: number | null;
-  encoderModeId: number | null;
 }
 
 export interface NetworkEmulationConfig {
@@ -85,7 +84,7 @@ export class NewExperimentFormService {
     return {
       name: '',
       projectTypeId: null,
-      encoders: [{ encoderTypeId: null, codecId: null, encoderModeId: null }],
+      encoders: [{ encoderTypeId: null, codecId: null }],
       sequences: [],
       networkEmulation: { packetLoss: [], delay: [], jitter: [] },
     };

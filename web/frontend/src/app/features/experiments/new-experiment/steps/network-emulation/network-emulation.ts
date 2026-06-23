@@ -4,7 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { NewExperimentFormService } from '../../new-experiment-form.service';
-import { InfrastructureService } from '../../../services/infrastructure.service';
+import { InfrastructureService } from '../../../services/infrastructure';
 import { TransmissionCondition } from '../../../models/infrastructure-config.model';
 
 type NetworkField = 'packetLoss' | 'delay' | 'jitter';

@@ -14,11 +14,6 @@ export interface Codec {
   name: string;
 }
 
-export interface EncoderMode {
-  id: number;
-  name: string;
-}
-
 export interface VideoFile {
   id: number;
   name: string;
@@ -52,7 +47,6 @@ export interface InfrastructureConfig {
   projectTypes: ProjectType[];
   encoderTypes: EncoderType[];
   codecs: Codec[];
-  encoderModes: EncoderMode[];
   sequences: Sequence[];
   topologies: Topology[];
   transmissionConditions: TransmissionCondition[];

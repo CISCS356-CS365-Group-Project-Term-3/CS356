@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { Codec, EncoderMode, EncoderType } from '../../../models/infrastructure-config.model';
+import { Codec, EncoderType } from '../../../models/infrastructure-config.model';
 import { InfrastructureService } from '../../../services/infrastructure';
 import { EncoderConfig, NewExperimentFormService } from '../../new-experiment-form.service';
 
@@ -18,8 +18,6 @@ import { EncoderConfig, NewExperimentFormService } from '../../new-experiment-fo
 export class EncodersStep implements OnInit {
   encoderTypes: EncoderType[] = [];
   allCodecs: Codec[] = [];
-  allModes: EncoderMode[] = [];
-
   constructor(
     private infrastructureService: InfrastructureService,
     public formService: NewExperimentFormService,
@@ -29,7 +27,6 @@ export class EncodersStep implements OnInit {
     this.infrastructureService.getConfig().subscribe((data) => {
       this.encoderTypes = data.encoderTypes;
       this.allCodecs = data.codecs;
-      this.allModes = data.encoderModes;
     });
   }
 
@@ -42,15 +39,10 @@ export class EncodersStep implements OnInit {
 
   onEncoderTypeChange(encoder: EncoderConfig): void {
     encoder.codecId = null;
-    encoder.encoderModeId = null;
-  }
-
-  onCodecChange(encoder: EncoderConfig): void {
-    encoder.encoderModeId = null;
   }
 
   addEncoder(): void {
-    this.formService.form.encoders.push({ encoderTypeId: null, codecId: null, encoderModeId: null });
+    this.formService.form.encoders.push({ encoderTypeId: null, codecId: null });
   }
 
   removeEncoder(index: number): void {
