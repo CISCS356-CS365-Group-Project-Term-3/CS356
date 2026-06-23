@@ -1,5 +1,5 @@
-from .coder import Coder
+from .coder import Transcoder
 from .decoder import Decoder
 from .encoder import Encoder
 
-__all__ = ["Coder", "Decoder", "Encoder"]
+__all__ = ["Transcoder", "Decoder", "Encoder"]
