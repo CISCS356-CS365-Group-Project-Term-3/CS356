@@ -16,6 +16,7 @@ from user_management.api.user_portal_service import (
     send_reset_email,
     delete_user,
     update_user_role,
+    create_user,
 )
 
 class Test(TestCase):
@@ -357,4 +358,70 @@ class Test(TestCase):
         params = call_args[0][1]
         self.assertEqual(params["role"], "moderator")
         self.assertEqual(params["user_id"], 99)
+
+    @patch('user_management.api.user_portal_service.hash_password')
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_create_user_success(self, mock_db, mock_hash_password):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+        mock_hash_password.return_value = "hashed_password"
+
+        result = create_user(
+            "new_user",
+            "new@example.com",
+            "General user",
+            "password123"
+        )
+
+        self.assertTrue(result)
+        mock_hash_password.assert_called_once_with("password123")
+        mock_conn.execute.assert_called_once()
+        mock_conn.commit.assert_called_once()
+        mock_conn.close.assert_called_once()
+
+        call_args = mock_conn.execute.call_args
+        sql_call = call_args[0][0]
+        self.assertIn("INSERT INTO users", str(sql_call))
+        self.assertIn("user_name", str(sql_call))
+        self.assertIn("user_email", str(sql_call))
+        self.assertIn("password_hash", str(sql_call))
+        self.assertIn("user_role", str(sql_call))
+
+        params = call_args[0][1]
+        self.assertEqual(params["user_name"], "new_user")
+        self.assertEqual(params["user_email"], "new@example.com")
+        self.assertEqual(params["password_hash"], "hashed_password")
+        self.assertEqual(params["user_role"], "General user")
+
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_create_user_db_connection_failure(self, mock_db):
+        mock_db.return_value = None
+
+        result = create_user(
+            "new_user",
+            "new@example.com",
+            "General user",
+            "password123"
+        )
+
+        self.assertFalse(result)
+
+    @patch('user_management.api.user_portal_service.hash_password')
+    @patch('user_management.api.user_portal_service.create_db_connection')
+    def test_create_user_db_error(self, mock_db, mock_hash_password):
+        mock_conn = MagicMock()
+        mock_db.return_value = mock_conn
+        mock_hash_password.return_value = "hashed_password"
+        mock_conn.execute.side_effect = Exception("DB error")
+
+        result = create_user(
+            "new_user",
+            "new@example.com",
+            "General user",
+            "password123"
+        )
+
+        self.assertFalse(result)
+        mock_conn.commit.assert_not_called()
+        mock_conn.close.assert_called_once()
 
