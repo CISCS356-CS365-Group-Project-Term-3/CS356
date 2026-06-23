@@ -3,6 +3,7 @@ from models.api_models import *
 from models.sql_models import *
 from util.engine import get_engine, Base, query_result_as_list, table_to_json
 from util.data_init import data_init
+from util.util import *
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from flask_cors import CORS
@@ -16,7 +17,65 @@ engine = None
 def process_spacial(row):
     row["spacial"] = [row.get("spacial_x"), row.get("spacial_y")]
 
-def standard_crud(request, table, proc=None):
+def standard_crud(request, table, handle_update, handle_create, post_model, put_model, proc=None):
+    with Session(engine) as session:
+        if request.method == "GET":
+            rows = query_result_as_list(session.query(table).all())
+            if proc:
+                proc(rows)
+            return rows
+            
+        elif request.method == "POST":
+            try: 
+                post_model.model_validate(request.json)
+            except ValidationError as e:
+                print("Json not in correct form")
+                return {"status": False, "message": "Error, request malformed."}
+            body = request.json # this mean that it is not a new project type
+            id = body.get("id")
+            rows = session.query(table).filter(table.id == id).all()
+            if len(rows) == 1:
+                row = rows[0]
+                row = handle_update(row, body)
+                session.commit()
+                return {"status": True, "message": "row successfully updated."}
+            else:
+                print("id not found")
+                {"status": False, "message": "Error, no rows matching ID"}
+        elif request.method == "PUT":
+            body = request.json
+            try: 
+                put_model.model_validate(request.json)
+            except ValidationError as e:
+                print("Json not in correct form")
+                return {"status": False, "message": "Error, request malformed."}
+            new_row = handle_create(table, body)
+            session.add(new_row)
+            session.commit()
+            return {"status": True, "message": "row successfully created."}
+
+        elif request.method == "DELETE":
+            body = request.json
+            try:
+                IdDelete.model_validate(body)
+            except ValidationError:
+                print("JSON not in correct format")
+                return {"status": False, "message": "Error, request malformed."}
+            id = body.get("id")
+            rows = session.query(table).filter(table.id == id).all()
+            if len(rows) == 0:
+                print("No rows found")
+                return {"status": False, "message": "Error, no rows matching ID"}
+            elif len(rows) > 1:
+                print("Error: Multiple rows found.")
+                {"status": False, "message": "Error, multiple rows found."}
+            else:
+                row = rows[0]
+                session.delete(row)
+                session.commit()
+                return {"status": True, "message": "row successfully deleted."}
+
+def standard_activate(request, table, proc=None):
     with Session(engine) as session:
         if request.method == "GET":
             rows = query_result_as_list(session.query(table).all())
@@ -90,37 +149,57 @@ def get_all_ui_options():
 def get_active_ui_options():
     return get_ui_options(filter=True)
 
-@app.route("/rest/project_types", methods=["GET", "POST"])
+@app.route("/rest/project_types", methods=["GET", "POST", "PUT"])
 def project_types():
-    return standard_crud(request, ProjectType)
+     return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
 
-@app.route("/rest/encoder_types", methods=["GET", "POST"])
+@app.route("/rest/encoder_types", methods=["GET", "POST", "PUT"])
 def encoder_types():
-    return standard_crud(request, EncoderType)
+    return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
 
-@app.route("/rest/encoder_modes", methods=["GET", "POST"])
+@app.route("/rest/encoder_modes", methods=["GET", "POST", "PUT"])
 def encoder_modes():
-    return standard_crud(request, EncoderMode)
+    return standard_crud(request, EncoderMode, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
             
-@app.route("/rest/codecs", methods=["GET", "POST"])
+@app.route("/rest/codecs", methods=["GET", "POST", "PUT"])
 def codecs():
-    return standard_crud(request, Codec)
+    return standard_crud(request, Codec, codec_update, codec_create, CodecUpdate, CodecCreate)
 
-@app.route("/rest/topologies", methods=["GET", "POST"])
+@app.route("/rest/topologies", methods=["GET", "POST", "PUT"])
 def topologies():
-    return standard_crud(request, Topology)
+    return standard_crud(request, Codec, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
 
-@app.route("/rest/transmission_conditions", methods=["GET", "POST"])
+@app.route("/rest/transmission_conditions", methods=["GET", "POST", "PUT"])
 def transmission_conditions():
-    return standard_crud(request, TransmissionCondition)
+    return standard_crud(request, TransmissionCondition, transmission_update, transmission_create, TransmissionConditionUpdate, TransmissionConditionCreate)
 
-@app.route("/rest/sequences", methods=["GET", "POST"])
+@app.route("/rest/sequences", methods=["GET", "POST", "PUT"])
 def sequences():
-    return standard_crud(request, Sequence)
+    return standard_crud(request, Sequence, sequence_update, sequence_create, SequenceUpdate, SequenceCreate)
 
-@app.route("/rest/video_files", methods=["GET", "POST"])
+@app.route("/rest/video_files", methods=["GET", "POST", "PUT"])
 def video_files():
-    return standard_crud(request, VideoFile)
+    return standard_crud(request, VideoFile, video_file_update, video_file_create, VideoFileUpdate, VideoFileCreate)
+
+@app.route("/rest/mappings", methods=["GET"])
+def get_mappings():
+    output = {}
+    with Session(engine) as session:
+        file_rows = session.query(VideoFile)
+        files = {}
+        for file in file_rows:
+            name = file.name
+            id = str(file.id).rjust(3, "0")
+            files[id] = name
+        output["raw_file"] = files
+        codec_rows = session.query(Codec)
+        codecs = {}
+        for codec in codec_rows:
+            name = codec.name
+            id = str(codec.id).rjust(3, "0")
+            codecs[id] = name
+        output["codec"] = codecs
+    return output
 
 def main():
     global engine
