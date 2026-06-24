@@ -10,6 +10,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {ActivatedRoute, Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {UserManagementService} from '../user-management-service';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 // custom validators
 function specialCharacterValidator(control: AbstractControl): ValidationErrors | null {
@@ -69,7 +70,7 @@ export class ResetPassword {
   reenteredPasswordErrorMessage = signal('');
   hide = signal(true);
 
-  constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient, private userManagementService: UserManagementService) {
+  constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient, private userManagementService: UserManagementService, private snackBar: MatSnackBar) {
     merge(
       this.resetPasswordForm.valueChanges,
       this.resetPasswordForm.statusChanges
@@ -132,7 +133,12 @@ export class ResetPassword {
       return;
     }
         this.userManagementService.resetPasswordConfirm(token, new_password).subscribe({
-        next: () => this.router.navigate(['/login']),
+        next: () => {
+          this.snackBar.open(
+            'Password updated',
+            'Close');
+          this.router.navigate(['/login']);
+        },
         error: (err) => console.error('Reset failed', err)
       });
   }

@@ -75,6 +75,7 @@ export class UserManagementService {
         user_name: username,
         password: password,
         confirm_password: confirmedPassword,
+        user_email: email,
         user_role: role,
       };
 
