@@ -67,4 +67,17 @@ export class UserManagementService {
       });
       return this.http.get(url, { headers });
     }
+
+    registerUser( username: string, password: string, confirmedPassword: string, email: string, role: string) {
+      const url = 'http://127.0.0.1:8000/auth/register';
+
+      const body = {
+        user_name: username,
+        password: password,
+        confirm_password: confirmedPassword,
+        user_role: role,
+      };
+
+      return this.http.post(url, body)
+    }
 }

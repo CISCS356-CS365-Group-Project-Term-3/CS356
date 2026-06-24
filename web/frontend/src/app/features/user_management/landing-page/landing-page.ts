@@ -15,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 /** @title Landing page */
 @Component({
   selector: 'app-landing-page',
-  imports: [MatCardModule, MatButtonModule, NgOptimizedImage, RouterLink],
+  imports: [MatCardModule, MatButtonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'landing-page.html',
   styleUrl: 'landing-page.scss',

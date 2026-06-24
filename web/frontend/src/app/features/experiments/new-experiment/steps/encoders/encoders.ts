@@ -11,6 +11,7 @@ import { EncoderConfig, NewExperimentFormService } from '../../new-experiment-fo
 
 @Component({
   selector: 'app-encoders',
+  standalone: true,
   imports: [FormsModule, MatCardModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatSelectModule],
   templateUrl: './encoders.html',
   styleUrl: './encoders.scss',

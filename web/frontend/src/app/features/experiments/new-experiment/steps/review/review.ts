@@ -18,6 +18,7 @@ interface SequenceDisplay {
 
 @Component({
   selector: 'app-review',
+  standalone: true,
   imports: [MatCardModule],
   templateUrl: './review.html',
   styleUrl: './review.scss',
