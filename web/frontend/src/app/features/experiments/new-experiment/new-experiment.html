@@ -44,6 +44,8 @@
           <app-sequences></app-sequences>
         </mat-step>
         <mat-step label="Network Emulation">
+          <app-network-emulation />
+        <mat-step label="Network Emulation">
           <app-network-emulation></app-network-emulation>
         </mat-step>
 
@@ -57,6 +59,7 @@
 
         <mat-step label="Review">
           <app-review></app-review>
+        </mat-step>
         </mat-step>
       </mat-stepper>
 
@@ -72,8 +75,18 @@
           <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting">
             Save Draft
           </button>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="onNext()"
+            [disabled]="isSubmitting || (isLastStep && !isFormComplete())"
+          >
+          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting">
+            Save Draft
+          </button>
           <button mat-raised-button color="primary" (click)="onNext()" [disabled]="isSubmitting || (isLastStep && !isFormComplete())">
             {{ isLastStep && isSubmitting ? 'Submitting…' : isLastStep ? 'Submit' : 'Next' }}
+          </button>
           </button>
         </div>
       </div>

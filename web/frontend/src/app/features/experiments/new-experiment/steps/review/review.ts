@@ -7,7 +7,6 @@ import { EncoderConfig, NewExperimentFormService, SequenceConfig } from '../../n
 interface EncoderDisplay {
   type: string;
   codec: string;
-  mode: string;
 }
 
 interface SequenceDisplay {
@@ -19,6 +18,7 @@ interface SequenceDisplay {
 
 @Component({
   selector: 'app-review',
+  standalone: true,
   imports: [MatCardModule],
   templateUrl: './review.html',
   styleUrl: './review.scss',
@@ -45,7 +45,6 @@ export class ReviewStep implements OnInit {
     return {
       type:  this.config?.encoderTypes.find((e) => e.id === encoder.encoderTypeId)?.name ?? '—',
       codec: this.config?.codecs.find((c) => c.id === encoder.codecId)?.name ?? '—',
-      mode:  this.config?.encoderModes.find((m) => m.id === encoder.encoderModeId)?.name ?? '—',
     };
   }
 

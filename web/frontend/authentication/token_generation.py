@@ -45,7 +45,7 @@ def generate_token(user_id, user_name, user_email, user_role):
             payload=payload_data,
             key=my_secret,
             algorithm='RS256'
-        )
+    )
 
 def load_key():
     try:
@@ -62,13 +62,12 @@ def load_key():
         print(f"Error loading private key: {e}")
         return None
 
-
 # for testing
 if __name__ == '__main__':
-    test_user = {
-        'user_id': 1,
-        'user_name': 'testuser',
-        'user_email': 'testuser@example.com',
-        'user_role': 'admin'
-    }
-    main(test_user)
+        test_user = {
+            'user_id': 1,
+            'user_name': 'testuser',
+            'user_email': 'testuser@example.com',
+            'user_role': 'admin'
+        }
+        main(test_user)

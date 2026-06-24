@@ -1,4 +1,6 @@
 import { Component, signal} from '@angular/core';
+import { UserManagementService } from '../user-management-service';
+import {Router, RouterLink} from '@angular/router';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -7,9 +9,6 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {RouterLink, Router} from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../services/auth.service';
 
 /** @title Login page */
 @Component({
@@ -42,7 +41,9 @@ export class Login {
   passwordErrorMessage = signal('');
   hide = signal(true);
 
-  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {
+  loginErrorMessage: string = '';
+
+  constructor(private userManagementService: UserManagementService, private router: Router) {
     merge(
       this.loginForm.valueChanges,
       this.loginForm.statusChanges
@@ -80,20 +81,29 @@ export class Login {
     const username = this.loginForm.get('username')?.value;
     const password = this.loginForm.get('password')?.value;
 
-    if (!username || !password) return;
+    if (!username || !password) {
+      return;
+    }
 
-    // call backend login endpoint
-    this.http.post<{ access_token: string }>('http://localhost:8000/auth/login', { user_name: username, password })
-      .subscribe({
-        next: (res) => {
-          if (res && res.access_token) {
-            this.authService.setToken(res.access_token);
-            this.router.navigate(['/experiments']);
-          }
-        },
-        error: (err) => {
-          console.error('Login failed', err);
+    this.userManagementService.loginUser(username, password).subscribe({
+      next: (data: unknown) => {
+        if (!data || data === false) {
+          console.error('Login failed');
+          return;
         }
-      });
+
+        const token = (data as any).access_token;
+
+        localStorage.setItem('access_token', token);
+        console.log('Login successful');
+        this.router.navigate(['/landing-page']);
+      },
+      error: (err) => {
+       console.error('Login request failed', err);
+        this.loginErrorMessage = err?.error?.error?.message || 'Login failed';
+
+      }
+    });
+
   }
 }
