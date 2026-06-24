@@ -82,7 +82,7 @@ export class NewExperiment implements OnInit {
     const encoders = this.formService.form.encoders;
     return (
       encoders.length > 0 &&
-      encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null && e.encoderModeId !== null)
+      encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null)
     );
   }
 
@@ -123,7 +123,6 @@ export class NewExperiment implements OnInit {
       encoders: form.encoders.map((e) => ({
         encoderTypeId: e.encoderTypeId,
         codecId: e.codecId,
-        encoderModeId: e.encoderModeId,
       })),
       sequences: form.sequences.map((s) => ({ videoFileId: s.videoFileId })),
       networkEmulation,
