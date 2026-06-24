@@ -1,0 +1,53 @@
+services:
+  queue:
+    image: rabbitmq:4.3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  experiment-management:
+    build: .
+    profiles:
+      - experiment-management
+    depends_on:
+      queue:
+        condition: service_healthy
+      experiments_db:
+        condition: service_healthy
+
+    ports:
+      - "5000:5000"
+    environment:
+      - QUEUE_NAME=experiment_queue
+      - QUEUE_CONTAINER=queue
+      - DB_HOST=experiments_db
+      - DB_NAME=experiments_management
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+
+  experiments_db:
+    image: postgres:16
+    container_name: experiments-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: experiments_management
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

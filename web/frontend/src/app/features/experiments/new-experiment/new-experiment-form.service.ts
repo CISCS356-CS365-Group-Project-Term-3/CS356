@@ -16,6 +16,12 @@ export interface NetworkEmulationConfig {
   jitter: number[];
 }
 
+export interface NetworkEmulationConfig {
+  packetLoss: number[];
+  delay: number[];
+  jitter: number[];
+}
+
 export interface NewExperimentForm {
   name: string;
   projectTypeId: number | null;
