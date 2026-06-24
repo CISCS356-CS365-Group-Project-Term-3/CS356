@@ -185,25 +185,25 @@ def login(login_details: LoginRequest):
         )
 
 @app.get("/auth/verify")
-def verify(authorisation: Optional[str] = Header(None)):
+def verify(authorization: Optional[str] = Header(None)):
     """
         - 200: {"user_id": 1, "user_role": "admin"}
-        - 401: {"error": {"status_code": 401, "message": "Unauthorised - missing or invalid token"}}
+        - 401: {"error": {"status_code": 401, "message": "Unauthorized - missing or invalid token"}}
         - 500: {"error": {"status_code": 500, "message": "Unable to verify token"}}
     """
     try:
-        if not authorisation:
+        if not authorization:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing or invalid token"
+                detail="Unauthorized - missing or invalid token"
             )
 
         # Parse Bearer token
-        parts = authorisation.split()
+        parts = authorization.split()
         if len(parts) != 2 or parts[0].lower() != "bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing or invalid token"
+                detail="Unauthorized - missing or invalid token"
             )
 
         token = parts[1]
@@ -216,7 +216,7 @@ def verify(authorisation: Optional[str] = Header(None)):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing or invalid token"
+                detail="Unauthorized - missing or invalid token"
             )
     except HTTPException:
         raise
@@ -310,20 +310,20 @@ def admin_delete_user(user_id: str):
 
 
 @app.get("/users/me")
-def getUserDetails(authorisation: Optional[str] = Header(None)):
+def getUserDetails(authorization: Optional[str] = Header(None)):
     try:
-        if not authorisation:
+        if not authorization:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing or invalid token"
+                detail="Unauthorized - missing or invalid token"
             )
 
         # Parse Bearer token
-        parts = authorisation.split()
+        parts = authorization.split()
         if len(parts) != 2 or parts[0].lower() != "bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing or invalid token"
+                detail="Unauthorized - missing or invalid token"
             )
 
         token = parts[1]
@@ -336,7 +336,7 @@ def getUserDetails(authorisation: Optional[str] = Header(None)):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing or invalid token"
+                detail="Unauthorized - missing or invalid token"
             )
     except HTTPException:
         raise

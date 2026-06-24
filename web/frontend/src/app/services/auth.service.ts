@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-const VERIFY_URL = 'http://localhost:8000/auth/verify';
+const API_BASE_URL = 'http://localhost:8000';
 
 @Injectable({
   providedIn: 'root'
@@ -17,13 +17,6 @@ export class AuthService {
     return localStorage.getItem(this.storageKey);
   }
 
-  setToken(token: string) {
-    localStorage.setItem(this.storageKey, token);
-  }
-
-  clearToken() {
-    localStorage.removeItem(this.storageKey);
-  }
 
   /**
    * Calls the backend /auth/verify endpoint with the stored token.
@@ -34,18 +27,11 @@ export class AuthService {
     if (!token) return of(false);
 
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get<{ user_id: number, user_role: string }>(VERIFY_URL, { headers })
+    return this.http.get<{ user_id: number, user_role: string }>(`${API_BASE_URL}/auth/verify`, { headers })
       .pipe(
         map(() => true),
         catchError(() => of(false))
       );
-  }
-
-  getUserInfo(): Observable<{ user_id: number, user_role: string } | null> {
-    const token = this.getToken();
-    if (!token) return of(null);
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    return this.http.get<{ user_id: number, user_role: string }>(VERIFY_URL, { headers }).pipe(catchError(() => of(null)));
   }
 }
 
