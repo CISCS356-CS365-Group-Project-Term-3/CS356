@@ -1,6 +1,6 @@
 import pytest
 import os
-from experiments_engine.decoder import Decoder
+from experiments_engine.coder.decoder import Decoder
 from coding_helpers import encode, remove_output, TEST_RAW_VIDEO_PATH, TEST_ENCODED_VIDEO_PATH
 
 DIRECTORY_NAME = os.path.dirname(__file__)

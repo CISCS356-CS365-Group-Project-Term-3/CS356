@@ -1,7 +1,7 @@
 import json
 import pika
 from .config import Settings
-from .runner import run
+
 from .engine import Engine
 
 # RabbitMQ consumer class.

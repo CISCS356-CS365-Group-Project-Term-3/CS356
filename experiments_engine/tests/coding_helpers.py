@@ -1,5 +1,5 @@
 import os
-from experiments_engine.encoder import Encoder
+from experiments_engine.coder.encoder import Encoder
 
 DIRECTORY_NAME = os.path.dirname(__file__)
 TEST_ENCODED_VIDEO_PATH: str = os.path.join(DIRECTORY_NAME, 'test_data/encoded_akiyo_qcif')

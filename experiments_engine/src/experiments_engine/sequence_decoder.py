@@ -113,7 +113,7 @@ class SequenceDecoder:
 
         match field_config:
             case 'DECIMAL':
-                return float(segment) / 1000
+                return float(segment) / 1000.0
             case 'INTEGER':
                 return int(segment)
             case _:
