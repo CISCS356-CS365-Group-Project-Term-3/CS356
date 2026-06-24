@@ -24,13 +24,23 @@ export class AuthService {
    */
   verifyToken(): Observable<boolean> {
     const token = this.getToken();
-    if (!token) return of(false);
+    if (!token) {
+      console.log('[AuthService] No token found in localStorage');
+      return of(false);
+    }
 
+    console.log(`[AuthService] Starting token verification - Token: ${token.substring(0, 20)}...`);
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     return this.http.get<{ user_id: number, user_role: string }>(`${API_BASE_URL}/auth/verify`, { headers })
       .pipe(
-        map(() => true),
-        catchError(() => of(false))
+        map((response) => {
+          console.log('[AuthService] ✓ Verification successful', response);
+          return true;
+        }),
+        catchError((error) => {
+          console.error('[AuthService] ✗ Verification failed', error.status, error.message);
+          return of(false);
+        })
       );
   }
 }

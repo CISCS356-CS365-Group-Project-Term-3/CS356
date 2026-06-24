@@ -12,13 +12,17 @@ export const AuthGuard: CanActivateFn = (_route, _state) => {
 
   const token = auth.getToken();
   if (!token) {
-    // redirect to login
+    console.log('[AuthGuard] ✗ Route guard blocked: No token in localStorage');
     return router.createUrlTree(['/login']);
   }
 
-  // verify with backend
+  console.log('[AuthGuard] Verifying token with backend...');
   return auth.verifyToken().pipe(map(valid => {
-    if (valid) return true;
+    if (valid) {
+      console.log('[AuthGuard] ✓ Route guard PASSED - User authenticated, allowing navigation');
+      return true;
+    }
+    console.log('[AuthGuard] ✗ Route guard BLOCKED - Token verification failed, redirecting to login');
     return router.createUrlTree(['/login']);
   }));
 };
