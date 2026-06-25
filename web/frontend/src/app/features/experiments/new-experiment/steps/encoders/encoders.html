@@ -23,7 +23,7 @@
         @if (encoder.encoderTypeId !== null) {
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Codec</mat-label>
-            <mat-select [(ngModel)]="encoder.codecId" (ngModelChange)="onCodecChange(encoder)">
+            <mat-select [(ngModel)]="encoder.codecId">
               @for (codec of availableCodecs(encoder); track codec.id) {
                 <mat-option [value]="codec.id">{{ codec.name }}</mat-option>
               }
@@ -31,16 +31,6 @@
           </mat-form-field>
         }
 
-        @if (encoder.codecId !== null) {
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Encoder mode</mat-label>
-            <mat-select [(ngModel)]="encoder.encoderModeId">
-              @for (mode of allModes; track mode.id) {
-                <mat-option [value]="mode.id">{{ mode.name }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        }
       </mat-card-content>
     </mat-card>
   }

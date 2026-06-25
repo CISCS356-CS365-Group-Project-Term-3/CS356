@@ -7,7 +7,7 @@ export interface Experiment {
   engineStatus?: ExperimentStatus;
   date: string;
   projectTypeId: number;
-  encoders: { encoderTypeId: number; codecId: number; encoderModeId: number }[];
+  encoders: { encoderTypeId: number; codecId: number }[];
   sequences: { videoFileId: number }[];
   networkEmulation?: { packetLoss: number[]; delay: number[]; jitter: number[] };
 }

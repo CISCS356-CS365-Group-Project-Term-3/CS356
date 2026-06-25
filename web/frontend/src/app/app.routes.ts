@@ -38,5 +38,8 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPassword},
   { path: 'profile', component: Profile },
   { path: '', component: Home }
+<<<<<<< HEAD
 >>>>>>> origin/G-experiment-management-portal
+=======
+>>>>>>> origin/frontend
 ];

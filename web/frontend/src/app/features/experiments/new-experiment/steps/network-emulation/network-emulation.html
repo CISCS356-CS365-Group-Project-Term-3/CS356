@@ -4,6 +4,7 @@
   </p>
 
   <div class="fields-row">
+<<<<<<< HEAD
     <mat-form-field appearance="outline">
       <mat-label>Packet Loss (%)</mat-label>
       <mat-chip-grid #packetLossGrid>
@@ -57,5 +58,26 @@
         />
       </mat-chip-grid>
     </mat-form-field>
+=======
+    @for (field of fields; track field) {
+      <mat-form-field appearance="outline">
+        <mat-label>{{ getLabel(field) }}</mat-label>
+        <mat-chip-grid #chipGrid>
+          @for (val of formService.form.networkEmulation[field]; track $index; let i = $index) {
+            <mat-chip-row (removed)="removeValue(field, i)">
+              {{ val }}{{ getUnit(field) }}
+              <button matChipRemove><mat-icon>cancel</mat-icon></button>
+            </mat-chip-row>
+          }
+          <input
+            [placeholder]="getBoundsHint(field)"
+            [matChipInputFor]="chipGrid"
+            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+            (matChipInputTokenEnd)="addValue(field, $event)"
+          />
+        </mat-chip-grid>
+      </mat-form-field>
+    }
+>>>>>>> origin/frontend
   </div>
 </div>
