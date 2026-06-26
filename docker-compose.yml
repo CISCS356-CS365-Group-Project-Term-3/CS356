@@ -104,12 +104,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  infra_db:
+  infra-management:
+    build: ./infra_management
+    depends_on:
+      postgres_server:
+        condition: service_healthy
+    ports:
+      - "5002:5001"
+    environment:
+      - DB_PASSWORD=hello
+
+  postgres_server:
     image: postgres:17
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Welcome1
+      POSTGRES_PASSWORD: hello
       POSTGRES_DB: postgres
     ports:
       - "5433:5432"
@@ -119,8 +129,8 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./infra_management/sql/ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
-      - ./infra_management/sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+      - ./infra_management/src/infra_management/sql/ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
+      - ./infra_management/src/infra_management/sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
       - infra_data:/var/lib/postgresql/data
 
   user-management:
