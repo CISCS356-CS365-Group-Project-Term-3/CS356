@@ -6,6 +6,7 @@ import { Dashboard } from './dashboard';
 import { ExperimentsService } from '../services/experiments';
 import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
 import { InfrastructureService } from '../services/infrastructure';
+import { UserManagementService } from '../../user_management/user-management-service';
 import { Experiment } from '../models/experiment.model';
 
 const experiments: Experiment[] = [
@@ -82,6 +83,12 @@ describe('Dashboard', () => {
                 transmissionConditions: [],
               }),
             ),
+          },
+        },
+        {
+          provide: UserManagementService,
+          useValue: {
+            getUserInfo: vi.fn().mockReturnValue(of({ user_id: 1, user_role: 'user' })),
           },
         },
       ],

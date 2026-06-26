@@ -136,8 +136,6 @@ export class Dashboard implements OnInit {
   }
 
   loadExperiments(): void {
-    // const scope = this.isAdmin && this.showAllExperiments ? 'all' : 'mine';
-    // this.experimentsService.getExperiments(scope).subscribe(data => { this.experiments = data; });
     const userId = (this.isAdmin && this.showAllExperiments) ? undefined : this.userId;
     this.experimentsService.getExperiments(userId ?? undefined).subscribe({
       next: (data) => {

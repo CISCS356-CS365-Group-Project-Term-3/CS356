@@ -78,6 +78,10 @@ export class NewExperiment implements OnInit {
     }
   }
 
+  canSaveDraft(): boolean {
+    return this.isProjectSetupComplete();
+  }
+
   onSaveDraft(): void {
     this.doSubmit('draft');
   }
@@ -101,10 +105,6 @@ export class NewExperiment implements OnInit {
 
   isFormComplete(): boolean {
     return this.isProjectSetupComplete() && this.isEncodersComplete() && this.isSequencesComplete();
-  }
-
-  isNetworkComplete(): boolean {
-    return true;
   }
 
   isStepError(stepIndex: number): boolean {
