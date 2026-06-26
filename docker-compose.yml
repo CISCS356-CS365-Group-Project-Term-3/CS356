@@ -104,6 +104,58 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  infra_db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Welcome1
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./infra_management/sql/ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
+      - ./infra_management/sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+      - infra_data:/var/lib/postgresql/data
+
+  user-management:
+    build: ./user_management
+    depends_on:
+      user_management_db:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@user_management_db:5432/user_management
+      - GMAIL_SENDER=groupprojectcs356@gmail.com
+      - GMAIL_APP_PASSWORD=pcza jxio jlsn gmdn
+      - FRONTEND_BASE_URL=http://localhost:8080
+
+  user_management_db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: user_management
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./user_management/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - user_management_data:/var/lib/postgresql/data
+
 volumes:
   mongo_data:
   postgres_data:
+  infra_data:
+  user_management_data:
