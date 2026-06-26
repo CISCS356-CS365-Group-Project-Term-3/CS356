@@ -3,16 +3,14 @@ import jwt
 import datetime
 from cryptography.hazmat.primitives import serialization
 
-TOKEN = None
-
 def main(json):
-    global TOKEN
     # takes in JSON data
+    token = None
     if json is not None:
         temp = parse_payload(json)
         if temp is not None:
-            TOKEN = temp
-            return None
+            token = temp
+            return token
         else:
             print("Error generating token.")
             return None
