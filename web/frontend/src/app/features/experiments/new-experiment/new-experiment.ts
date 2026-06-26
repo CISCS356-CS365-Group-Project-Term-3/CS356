@@ -73,9 +73,13 @@ export class NewExperiment implements OnInit {
     this.doSubmit('draft');
   }
 
-  isProjectSetupComplete(): boolean {
+  canSaveDraft(): boolean {
     const form = this.formService.form;
     return form.name.trim().length > 0 && form.projectTypeId !== null;
+  }
+
+  isProjectSetupComplete(): boolean {
+    return this.canSaveDraft();
   }
 
   isEncodersComplete(): boolean {
