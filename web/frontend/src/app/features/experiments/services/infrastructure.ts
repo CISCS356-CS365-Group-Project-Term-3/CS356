@@ -13,7 +13,7 @@ export class InfrastructureService {
   private config$: Observable<InfrastructureConfig>;
 
   constructor(private http: HttpClient) {
-    this.config$ = this.http.get(`${API_BASE}/rest/get_ui_options`).pipe(
+    this.config$ = this.http.get(`${API_BASE}/rest/get_active_ui_options`).pipe(
       map((data) => {
         const config = camelizeKeys(data) as InfrastructureConfig;
         // activeCodecs not yet returned by backend — being added next sprint
@@ -48,12 +48,6 @@ const MOCK_CONFIG: InfrastructureConfig = {
     { id: 1, name: 'AVC (H.264)' },
     { id: 2, name: 'SVC (H.264)' },
     { id: 3, name: 'HEVC (H.265)' },
-  ],
-
-  encoderModes: [
-    { id: 1, name: 'Random Access' },
-    { id: 2, name: 'Low Delay' },
-    { id: 3, name: 'Intra Only' },
   ],
 
   sequences: [
@@ -136,7 +130,8 @@ const MOCK_CONFIG: InfrastructureConfig = {
   ],
 
   transmissionConditions: [
-    { id: 1, name: 'Delay', lowerBound: '0ms', upperBound: '1000ms' },
-    { id: 2, name: 'Jitter', lowerBound: '0ms', upperBound: '1000ms' },
+    { id: 1, name: 'Delay', lowerBound: 0, upperBound: 999 },
+    { id: 2, name: 'Jitter', lowerBound: 0, upperBound: 200 },
+    { id: 3, name: 'Packet Loss', lowerBound: 0, upperBound: 20 },
   ],
 };

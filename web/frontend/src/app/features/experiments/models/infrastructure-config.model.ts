@@ -14,11 +14,6 @@ export interface Codec {
   name: string;
 }
 
-export interface EncoderMode {
-  id: number;
-  name: string;
-}
-
 export interface VideoFile {
   id: number;
   name: string;
@@ -43,15 +38,15 @@ export interface Topology {
 export interface TransmissionCondition {
   id: number;
   name: string;
-  lowerBound: string;
-  upperBound: string;
+  lowerBound: number;
+  upperBound: number;
+  unit?: string | null;
 }
 
 export interface InfrastructureConfig {
   projectTypes: ProjectType[];
   encoderTypes: EncoderType[];
   codecs: Codec[];
-  encoderModes: EncoderMode[];
   sequences: Sequence[];
   topologies: Topology[];
   transmissionConditions: TransmissionCondition[];

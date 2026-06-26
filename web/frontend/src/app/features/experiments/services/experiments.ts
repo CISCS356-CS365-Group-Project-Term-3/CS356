@@ -37,7 +37,7 @@ export class ExperimentsService {
       engineStatus: 'Complete',
       date: '2026-06-04T14:32:00',
       projectTypeId: 1,
-      encoders: [{ encoderTypeId: 1, codecId: 3, encoderModeId: 1 }],
+      encoders: [{ encoderTypeId: 1, codecId: 3 }],
       sequences: [{ videoFileId: 1 }, { videoFileId: 4 }],
     },
     {
@@ -47,7 +47,7 @@ export class ExperimentsService {
       engineStatus: 'Running',
       date: '2026-06-04T13:10:00',
       projectTypeId: 1,
-      encoders: [{ encoderTypeId: 1, codecId: 1, encoderModeId: 2 }],
+      encoders: [{ encoderTypeId: 1, codecId: 1 }],
       sequences: [{ videoFileId: 2 }, { videoFileId: 6 }],
     },
     {
@@ -57,7 +57,7 @@ export class ExperimentsService {
       engineStatus: 'Running',
       date: '2026-06-04T11:45:00',
       projectTypeId: 1,
-      encoders: [{ encoderTypeId: 1, codecId: 2, encoderModeId: 1 }],
+      encoders: [{ encoderTypeId: 1, codecId: 2 }],
       sequences: [{ videoFileId: 8 }],
     },
     {
@@ -66,7 +66,7 @@ export class ExperimentsService {
       status: 'draft',
       date: '2026-06-03T09:20:00',
       projectTypeId: 1,
-      encoders: [{ encoderTypeId: 1, codecId: 3, encoderModeId: 2 }],
+      encoders: [{ encoderTypeId: 1, codecId: 3 }],
       sequences: [{ videoFileId: 3 }, { videoFileId: 7 }],
     },
     {
@@ -76,7 +76,7 @@ export class ExperimentsService {
       engineStatus: 'Failed',
       date: '2026-05-03T16:00:00',
       projectTypeId: 1,
-      encoders: [{ encoderTypeId: 1, codecId: 1, encoderModeId: 1 }],
+      encoders: [{ encoderTypeId: 1, codecId: 1 }],
       sequences: [{ videoFileId: 5 }],
     },
   ];
