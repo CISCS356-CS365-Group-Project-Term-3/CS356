@@ -1,15 +1,9 @@
-<<<<<<< HEAD
-import { Component } from '@angular/core';
-=======
 import { Component, OnInit } from '@angular/core';
->>>>>>> origin/frontend
 import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { NewExperimentFormService } from '../../new-experiment-form.service';
-<<<<<<< HEAD
-=======
 import { InfrastructureService } from '../../../services/infrastructure';
 import { TransmissionCondition } from '../../../models/infrastructure-config.model';
 
@@ -20,7 +14,6 @@ const FIELD_CONDITION_NAME: Record<NetworkField, string> = {
   delay: 'delay',
   jitter: 'jitter',
 };
->>>>>>> origin/frontend
 
 @Component({
   selector: 'app-network-emulation',
@@ -28,16 +21,6 @@ const FIELD_CONDITION_NAME: Record<NetworkField, string> = {
   templateUrl: './network-emulation.html',
   styleUrl: './network-emulation.scss',
 })
-<<<<<<< HEAD
-export class NetworkEmulationStep {
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
-
-  constructor(public formService: NewExperimentFormService) {}
-
-  addValue(field: 'packetLoss' | 'delay' | 'jitter', event: MatChipInputEvent): void {
-    const num = parseFloat(event.value.trim());
-    if (!isNaN(num) && num >= 0) {
-=======
 export class NetworkEmulationStep implements OnInit {
   readonly separatorKeysCodes = [ENTER, COMMA] as const;
   readonly fields: NetworkField[] = ['packetLoss', 'delay', 'jitter'];
@@ -86,17 +69,12 @@ export class NetworkEmulationStep implements OnInit {
     const min = c?.lowerBound ?? 0;
     const max = c?.upperBound ?? Infinity;
     if (!isNaN(num) && num >= min && num <= max) {
->>>>>>> origin/frontend
       this.formService.form.networkEmulation[field].push(num);
     }
     event.chipInput.clear();
   }
 
-<<<<<<< HEAD
-  removeValue(field: 'packetLoss' | 'delay' | 'jitter', index: number): void {
-=======
   removeValue(field: NetworkField, index: number): void {
->>>>>>> origin/frontend
     this.formService.form.networkEmulation[field].splice(index, 1);
   }
 }

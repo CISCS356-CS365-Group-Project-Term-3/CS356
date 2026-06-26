@@ -1,9 +1,5 @@
 import { Component, signal } from '@angular/core';
-<<<<<<< HEAD
-import { RouterOutlet } from '@angular/router';
-=======
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
->>>>>>> origin/frontend
 import { Navbar } from './shared/navbar/navbar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';

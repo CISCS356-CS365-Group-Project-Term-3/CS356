@@ -9,24 +9,6 @@ import { ResetPassword } from './features/user_management/reset-password/reset-p
 import { ForgotPassword} from './features/user_management/forgot-password/forgot-password';
 import { Profile } from './features/user_management/profile/profile';
 
-<<<<<<< HEAD
-import { InfrastructurePortalComponent } from './features/infrastructure-portal/infrastructure-portal';
-import { InfrastructureDashboardComponent } from './features/infrastructure-portal/dashboard/infrastructure-dashboard';
-import { InfrastructureEncodersComponent } from './features/infrastructure-portal/encoders/infrastructure-encoders';
-import { InfrastructureNetworkProfilesComponent } from './features/infrastructure-portal/network-profiles/infrastructure-network-profiles';
-
-export const routes: Routes = [
-  {
-    path: 'infrastructurePortal',
-    component: InfrastructurePortalComponent,
-    children: [
-      { path: '', component: InfrastructureDashboardComponent },
-      { path: 'encoders', component: InfrastructureEncodersComponent },
-      { path: 'network-profiles', component: InfrastructureNetworkProfilesComponent },
-    ],
-  },
-  { path: '', redirectTo: 'infrastructurePortal', pathMatch: 'full' },
-=======
 export const routes: Routes = [
   { path: 'experiments', component: Dashboard },
   { path: 'experiments/new', component: NewExperiment },
@@ -38,8 +20,4 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPassword},
   { path: 'profile', component: Profile },
   { path: '', component: Home }
-<<<<<<< HEAD
->>>>>>> origin/G-experiment-management-portal
-=======
->>>>>>> origin/frontend
 ];

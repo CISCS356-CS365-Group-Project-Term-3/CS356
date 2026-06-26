@@ -4,61 +4,6 @@
   </p>
 
   <div class="fields-row">
-<<<<<<< HEAD
-    <mat-form-field appearance="outline">
-      <mat-label>Packet Loss (%)</mat-label>
-      <mat-chip-grid #packetLossGrid>
-        @for (val of formService.form.networkEmulation.packetLoss; track $index; let i = $index) {
-          <mat-chip-row (removed)="removeValue('packetLoss', i)">
-            {{ val }}%
-            <button matChipRemove><mat-icon>cancel</mat-icon></button>
-          </mat-chip-row>
-        }
-        <input
-          placeholder="e.g. 4.5, Enter to add"
-          [matChipInputFor]="packetLossGrid"
-          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-          (matChipInputTokenEnd)="addValue('packetLoss', $event)"
-        />
-      </mat-chip-grid>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Delay (ms)</mat-label>
-      <mat-chip-grid #delayGrid>
-        @for (val of formService.form.networkEmulation.delay; track $index; let i = $index) {
-          <mat-chip-row (removed)="removeValue('delay', i)">
-            {{ val }}ms
-            <button matChipRemove><mat-icon>cancel</mat-icon></button>
-          </mat-chip-row>
-        }
-        <input
-          placeholder="e.g. 80, Enter to add"
-          [matChipInputFor]="delayGrid"
-          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-          (matChipInputTokenEnd)="addValue('delay', $event)"
-        />
-      </mat-chip-grid>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Jitter (ms)</mat-label>
-      <mat-chip-grid #jitterGrid>
-        @for (val of formService.form.networkEmulation.jitter; track $index; let i = $index) {
-          <mat-chip-row (removed)="removeValue('jitter', i)">
-            {{ val }}ms
-            <button matChipRemove><mat-icon>cancel</mat-icon></button>
-          </mat-chip-row>
-        }
-        <input
-          placeholder="e.g. 25, Enter to add"
-          [matChipInputFor]="jitterGrid"
-          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-          (matChipInputTokenEnd)="addValue('jitter', $event)"
-        />
-      </mat-chip-grid>
-    </mat-form-field>
-=======
     @for (field of fields; track field) {
       <mat-form-field appearance="outline">
         <mat-label>{{ getLabel(field) }}</mat-label>
@@ -78,6 +23,5 @@
         </mat-chip-grid>
       </mat-form-field>
     }
->>>>>>> origin/frontend
   </div>
 </div>

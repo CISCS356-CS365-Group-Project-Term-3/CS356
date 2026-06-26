@@ -130,13 +130,8 @@ const MOCK_CONFIG: InfrastructureConfig = {
   ],
 
   transmissionConditions: [
-<<<<<<< HEAD
-    { id: 1, name: 'Delay', lowerBound: '0ms', upperBound: '1000ms' },
-    { id: 2, name: 'Jitter', lowerBound: '0ms', upperBound: '1000ms' },
-=======
     { id: 1, name: 'Delay', lowerBound: 0, upperBound: 999 },
     { id: 2, name: 'Jitter', lowerBound: 0, upperBound: 200 },
     { id: 3, name: 'Packet Loss', lowerBound: 0, upperBound: 20 },
->>>>>>> origin/frontend
   ],
 };
