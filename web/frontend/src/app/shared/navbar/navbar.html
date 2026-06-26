@@ -1,0 +1,20 @@
+
+<nav class="navbar">
+  <div class="navbar-logo">
+    <img routerLink="/landing-page" src="assets/app-logo.png" alt="1Klick Logo" />
+  </div>
+
+  <ul class="navbar-links">
+    <li><a routerLink="/infrastructure">Infrastructure</a></li>
+    <li><a routerLink="/experiments">Experiments</a></li>
+    <li><a routerLink="/results">Results</a></li>
+  </ul>
+
+  <div class="navbar-actions">
+    <div class="navbar-profile-icon">
+      <img routerLink="/profile" src="assets/profile-icon.png" alt="profile icon">
+    </div>
+    <button class="log-out-button" matButton="text" (click)="openConfirm()"> Log out</button>
+  </div>
+
+</nav>

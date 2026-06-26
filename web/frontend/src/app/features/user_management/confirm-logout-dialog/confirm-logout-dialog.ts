@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
-import { MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle, MatDialogModule} from '@angular/material/dialog';
+import { MatDialogRef, MatDialogModule} from '@angular/material/dialog';
 
 /** @title Confirm Logout Dialog */
 @Component({
@@ -8,9 +8,6 @@ import { MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle, MatDi
   imports: [
     MatButtonModule,
     MatDialogModule,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogTitle
   ],
   templateUrl: './confirm-logout-dialog.html',
   styleUrl: './confirm-logout-dialog.scss',
@@ -25,6 +22,5 @@ export class ConfirmLogoutDialog {
   }
 
   onConfirm() {
-    this.dialogRef.close(true);
-  }
+    this.dialogRef.close(true);}
 }

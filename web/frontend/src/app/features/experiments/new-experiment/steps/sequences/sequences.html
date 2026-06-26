@@ -1,0 +1,46 @@
+<div class="step-content">
+  <mat-card>
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Video files</mat-label>
+        <mat-select multiple [(ngModel)]="selectedFileIds" (ngModelChange)="onFileSelectionChange($event)">
+          @for (seq of sequences; track seq.id) {
+            <mat-optgroup [label]="seq.name">
+              @for (file of seq.videoFiles; track file.id) {
+                <mat-option [value]="file.id">{{ getFileLabel(file) }}</mat-option>
+              }
+            </mat-optgroup>
+          }
+        </mat-select>
+      </mat-form-field>
+      @if (formService.form.sequences.length === 0) {
+        <p class="empty-hint">Select one or more video files to include in this experiment.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @for (seq of formService.form.sequences; track seq.videoFileId) {
+    @let file = getFile(seq.videoFileId);
+    @if (file) {
+      <mat-card>
+        <mat-card-content>
+          <p class="section-label">{{ getSequenceName(seq.videoFileId) }}</p>
+          <div class="config-rows">
+            <div class="config-row">
+              <span class="config-label">Resolution</span>
+              <span>{{ file.spacial[0] }}x{{ file.spacial[1] }}</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Frame Rate</span>
+              <span>{{ file.temporal }}fps</span>
+            </div>
+            <div class="config-row">
+              <span class="config-label">Bit Depth</span>
+              <span>{{ file.depth }}bit</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>

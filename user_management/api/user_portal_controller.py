@@ -85,6 +85,17 @@ async def http_exception_handler(_request: Request, exc: StarletteHTTPException)
     )
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:4200",
+        "http://127.0.0.1:4200"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 class RegisterUser(BaseModel):
     user_name: str
     password: str
@@ -100,7 +111,7 @@ def register(register_details: RegisterUser):
             detail="Passwords do not match"
         )
 
-    allowed_roles = ["General user", "Infrastructure owner"]
+    allowed_roles = ["user", "admin"]
 
     if register_details.user_role not in allowed_roles:
         raise HTTPException(
@@ -131,7 +142,7 @@ def register(register_details: RegisterUser):
 
     return {"message": "Account created successfully"}
 
-    
+
 
 
 
