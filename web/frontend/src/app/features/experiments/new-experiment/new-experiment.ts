@@ -11,6 +11,7 @@ import { ReviewStep } from './steps/review/review';
 import { NetworkEmulationStep } from './steps/network-emulation/network-emulation';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { UserManagementService } from '../../user_management/user-management-service';
 
 @Component({
   selector: 'app-new-experiment',
@@ -33,15 +34,23 @@ export class NewExperiment implements OnInit {
   submitError: string | null = null;
   isSubmitting = false;
   visitedSteps = new Set<number>();
+  private userId: number | null = null;
 
   constructor(
     public formService: NewExperimentFormService,
     public router: Router,
     private experimentsService: ExperimentsService,
+    private userService: UserManagementService,
   ) {}
 
   ngOnInit(): void {
     this.formService.applyPendingTemplate();
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => { this.userId = user.user_id; },
+        error: () => {},
+      });
+    } catch {}
   }
 
   get isFirstStep(): boolean {
@@ -73,13 +82,9 @@ export class NewExperiment implements OnInit {
     this.doSubmit('draft');
   }
 
-  canSaveDraft(): boolean {
+  isProjectSetupComplete(): boolean {
     const form = this.formService.form;
     return form.name.trim().length > 0 && form.projectTypeId !== null;
-  }
-
-  isProjectSetupComplete(): boolean {
-    return this.canSaveDraft();
   }
 
   isEncodersComplete(): boolean {
@@ -134,7 +139,7 @@ export class NewExperiment implements OnInit {
     this.submitError = null;
     const request$ = editingId
       ? this.experimentsService.patchExperiment(editingId, basePayload)
-      : this.experimentsService.createExperiment({ userId: 1, ...basePayload }); // TODO: replace userId with JWT
+      : this.experimentsService.createExperiment({ userId: this.userId, ...basePayload });
     request$.subscribe({
       next: () => this.router.navigate(['/experiments']),
       error: () => {
