@@ -71,7 +71,7 @@
           <button mat-stroked-button (click)="onBack()">
             {{ isFirstStep ? 'Cancel' : 'Back' }}
           </button>
-          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting">
+          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting || !canSaveDraft()">
             Save Draft
           </button>
           <button
