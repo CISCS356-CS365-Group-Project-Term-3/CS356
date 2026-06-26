@@ -183,7 +183,8 @@ def get_user_details(token):
 
 def create_db_connection():
     try:
-        engine = create_engine("postgresql://admin:admin123@localhost:5432/user_management")
+        database_url = os.environ["DATABASE_URL"]
+        engine = create_engine(database_url)
         connection = engine.connect()
         return connection
     except Exception as e:
@@ -269,7 +270,8 @@ def send_reset_email(to_email, token):
     if not sender or not app_password:
         raise EnvironmentError("GMAIL_SENDER and GMAIL_APP_PASSWORD must be set in db.env")
 
-    reset_link = f"http://localhost:4200/reset-password?token={token}"
+    frontend_base_url = os.environ.get("FRONTEND_BASE_URL", "http://localhost:4200").rstrip("/")
+    reset_link = f"{frontend_base_url}/reset-password?token={token}"
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "Password Reset Request"
