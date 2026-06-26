@@ -1,4 +1,4 @@
-import { Component, signal} from '@angular/core';
+import { Component, signal, inject} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -7,6 +7,10 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import {HttpClient} from '@angular/common/http';
+import {UserManagementService} from '../user-management-service';
+import {MatSnackBar} from '@angular/material/snack-bar';
+
 
 /** @title Forgot password page */
 @Component({
@@ -27,14 +31,17 @@ import {MatButtonModule} from '@angular/material/button';
 
 export class ForgotPassword {
 
+  private http = inject(HttpClient);
 
   readonly emailForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });
 
   emailErrorMessage = signal('');
+  successMessage = signal('');
 
-  constructor() {
+  constructor(private userManagementService : UserManagementService, private snackBar: MatSnackBar) {
+
     merge(
       this.emailForm.valueChanges,
       this.emailForm.statusChanges
@@ -56,11 +63,17 @@ export class ForgotPassword {
     }
   }
 
-  sendEmail(){
-    // send password reset email
-
-    // confirm link has been sent in UI
-
+  sendEmail() {
+    const email = this.emailForm.get('email')?.value;
+    if (!email) return;
+     this.userManagementService.resetPassword(email).subscribe({
+      next: () => this.snackBar.open(
+        'If an account exists, a reset link has been sent to your email.',
+        'Close'),
+      error: () => this.snackBar.open(
+        'If an account exists, a reset link has been sent to your email.',
+        'Close')
+    });
   }
 }
 
