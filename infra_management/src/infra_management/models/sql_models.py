@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy import Integer, String, DateTime, Table, Column, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-from util.engine import Base
+from ..util.engine import Base
 from typing import List
 
 class ProjectType(Base):
@@ -10,6 +10,7 @@ class ProjectType(Base):
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class EncoderType(Base):
     __tablename__ = "encoder_type"
@@ -18,6 +19,7 @@ class EncoderType(Base):
     description = mapped_column(String(255))
     codecs = relationship("Codec", back_populates="encoder_type", cascade="all, delete-orphan")
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class Codec(Base):
     __tablename__ = "codec"
@@ -28,18 +30,21 @@ class Codec(Base):
     name = mapped_column(String(255))
     encoder_type = relationship("EncoderType", back_populates="codecs")
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class EncoderMode(Base):
     __tablename__ = "encoder_modes"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class Topology(Base):
     __tablename__ = "topology"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class TransmissionCondition(Base):
     __tablename__ = "transmission_conditions"
@@ -49,6 +54,7 @@ class TransmissionCondition(Base):
     upper_bound = mapped_column(Integer)
     unit = mapped_column(String(255))
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class Sequence(Base):
     __tablename__ = "sequence"
@@ -56,6 +62,7 @@ class Sequence(Base):
     name = mapped_column(String(64))
     description = mapped_column(String(255))
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)
 
 class VideoFile(Base):
     __tablename__ = "video_file"
@@ -70,3 +77,4 @@ class VideoFile(Base):
     quality = mapped_column(String(64))
     gamut = mapped_column(String(64))
     active = mapped_column(Integer)
+    supported = mapped_column(Integer, nullable=False, default=0)

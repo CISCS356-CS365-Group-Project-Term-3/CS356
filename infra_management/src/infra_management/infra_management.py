@@ -1,11 +1,11 @@
 from flask import Flask, request
-from models.api_models import *
-from models.sql_models import *
-from util.engine import get_engine, Base, query_result_as_list, table_to_json
-from util.data_init import data_init
-from util.util import *
+from .models.api_models import *
+from .models.sql_models import *
+from .util.engine import get_engine, Base, query_result_as_list, table_to_json
+from .util.data_init import data_init
+from .util.util import *
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from flask_cors import CORS
 from pydantic import ValidationError
 
@@ -114,7 +114,7 @@ def get_ui_options(filter=False):
         transmission_conditions = query_result_as_list(session.query(TransmissionCondition).filter(or_(TransmissionCondition.active == 1, filter == False)).all())
         for sequence in sequences:
             id = sequence.get("id")
-            videos = query_result_as_list(session.query(VideoFile).filter(or_(VideoFile.sequence_id == id, VideoFile.active == 1, filter == False)))
+            videos = query_result_as_list(session.query(VideoFile).filter(and_(or_(VideoFile.active == 1, filter == False), VideoFile.sequence_id == id)))
             for vid in videos:
                 vid["spacial"] = [vid.get("spacial_x"), vid.get("spacial_y")]
                 vid.pop("spacial_x", None)
@@ -126,7 +126,7 @@ def get_ui_options(filter=False):
         for encoder_type in encoder_type_rows:
             encoder_type_json = table_to_json(encoder_type)
             active_codecs = [c.id for c in encoder_type.codecs if c.active == 1]
-            encoder_type_json["active_codeds"] = active_codecs
+            encoder_type_json["active_codecs"] = active_codecs
             encoder_types.append(encoder_type_json)
 
         output = {
@@ -209,5 +209,3 @@ def main():
         if len(session.query(ProjectType).all()) == 0:
             data_init()
     app.run(host = "0.0.0.0", port=5001)
-
-main()

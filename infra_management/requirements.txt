@@ -1,0 +1,10 @@
+annotated-types
+Flask
+flask-cors
+psycopg2-binary
+pydantic
+pydantic_core
+SQLAlchemy
+typing-inspection
+typing_extensions
+Werkzeug
