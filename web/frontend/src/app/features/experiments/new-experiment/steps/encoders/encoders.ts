@@ -31,11 +31,16 @@ export class EncodersStep implements OnInit {
     });
   }
 
-  availableCodecs(encoder: EncoderConfig): Codec[] {
+  availableCodecs(encoder: EncoderConfig, index: number): Codec[] {
     const et = this.encoderTypes.find((e) => e.id === encoder.encoderTypeId);
     if (!et) return [];
-    if (!et.activeCodecs?.length) return this.allCodecs;
-    return this.allCodecs.filter((c) => et.activeCodecs.includes(c.id));
+    const base = !et.activeCodecs?.length
+      ? this.allCodecs
+      : this.allCodecs.filter((c) => et.activeCodecs.includes(c.id));
+    const usedCodecIds = this.formService.form.encoders
+      .filter((e, i) => i !== index && e.encoderTypeId === encoder.encoderTypeId && e.codecId !== null)
+      .map((e) => e.codecId);
+    return base.filter((c) => !usedCodecIds.includes(c.id));
   }
 
   onEncoderTypeChange(encoder: EncoderConfig): void {
