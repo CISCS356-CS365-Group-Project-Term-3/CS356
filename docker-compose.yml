@@ -1,4 +1,9 @@
 services:
+  web:
+    build: ./web
+    ports:
+      - "8080:8080"
+
   engine:
     privileged: true
     build: ./experiments_engine
@@ -17,6 +22,25 @@ services:
       INPUT_DIR: /resources/input
       TEMP_DIR: /tmp
       OUTPUT_DIR: /resources/output
+  
+  experiment-management:
+    build: ./experiment_management
+    profiles:
+      - experiment-management
+    depends_on:
+      queue:
+        condition: service_healthy
+      experiments_db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      - QUEUE_NAME=experiment_queue
+      - QUEUE_CONTAINER=queue
+      - DB_HOST=experiments_db
+      - DB_NAME=experiments_management
+      - DB_USER=postgres
+      - DB_PASSWORD=password
 
   queue:
     image: rabbitmq:4.3-management-alpine
@@ -62,5 +86,24 @@ services:
       - mongo
     restart: unless-stopped
 
+  experiments_db:
+    image: postgres:16
+    container_name: experiments-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: experiments_management
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   mongo_data:
+  postgres_data:
