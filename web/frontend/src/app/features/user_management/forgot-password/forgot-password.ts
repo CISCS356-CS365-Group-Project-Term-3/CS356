@@ -63,10 +63,9 @@ export class ForgotPassword {
     const email = this.emailForm.get('email')?.value;
     if (!email) return;
 
-    this.http.post('http://localhost:8000/auth/reset_password', { email }).subscribe({
+    this.http.post('/user-management/auth/reset_password', { email }).subscribe({
       next: () => this.successMessage.set('If an account exists, a reset link has been sent to your email.'),
       error: () => this.successMessage.set('If an account exists, a reset link has been sent to your email.')
     });
   }
 }
-
