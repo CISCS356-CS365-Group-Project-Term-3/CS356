@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 
 /**
  * Functional guard that verifies JWT using the backend verify API.
+ * Wipes out dead tokens to prevent endless validation loops.
  */
 export const AuthGuard: CanActivateFn = (_route, _state) => {
   const auth = inject(AuthService);
@@ -12,18 +13,18 @@ export const AuthGuard: CanActivateFn = (_route, _state) => {
 
   const token = auth.getToken();
   if (!token) {
-    console.log('[AuthGuard] ✗ Route guard blocked: No token in localStorage');
     return router.createUrlTree(['/login']);
   }
 
-  console.log('[AuthGuard] Verifying token with backend...');
-  return auth.verifyToken().pipe(map(valid => {
-    if (valid) {
-      console.log('[AuthGuard] ✓ Route guard PASSED - User authenticated, allowing navigation');
-      return true;
-    }
-    console.log('[AuthGuard] ✗ Route guard BLOCKED - Token verification failed, redirecting to login');
-    return router.createUrlTree(['/login']);
-  }));
-};
+  return auth.verifyToken().pipe(
+    map(valid => {
+      if (valid) {
+        return true;
+      }
 
+      // token gets deleted if invalid, so user is redirected to login page
+      auth.clearToken();
+      return router.createUrlTree(['/login']);
+    })
+  );
+};
