@@ -34,25 +34,25 @@ def login(login_details: LoginRequest):
         )
 
 @app.get("/auth/verify")
-def verify(authorisation: Optional[str] = Header(None)):
+def verify(authorization: Optional[str] = Header(None)):
     """
         - 200: {"user_id": 1, "user_role": "admin"}
-        - 401: {"error": "Unauthorised - missing or invalid token"}
+        - 401: {"error": "Unauthorized - missing or invalid token"}
         - 500: {"error": "Token verification failed: error_message"}
     """
     try:
-        if not authorisation:
+        if not authorization:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - missing Authorisation header"
+                detail="Unauthorized - missing Authorization header"
             )
 
         # Parse Bearer token
-        parts = authorisation.split()
+        parts = authorization.split()
         if len(parts) != 2 or parts[0].lower() != "bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - invalid Authorisation header format. Expected: Bearer <token>"
+                detail="Unauthorized - invalid Authorization header format. Expected: Bearer <token>"
             )
 
         token = parts[1]
@@ -65,7 +65,7 @@ def verify(authorisation: Optional[str] = Header(None)):
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Unauthorised - invalid or expired token"
+                detail="Unauthorized - invalid or expired token"
             )
     except HTTPException:
         raise

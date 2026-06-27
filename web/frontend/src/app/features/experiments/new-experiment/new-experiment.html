@@ -23,7 +23,7 @@
           [hasError]="isStepError(0)"
           errorMessage=""
         >
-          <app-project-setup />
+          <app-project-setup></app-project-setup>
         </mat-step>
 
         <mat-step
@@ -32,7 +32,7 @@
           [hasError]="isStepError(1)"
           errorMessage=""
         >
-          <app-encoders />
+          <app-encoders></app-encoders>
         </mat-step>
 
         <mat-step
@@ -41,10 +41,12 @@
           [hasError]="isStepError(2)"
           errorMessage=""
         >
-          <app-sequences />
+          <app-sequences></app-sequences>
         </mat-step>
         <mat-step label="Network Emulation">
           <app-network-emulation />
+        <mat-step label="Network Emulation">
+          <app-network-emulation></app-network-emulation>
         </mat-step>
 
         <!-- <mat-step label="Analysis">
@@ -56,13 +58,12 @@
         </mat-step> -->
 
         <mat-step label="Review">
-          <app-review />
+          <app-review></app-review>
+        </mat-step>
         </mat-step>
       </mat-stepper>
 
-      @if (submitError) {
-        <p class="submit-error">{{ submitError }}</p>
-      }
+      <p *ngIf="submitError" class="submit-error">{{ submitError }}</p>
       <div class="actions">
         <span class="step-counter"
           >Step {{ stepper.selectedIndex + 1 }} of {{ stepper.steps.length }}</span
@@ -80,7 +81,12 @@
             (click)="onNext()"
             [disabled]="isSubmitting || (isLastStep && !isFormComplete())"
           >
+          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting">
+            Save Draft
+          </button>
+          <button mat-raised-button color="primary" (click)="onNext()" [disabled]="isSubmitting || (isLastStep && !isFormComplete())">
             {{ isLastStep && isSubmitting ? 'Submitting…' : isLastStep ? 'Submit' : 'Next' }}
+          </button>
           </button>
         </div>
       </div>
