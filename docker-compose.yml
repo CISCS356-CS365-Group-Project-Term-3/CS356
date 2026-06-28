@@ -3,12 +3,21 @@ services:
     build: ./web
     ports:
       - "8080:8080"
+    depends_on:
+      experiment-management:
+        condition: service_healthy
+      infra-management:
+        condition: service_healthy
+      user-management:
+        condition: service_healthy
 
   engine:
     privileged: true
     build: ./experiments_engine
     depends_on:
       queue: 
+        condition: service_healthy
+      infra-management:
         condition: service_healthy
     volumes:
       - ./config_map.json:/config_map.json:ro
@@ -25,8 +34,6 @@ services:
   
   experiment-management:
     build: ./experiment_management
-    profiles:
-      - experiment-management
     depends_on:
       queue:
         condition: service_healthy
@@ -41,6 +48,12 @@ services:
       - DB_NAME=experiments_management
       - DB_USER=postgres
       - DB_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   queue:
     image: rabbitmq:4.3-management-alpine
@@ -107,14 +120,23 @@ services:
   infra-management:
     build: ./infra_management
     depends_on:
-      postgres_server:
+      infra_db:
         condition: service_healthy
     ports:
       - "5002:5001"
     environment:
       - DB_PASSWORD=hello
+      - DB_USER=postgres
+      - DB_HOST=infra_db
+      - DB_DB=postgres
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-  postgres_server:
+  infra_db:
     image: postgres:17
     restart: unless-stopped
     environment:
@@ -122,15 +144,13 @@ services:
       POSTGRES_PASSWORD: hello
       POSTGRES_DB: postgres
     ports:
-      - "5433:5432"
+      - "5435:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - ./infra_management/src/infra_management/sql/ddl.sql:/docker-entrypoint-initdb.d/01_ddl.sql:ro
-      - ./infra_management/src/infra_management/sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
       - infra_data:/var/lib/postgresql/data
 
   user-management:
@@ -144,7 +164,13 @@ services:
       - DATABASE_URL=postgresql://admin:admin123@user_management_db:5432/user_management
       - GMAIL_SENDER=groupprojectcs356@gmail.com
       - GMAIL_APP_PASSWORD=pcza jxio jlsn gmdn
-      - FRONTEND_BASE_URL=http://localhost:8080
+      - FRONTEND_BASE_URL=http://web:8080
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   user_management_db:
     image: postgres:17
