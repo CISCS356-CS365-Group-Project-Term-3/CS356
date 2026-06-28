@@ -201,6 +201,10 @@ def get_mappings():
         output["codec"] = codecs
     return output
 
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+
 def main():
     global engine
     engine = get_engine()

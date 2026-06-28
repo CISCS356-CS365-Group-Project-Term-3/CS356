@@ -44,5 +44,10 @@ def update_experiment(experiment_id):
         return {"error": "Experiment not found"}, 404
     return updated_experiment, 200
 
+
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+
 if __name__ == "__main__":
     app.run(debug=True)
