@@ -1,8 +1,9 @@
-from flask import Flask, request
+from flask import Flask, request , jsonify
 from flask_cors import CORS
-from services import experiment_service
-from storage import experiment_store
+from services import experiment_service , results_portal
+from storage import experiment_store, results_store
 from storage.db import engine, Base
+
 app = Flask(__name__)
 Base.metadata.create_all(bind=engine)
 CORS(app)
@@ -43,6 +44,12 @@ def update_experiment(experiment_id):
     if not updated_experiment:
         return {"error": "Experiment not found"}, 404
     return updated_experiment, 200
+
+
+@app.route("/experiments-results", methods=["GET"])
+def getresults():
+    results = results_portal.get_result_summaries()
+    return jsonify(results), 200
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -4,5 +4,19 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+  "/experiment-management": {
+    "target": "http://localhost:5000",
+    "pathRewrite": { "^/experiment-management": "" },
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/infra": {
+    "target": "http://localhost:5001",
+    "pathRewrite": { "^/infra": "" },
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 }

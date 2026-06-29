@@ -1,6 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
+import { catchError, combineLatest, of } from 'rxjs';
+import { ResultsService } from './services/results-service';
+import { MetricAverage, ResultSummary } from './models/result-summary.model';
+import { InfrastructureService } from '../experiments/services/infrastructure';
+import { InfrastructureConfig } from '../experiments/models/infrastructure-config.model';
 
 interface MetricSummary {
   label: string;
@@ -16,8 +21,12 @@ interface ExperimentResult {
   codec: string;
   sequence: string;
   frameCount: number;
+  success: boolean;
+  failureReason: string | null;
   psnrSummary: MetricSummary[];
   ssimSummary: MetricSummary[];
+  // Synthetic per-frame trend, anchored to the real average — true per-frame
+  // series from the engine isn't wired up yet.
   psnrSeries: number[];
   ssimSeries: number[];
 }
@@ -29,93 +38,34 @@ interface ExperimentResult {
   templateUrl: './results.html',
   styleUrl: './results.scss',
 })
-export class ResultsPage {
+export class ResultsPage implements OnInit {
   readonly chartWidth = 500;
   readonly chartHeight = 200;
   readonly chartPadding = 24;
 
-  readonly experimentHistory: ExperimentResult[] = [
-    {
-      id: 3,
-      title: 'Experiment 3',
-      name: 'foreman_cif.y4m',
-      date: '2026-06-26 16:10',
-      codec: 'H.264 / AVC',
-      sequence: 'foreman_cif.y4m',
-      frameCount: 120,
-      psnrSummary: [
-        { label: 'Y', value: '38.50 dB', hint: 'Luma' },
-        { label: 'U', value: '40.10 dB', hint: 'Chrominance' },
-        { label: 'V', value: '39.80 dB', hint: 'Chrominance' },
-        { label: 'All', value: '39.45 dB', hint: 'Overall' },
-      ],
-      ssimSummary: [
-        { label: 'Y', value: '0.962', hint: 'Luma' },
-        { label: 'U', value: '0.948', hint: 'Chrominance' },
-        { label: 'V', value: '0.951', hint: 'Chrominance' },
-        { label: 'All', value: '0.957', hint: 'Overall' },
-      ],
-      // Micro-variations around 39.4
-      psnrSeries: [39.4, 39.5, 39.4, 39.3, 39.4, 39.6, 39.5, 39.4, 39.3, 39.4, 39.5, 39.4],
-      // Micro-variations around 0.95
-      ssimSeries: [0.956, 0.957, 0.956, 0.955, 0.956, 0.958, 0.957, 0.956, 0.955, 0.957, 0.956, 0.956],
-    },
-    {
-      id: 2,
-      title: 'Experiment 2',
-      name: 'coastguard_qcif_mono.y4m',
-      date: '2026-06-25 11:05',
-      codec: 'H.265 / HEVC',
-      sequence: 'coastguard_qcif_mono.y4m',
-      frameCount: 96,
-      psnrSummary: [
-        { label: 'Y', value: '36.21 dB', hint: 'Luma' },
-        { label: 'U', value: '37.64 dB', hint: 'Chrominance' },
-        { label: 'V', value: '36.98 dB', hint: 'Chrominance' },
-        { label: 'All', value: '36.94 dB', hint: 'Overall' },
-      ],
-      ssimSummary: [
-        { label: 'Y', value: '0.948', hint: 'Luma' },
-        { label: 'U', value: '0.934', hint: 'Chrominance' },
-        { label: 'V', value: '0.939', hint: 'Chrominance' },
-        { label: 'All', value: '0.941', hint: 'Overall' },
-      ],
-      // Micro-variations around 36.9
-      psnrSeries: [36.9, 37.0, 36.9, 36.8, 36.9, 37.1, 37.0, 36.9, 36.8, 37.0, 36.9, 36.9],
-      // Micro-variations around 0.94
-      ssimSeries: [0.941, 0.942, 0.941, 0.940, 0.941, 0.943, 0.942, 0.941, 0.940, 0.942, 0.941, 0.941],
-    },
-    {
-      id: 1,
-      title: 'Experiment 1',
-      name: 'mobile_sif.y4m',
-      date: '2026-06-23 09:40',
-      codec: 'H.264 / AVC',
-      sequence: 'mobile_sif.y4m',
-      frameCount: 88,
-      psnrSummary: [
-        { label: 'Y', value: '34.76 dB', hint: 'Luma' },
-        { label: 'U', value: '35.62 dB', hint: 'Chrominance' },
-        { label: 'V', value: '35.18 dB', hint: 'Chrominance' },
-        { label: 'All', value: '35.18 dB', hint: 'Overall' },
-      ],
-      ssimSummary: [
-        { label: 'Y', value: '0.931', hint: 'Luma' },
-        { label: 'U', value: '0.915', hint: 'Chrominance' },
-        { label: 'V', value: '0.919', hint: 'Chrominance' },
-        { label: 'All', value: '0.922', hint: 'Overall' },
-      ],
-      // Micro-variations around 35.1
-      psnrSeries: [35.1, 35.2, 35.1, 35.0, 35.1, 35.3, 35.2, 35.1, 35.0, 35.2, 35.1, 35.1],
-      // Micro-variations around 0.92
-      ssimSeries: [0.922, 0.923, 0.922, 0.921, 0.922, 0.924, 0.923, 0.922, 0.921, 0.923, 0.922, 0.922],
-    },
-  ];
+  loading = true;
+  experimentHistory: ExperimentResult[] = [];
 
   sortOption: 'newest' | 'oldest' = 'newest';
   showFilters = false;
 
-  selectedExperiment = this.experimentHistory[0];
+  selectedExperiment: ExperimentResult | undefined;
+
+  constructor(
+    private resultsService: ResultsService,
+    private infrastructureService: InfrastructureService,
+  ) {}
+
+  ngOnInit(): void {
+    combineLatest([
+      this.resultsService.getResultSummaries().pipe(catchError(() => of([] as ResultSummary[]))),
+      this.infrastructureService.getConfig().pipe(catchError(() => of(undefined))),
+    ]).subscribe(([results, config]) => {
+      this.experimentHistory = results.map((result) => this.toExperimentResult(result, config));
+      this.selectedExperiment = this.visibleExperiments[0];
+      this.loading = false;
+    });
+  }
 
   get visibleExperiments(): ExperimentResult[] {
     const sorted = [...this.experimentHistory];
@@ -136,6 +86,10 @@ export class ResultsPage {
     return this.sortOption === 'oldest' ? 'Oldest first' : 'Newest first';
   }
 
+  get emptyStateMessage(): string {
+    return this.loading ? 'Loading experiment history…' : 'No experiments match that search.';
+  }
+
   toggleSort(): void {
     this.sortOption = this.sortOption === 'newest' ? 'oldest' : 'newest';
   }
@@ -147,15 +101,75 @@ export class ResultsPage {
   get psnrPath(): string {
     // For PSNR, expect values generally between 30 and 45.
     // Setting a fixed window size of 10dB contextually scales tiny ripples perfectly.
-    const average = this.selectedExperiment.psnrSeries.reduce((a, b) => a + b, 0) / this.selectedExperiment.psnrSeries.length;
-    return this.buildPath(this.selectedExperiment.psnrSeries, average - 5, average + 5);
+    const series = this.selectedExperiment?.psnrSeries ?? [];
+    const average = series.reduce((a, b) => a + b, 0) / (series.length || 1);
+    return this.buildPath(series, average - 5, average + 5);
   }
 
   get ssimPath(): string {
-    // For SSIM, max is 1.0. We give it a small visual window range of 0.1 total 
+    // For SSIM, max is 1.0. We give it a small visual window range of 0.1 total
     // to keep the line flat near the top half.
-    const average = this.selectedExperiment.ssimSeries.reduce((a, b) => a + b, 0) / this.selectedExperiment.ssimSeries.length;
-    return this.buildPath(this.selectedExperiment.ssimSeries, average - 0.05, average + 0.05);
+    const series = this.selectedExperiment?.ssimSeries ?? [];
+    const average = series.reduce((a, b) => a + b, 0) / (series.length || 1);
+    return this.buildPath(series, average - 0.05, average + 0.05);
+  }
+
+  private toExperimentResult(
+    result: ResultSummary,
+    config: InfrastructureConfig | undefined,
+  ): ExperimentResult {
+    const codecName = config?.codecs.find((codec) => codec.id === result.codecId)?.name;
+    const videoFile = config?.sequences
+      .flatMap((sequence) => sequence.videoFiles)
+      .find((file) => file.id === result.videoFileId);
+    const sequenceName = videoFile?.name ?? result.sequenceCode ?? 'Unknown sequence';
+
+    return {
+      id: result.experimentId,
+      title: result.experimentName ?? `Experiment ${result.experimentId}`,
+      name: sequenceName,
+      date: this.formatDate(result.createdAt),
+      codec: codecName ?? 'Unknown codec',
+      sequence: sequenceName,
+      frameCount: result.frameCount,
+      success: result.success,
+      failureReason: result.failureReason,
+      psnrSummary: this.buildSummary(result.psnrAverage, (value) => `${value.toFixed(2)} dB`),
+      ssimSummary: this.buildSummary(result.ssimAverage, (value) => value.toFixed(3)),
+      psnrSeries: this.mockSeriesAround(result.psnrAverage.combined ?? 0, 0.15),
+      ssimSeries: this.mockSeriesAround(result.ssimAverage.combined ?? 0, 0.01),
+    };
+  }
+
+  private buildSummary(average: MetricAverage, format: (value: number) => string): MetricSummary[] {
+    const fmt = (value: number | null) => (value == null ? '—' : format(value));
+
+    return [
+      { label: 'Y', value: fmt(average.y), hint: 'Luma' },
+      { label: 'U', value: fmt(average.u), hint: 'Chrominance' },
+      { label: 'V', value: fmt(average.v), hint: 'Chrominance' },
+      { label: 'All', value: fmt(average.combined), hint: 'Overall' },
+    ];
+  }
+
+  // Generates a deterministic wiggle around the real average so the trend chart
+  // still reads naturally until per-frame data is exposed by the backend.
+  private mockSeriesAround(average: number, spread: number, points = 12): number[] {
+    return Array.from({ length: points }, (_, index) => average + spread * Math.sin(index * 1.3));
+  }
+
+  private formatDate(value: string | null): string {
+    if (!value) {
+      return 'Unknown date';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return 'Unknown date';
+    }
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
 
   private parseDate(value: string): number {
@@ -168,9 +182,13 @@ export class ResultsPage {
     const padding = this.chartPadding;
     const range = explicitMax - explicitMin || 1;
 
+    if (values.length === 0) {
+      return '';
+    }
+
     return values
       .map((value, index) => {
-        const x = padding + (index / (values.length - 1)) * (width - padding * 2);
+        const x = padding + (index / (values.length - 1 || 1)) * (width - padding * 2);
         // Standardize Y mapping to the explicit data window bounds
         const y = height - padding - ((value - explicitMin) / range) * (height - padding * 2);
         return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
