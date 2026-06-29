@@ -99,7 +99,7 @@ def standard_activate(request, table, proc=None):
             row = rows[0]
             row.active = body.get("active")
             session.commit()
-            return {"status": True, "message": f"Successfully set row with id {id} to active {body.get("active")}"}
+            return {"status": True, "message": f"Successfully set row with id {id} to active {body.get('active')}"}
 
 
 def get_ui_options(filter=False):
@@ -149,6 +149,14 @@ def get_all_ui_options():
 def get_active_ui_options():
     return get_ui_options(filter=True)
 
+@app.route("/rest/encoder_types/active", methods=["POST"])
+def encoder_type_active():
+    return standard_activate(request, EncoderType)
+
+@app.route("/rest/codecs/active", methods=["POST"])
+def codec_active():
+    return standard_activate(request, Codec)
+
 @app.route("/rest/project_types", methods=["GET", "POST", "PUT"])
 def project_types():
      return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
@@ -173,6 +181,9 @@ def topologies():
 def transmission_conditions():
     return standard_crud(request, TransmissionCondition, transmission_update, transmission_create, TransmissionConditionUpdate, TransmissionConditionCreate)
 
+@app.route("/rest/transmission_conditions/active", methods=["POST"])
+def transmission_conditions_active():
+    return standard_activate(request,TransmissionCondition)
 @app.route("/rest/sequences", methods=["GET", "POST", "PUT"])
 def sequences():
     return standard_crud(request, Sequence, sequence_update, sequence_create, SequenceUpdate, SequenceCreate)

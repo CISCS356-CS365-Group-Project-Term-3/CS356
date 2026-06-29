@@ -1,67 +1,136 @@
 <div class="page">
+
+  <!-- ================= Header ================= -->
+
   <div class="header-row">
+
     <div>
+
       <h1>Network Profiles</h1>
-      <p>Manage transmission conditions for streaming tests.</p>
+
+      <p>
+        Manage transmission conditions available within the platform.
+        Only active supported network profiles can be used when creating
+        experiments.
+      </p>
+
     </div>
 
     <div class="actions">
-      <button mat-flat-button color="primary" (click)="addProfile()">
+
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addNetworkProfile()">
+
         <mat-icon>add</mat-icon>
-        Add profile
+
+        Add Network Profile
+
       </button>
-      <button mat-stroked-button color="primary" (click)="editSelected()">
-        <mat-icon>edit</mat-icon>
-        Edit selected
-      </button>
-      <button mat-stroked-button color="accent" (click)="applySelected()">
+
+      <button
+        mat-stroked-button
+        color="primary"
+        [disabled]="!selectedProfile || selectedProfile.active === 1"
+        (click)="enableSelected()">
+
         <mat-icon>check_circle</mat-icon>
-        Apply selected
+
+        Enable
+
       </button>
+
+      <button
+        mat-stroked-button
+        color="warn"
+        [disabled]="!selectedProfile || selectedProfile.active === 0"
+        (click)="disableSelected()">
+
+        <mat-icon>block</mat-icon>
+
+        Disable
+
+      </button>
+
     </div>
+
   </div>
 
-  <div class="layout">
-    <mat-card class="panel table-panel">
-      <div class="panel-top">
-        <mat-form-field appearance="outline" class="search-box">
-          <mat-label>Search profiles</mat-label>
-          <input matInput [value]="searchText" (input)="onSearch($event)" />
-        </mat-form-field>
-      </div>
+  <!-- ================= Information ================= -->
 
-      <div class="ag-theme-quartz grid-wrap">
-        <ag-grid-angular
-          style="width: 100%; height: 100%;"
-          [rowData]="rowData"
-          [columnDefs]="columnDefs"
-          [defaultColDef]="defaultColDef"
-          [animateRows]="true"
-          [pagination]="true"
-          [paginationPageSize]="5"
-          rowSelection="single"
-          (gridReady)="onGridReady($event)"
-          (selectionChanged)="onSelectionChanged($event)"
-        >
-        </ag-grid-angular>
-      </div>
-    </mat-card>
+  <mat-card class="info-card">
 
-    <mat-card class="panel side-panel">
-      <h2>Selected profile</h2>
+    <mat-icon color="primary">
 
-      <div *ngIf="selectedProfile; else noneSelected" class="selected-box">
-        <div><strong>Name:</strong> {{ selectedProfile.name }}</div>
-        <div><strong>Packet Loss:</strong> {{ selectedProfile.packetLoss }}</div>
-        <div><strong>Delay:</strong> {{ selectedProfile.delay }}</div>
-        <div><strong>Jitter:</strong> {{ selectedProfile.jitter }}</div>
-        <div><strong>Bandwidth:</strong> {{ selectedProfile.bandwidth }}</div>
-        <div><strong>Notes:</strong> {{ selectedProfile.notes }}</div>
-      </div>
+      info
 
-      <ng-template #noneSelected>
-        <p class="muted">Select a profile to view or edit it.</p>
-      </ng-template>
-    </mat-card>
-  </div>
+    </mat-icon>
+
+    <div>
+
+      <strong>Network Profiles</strong>
+
+      <p>
+
+        Network profiles represent transmission conditions that are used
+        during experiment execution.
+
+      </p>
+
+      <p>
+
+        Only network profiles marked as
+        <strong>Supported</strong>
+        and
+        <strong>Active</strong>
+        can be selected by researchers.
+
+      </p>
+
+    </div>
+
+  </mat-card>
+
+  <!-- ================= Table ================= -->
+
+  <mat-card class="panel">
+
+    <div class="panel-top">
+
+    </div>
+
+    <div
+      class="ag-theme-quartz grid-wrap">
+
+      <ag-grid-angular
+
+        style="width:100%;height:100%;"
+
+        [rowData]="rowData"
+
+        [columnDefs]="columnDefs"
+
+        [defaultColDef]="defaultColDef"
+
+        [rowClassRules]="rowClassRules"
+
+        [animateRows]="true"
+
+        [pagination]="true"
+
+        [paginationPageSize]="10"
+
+        rowSelection="single"
+
+        (gridReady)="onGridReady($event)"
+
+        (selectionChanged)="onSelectionChanged($event)">
+
+      </ag-grid-angular>
+
+    </div>
+
+  </mat-card>
+
 </div>

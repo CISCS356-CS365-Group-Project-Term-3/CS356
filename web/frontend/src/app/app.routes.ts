@@ -13,6 +13,7 @@ import { InfrastructureEncodersComponent } from './features/infrastructure-porta
 import { InfrastructureNetworkProfilesComponent } from './features/infrastructure-portal/network-profiles/infrastructure-network-profiles';
 import { InfrastructureCodecsComponent } from './features/infrastructure-portal/codecs/infrastructure-codecs';
 import { Profile } from './features/user_management/profile/profile';
+import { InfrastructureDatasetsComponent} from './features/infrastructure-portal/datasets/infrastruture-datasets';
 
 export const routes: Routes = [
   { path: 'experiments', component: Dashboard },
@@ -31,6 +32,7 @@ export const routes: Routes = [
       { path: 'encoders', component: InfrastructureEncodersComponent },
       {path: 'codecs', component: InfrastructureCodecsComponent},
       { path: 'network-profiles', component: InfrastructureNetworkProfilesComponent },
+      { path: 'infrastructure-datasets',component:InfrastructureDatasetsComponent},
     ],
   },
 ];

@@ -1,17 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
-import {
-  MatDialogRef,
-  MatDialogModule
-} from '@angular/material/dialog';
-
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,35 +12,41 @@ import { MatButtonModule } from '@angular/material/button';
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
+    FormsModule,
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule
   ],
-  templateUrl: './add-codec-dialog.component.html'
+  templateUrl: './add-codec-dialog.component.html',
+  styleUrls: ['./add-codec-dialog.component.scss']
 })
 export class AddCodecDialogComponent {
-  codecForm: FormGroup;
 
+  name = '';
+  version = ''
   constructor(
-    private fb: FormBuilder,
     private dialogRef: MatDialogRef<AddCodecDialogComponent>
-  ) {
-    this.codecForm = this.fb.group({
-      codec: ['', Validators.required],
-      version: [''],
-      status: ['']
-    });
-  }
+  ) {}
 
   save(): void {
-    if (this.codecForm.valid) {
-      this.dialogRef.close(this.codecForm.value);
-    }
+
+    this.dialogRef.close({
+
+      name: this.name.trim(),
+
+      version: '1.0',
+
+      active: 0
+
+    });
+
   }
 
   cancel(): void {
+
     this.dialogRef.close();
+
   }
+
 }

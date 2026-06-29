@@ -1,48 +1,110 @@
 <div class="page">
+
+  <!-- ================= Header ================= -->
+
   <div class="header-row">
+
     <div>
+
       <h1>Encoder Types</h1>
-      <p>Manage encoder types available to researchers</p>
+
+      <p>
+        Manage the encoder types available within the platform.
+        Active encoder types are available to researchers when creating experiments.
+      </p>
+
     </div>
 
     <div class="actions">
-      <button mat-flat-button color="primary" (click)="addEncoder()">
+
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addEncoder()">
+
         <mat-icon>add</mat-icon>
-        Add encoder
+        Add Encoder Type
+
       </button>
-      <button mat-stroked-button color="primary" (click)="editSelected()">
-        <mat-icon>edit</mat-icon>
-        Edit selected
+
+      <button
+        mat-stroked-button
+        color="primary"
+        [disabled]="!selectedEncoder ||selectedEncoder.active === 1 ||selectedEncoder.name !== 'Standard Encoder'
+"
+        (click)="enableSelected()">
+
+        <mat-icon>check_circle</mat-icon>
+        Enable
+
       </button>
-      <button mat-stroked-button color="warn" (click)="deleteSelected()">
-        <mat-icon>delete</mat-icon>
-        Delete selected
+
+      <button
+        mat-stroked-button
+        color="warn"
+        [disabled]=" !selectedEncoder || selectedEncoder.active === 0 ||selectedEncoder.name !== 'Standard Encoder'
+"
+        (click)="disableSelected()">
+
+        <mat-icon>block</mat-icon>
+        Disable
+
       </button>
+
     </div>
+
   </div>
 
-  <mat-card class="panel">
-    <div class="panel-top">
-      <mat-form-field appearance="outline" class="search-box">
-        <mat-label>Search encoders</mat-label>
-        <input matInput [value]="searchText" (input)="onSearch($event)" />
-      </mat-form-field>
+  <!-- ================= Information ================= -->
+
+  <mat-card class="info-card">
+
+    <mat-icon color="primary">
+
+      info
+
+    </mat-icon>
+
+    <div>
+
+      <strong>Availability</strong>
+
+      <p>
+
+        Encoder types can be added to the platform at any time.
+        Only encoder types marked as <strong>Active</strong> will
+        be available for researchers when creating experiments.
+
+      </p>
+
     </div>
 
+  </mat-card>
+
+  <!-- ================= Table ================= -->
+
+  <mat-card class="panel">
     <div class="ag-theme-quartz grid-wrap">
+
       <ag-grid-angular
-        style="width: 100%; height: 100%;"
+
+        style="width:100%;height:100%;"
+
         [rowData]="rowData"
         [columnDefs]="columnDefs"
         [defaultColDef]="defaultColDef"
+        [rowClassRules]="rowClassRules"
         [animateRows]="true"
         [pagination]="true"
         [paginationPageSize]="10"
         rowSelection="single"
         (gridReady)="onGridReady($event)"
-        (selectionChanged)="onSelectionChanged($event)"
-      >
+        (selectionChanged)="onSelectionChanged($event)">
+
       </ag-grid-angular>
+
     </div>
+
   </mat-card>
+
 </div>

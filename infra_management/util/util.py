@@ -40,6 +40,7 @@ def transmission_create(table, body): #These could be further colapsed into a si
     name = body.get("name")
     lower_bound = body.get("lower_bound")
     upper_bound = body.get("upper_bound")
+    unit = body.get("unit"),
     return table(
         name = name,
         lower_bound = lower_bound,
@@ -57,22 +58,56 @@ def transmission_update(row, body):
 
 def codec_update(row, body):
     row.version = body.get("version") if body.get("version") else row.version
-    row.satus = body.get("status") if body.get("status") else row.status
-    row.filepath = body.get("filepath") if body.get("filepath") else row.filepath
+    #row.status = body.get("status") if body.get("status") else row.status
+    row.active = body.get("active") if body.get("active") is not None else row.active
+    #row.filepath = body.get("filepath") if body.get("filepath") else row.filepath #codec doesnt have a filepath
     row.name = body.get("name") if body.get("name") else row.name
 
+# def codec_create(table, body):
+#     return table(
+#         name = body.get("name"),
+#         active = body.get("active"),
+#         version = body.get("version")
+#     )
 def codec_create(table, body):
+
     return table(
         name = body.get("name"),
         active = body.get("active"),
         version = body.get("version")
     )
 
+# def name_id_create(table, body):
+#     name = body.get("name") #Name should already be validated at this point.
+#     return table(name=name)
+
 def name_id_create(table, body):
-    name = body.get("name") #Name should already be validated at this point.
-    return table(name=name)
+
+    return table(
+        name=body.get("name"),
+        description=body.get("description"),
+        active=body.get("active", 0)
+    )
+
+# def name_id_update(row, body):
+#
+#     if body.get("name") is not None:
+#         row.name = body.get("name")
+#
+#     if body.get("active") is not None:
+#         row.active = body.get("active")
+#
+#     return row
 
 def name_id_update(row, body):
-    name = body.get("name")
-    row.name = name
+
+    if body.get("name") is not None:
+        row.name = body.get("name")
+
+    if body.get("description") is not None:
+        row.description = body.get("description")
+
+    if body.get("active") is not None:
+        row.active = body.get("active")
+
     return row

@@ -1,26 +1,30 @@
-<h2 mat-dialog-title>Add Codec</h2>
+<h2 mat-dialog-title>
+  Add Codec
+</h2>
 
 <mat-dialog-content>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Codec</mat-label>
-    <input
-      matInput
-      formControlName="codec">
-  </mat-form-field>
+  <p class="dialog-description">
+    Add a codec to the Infrastructure Portal.
+    Unsupported codecs can be stored but cannot currently be enabled for
+    researchers until they are supported by the Experiments Engine.
+  </p>
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Version</mat-label>
-    <input
-      matInput
-      formControlName="version">
-  </mat-form-field>
+  <mat-form-field appearance="outline">
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Status</mat-label>
+    <mat-label>
+      Codec Name
+    </mat-label>
+
     <input
       matInput
-      formControlName="status">
+      [(ngModel)]="name"
+      maxlength="100">
+
+    <mat-hint>
+      Example: H.264
+    </mat-hint>
+
   </mat-form-field>
 
 </mat-dialog-content>
@@ -34,10 +38,11 @@
   </button>
 
   <button
-    mat-raised-button
+    mat-flat-button
     color="primary"
+    [disabled]="name.trim().length === 0"
     (click)="save()">
-    Save
+    Add Codec
   </button>
 
 </mat-dialog-actions>

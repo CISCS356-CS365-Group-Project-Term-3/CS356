@@ -15,9 +15,19 @@ export class UiOptionsService {
   }
 
   addEncoderType(encoder: any) {
-    return this.http.post(
+    return this.http.put(
       'http://localhost:5001/rest/encoder_types',
       encoder
+    );
+  }
+
+  toggleEncoderType(id: number, active: number) {
+    return this.http.post(
+      'http://localhost:5001/rest/encoder_types/active',
+      {
+        id,
+        active
+      }
     );
   }
 
@@ -29,4 +39,101 @@ export class UiOptionsService {
       }
     );
   }
+
+  enableEncoder(id: number) {
+    return this.http.post(
+      'http://localhost:5001/rest/encoder_types',
+      {
+        id,
+        active: 1
+      }
+    );
+  }
+
+  disableEncoder(id: number) {
+    return this.http.post(
+      'http://localhost:5001/rest/encoder_types',
+      {
+        id,
+        active: 0
+      }
+    );
+  }
+
+  addCodec(codec: any) {
+
+    return this.http.put(
+
+      'http://localhost:5001/rest/codecs',
+
+      codec
+
+    );
+
+  }
+  toggleCodec(id: number, active: number) {
+    return this.http.post(
+
+      'http://localhost:5001/rest/codecs/active',
+
+      {
+        id,
+        active
+      }
+
+    );
+
+  }
+
+  addTransmissionCondition(body: any) {
+
+    return this.http.put(
+
+      'http://localhost:5001/rest/transmission_conditions',
+
+      body
+
+    );
+
+  }
+
+  toggleTransmissionCondition(body: any) {
+
+    return this.http.post(
+      'http://localhost:5001/rest/transmission_conditions/active',
+
+      body
+    );
+  }
+
+  addSequence(sequence: any) {
+
+    return this.http.post(
+
+      `http://localhost:5001/rest/sequences`,
+
+      sequence
+
+    );
+
+  }
+
+  toggleSequence(body: {
+
+    id: number;
+
+    active: number;
+
+  }) {
+
+    return this.http.post(
+
+      `http://localhost:5001/rest/sequences/active`,
+
+      body
+
+    );
+
+  }
+
 }

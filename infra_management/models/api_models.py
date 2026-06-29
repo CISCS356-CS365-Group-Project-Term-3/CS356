@@ -2,16 +2,16 @@ from pydantic import BaseModel, PositiveInt
 from typing import List, Union, Optional, Annotated, Literal
 from annotated_types import Len
 
-class SequenceUpdate(BaseModel):
-    id: int
-    name: Optional[str]
-    description: Optional[str]
-    active: Optional[Literal[0, 1]]
+# class SequenceUpdate(BaseModel):
+#     id: int
+#     name: Optional[str]
+#     description: Optional[str]
+#     active: Optional[Literal[0, 1]]
 
-class SequenceCreate(BaseModel):
-    name: str
-    description: str
-    active: Literal[0, 1]
+# class SequenceCreate(BaseModel):
+#     name: str
+#     description: str
+#     active: Literal[0, 1]
 
 class VideoFileUpdate(BaseModel):
     id: int
@@ -49,11 +49,12 @@ class TransmissionConditionCreate(BaseModel):
     lower_bound: int
     upper_bound: int
     active: Literal[0, 1]
+    unit: str
 
 class CodecCreate(BaseModel):
-    version: str
-    active: Literal[0, 1]
     name: str
+    active: Literal[0, 1]
+    version: Optional[str] = None
 
 class CodecUpdate(BaseModel):
     id: int
@@ -64,30 +65,57 @@ class CodecUpdate(BaseModel):
 class IdDelete(BaseModel):
     id: int
 
+# class NameIdCreate(BaseModel):
+#     name: str
+#     active: int
+
 class NameIdCreate(BaseModel):
     name: str
-    active: int
+    description: Optional[str] = None
+    active: Literal[0, 1]
+
+# class SequenceCreate(BaseModel):
+#     name: str
+#     description: str
+#     active: int
 
 class SequenceCreate(BaseModel):
     name: str
     description: str
-    active: int
+    active: Literal[0, 1]
 
-class SequenceCreate(BaseModel):
-    name: str
-    description: str
-    active: int
+# class SequenceCreate(BaseModel):
+#     name: str
+#     description: str
+#     active: int
+
+# class SequenceUpdate(BaseModel):
+#     id: str
+#     name: Optional[str]
+#     description: Optional[str]
+#     active: Optional[int]
 
 class SequenceUpdate(BaseModel):
-    id: str
-    name: Optional[str]
-    description: Optional[str]
-    active: Optional[int]
+    id: int
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 
+class SequenceUpdate(BaseModel):
+    id: int
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
+
+# class NameIdUpdate(BaseModel):
+#     id: int
+#     name: Optional[str]
+#     active: Optional[int]
 class NameIdUpdate(BaseModel):
     id: int
-    name: Optional[str]
-    active: Optional[int]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 
 class ToggleActiveRequest(BaseModel):
     active: Literal[0, 1]

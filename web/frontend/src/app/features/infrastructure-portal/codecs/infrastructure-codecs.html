@@ -1,66 +1,119 @@
 <div class="page">
 
+  <!-- ================= Header ================= -->
+
   <div class="header-row">
 
     <div>
+
       <h1>Codecs</h1>
+
       <p>
-        Manage codec configurations available to researchers for experiment encoding.
+        Manage codec configurations available within the platform.
+        Only supported and active codecs are available to researchers when
+        creating experiments.
       </p>
+
     </div>
 
     <div class="actions">
 
-      <button mat-flat-button color="primary" (click)="addCodec()">
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addCodec()">
+
         <mat-icon>add</mat-icon>
-        Add codec
+        Add Codec
+
       </button>
 
-      <button mat-stroked-button color="primary" (click)="editSelected()">
-        <mat-icon>edit</mat-icon>
-        Edit selected
+      <button
+        mat-stroked-button
+        color="primary"
+        [disabled]="!selectedCodec || selectedCodec.active === 1"
+        (click)="enableSelected()">
+
+        <mat-icon>check_circle</mat-icon>
+        Enable
+
       </button>
 
-      <button mat-stroked-button color="warn" (click)="deleteSelected()">
-        <mat-icon>delete</mat-icon>
-        Delete selected
+      <button
+        mat-stroked-button
+        color="warn"
+        [disabled]="!selectedCodec || selectedCodec.active === 0"
+        (click)="disableSelected()">
+
+        <mat-icon>block</mat-icon>
+        Disable
+
       </button>
 
     </div>
 
   </div>
 
+  <!-- ================= Information ================= -->
+
+  <mat-card class="info-card">
+
+    <mat-icon color="primary">
+
+      info
+
+    </mat-icon>
+
+    <div>
+
+      <strong>Supported Codecs</strong>
+
+      <p>
+
+        Supported codecs are shown in green when active.
+        Unsupported codecs may be stored in the platform but cannot
+        currently be enabled for the experiments engine.
+
+      </p>
+
+    </div>
+
+  </mat-card>
+
+  <!-- ================= Table ================= -->
+
   <mat-card class="panel">
 
     <div class="panel-top">
-
-      <mat-form-field appearance="outline" class="search-box">
-
-        <mat-label>Search codecs</mat-label>
-
-        <input
-          matInput
-          [value]="searchText"
-          (input)="onSearch($event)"
-        />
-
-      </mat-form-field>
 
     </div>
 
     <div class="ag-theme-quartz grid-wrap">
 
       <ag-grid-angular
+
         style="width:100%;height:100%;"
+
         [rowData]="rowData"
+
         [columnDefs]="columnDefs"
+
         [defaultColDef]="defaultColDef"
+
+        [rowClassRules]="rowClassRules"
+
         [animateRows]="true"
+
         [pagination]="true"
+
         [paginationPageSize]="10"
+
         rowSelection="single"
+
         (gridReady)="onGridReady($event)"
-      >
+
+        (selectionChanged)="onSelectionChanged($event)">
+
       </ag-grid-angular>
 
     </div>
