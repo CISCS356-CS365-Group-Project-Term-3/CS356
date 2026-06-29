@@ -7,7 +7,7 @@
   </div>
 
   <div class="history-layout">
-    <mat-card appearance="outlined" class="history-card">
+    <mat-card class="history-card">
       <div class="card-header">
         <h2>Your experiment history</h2>
         <button type="button" class="card-badge-button" (click)="toggleSort()">
@@ -32,9 +32,9 @@
               <span>{{ experiment.date }}</span>
             </div>
             <div class="history-meta">
-              <span>{{ experiment.codec }}</span>
-              <span>{{ experiment.sequence }}</span>
-              @if (!experiment.success) {
+              <span>{{ experiment.codecsLabel }}</span>
+              <span>{{ experiment.name }}</span>
+              @if (hasFailures(experiment)) {
                 <span>Failed</span>
               }
             </div>
@@ -45,85 +45,116 @@
 
     <div class="detail-stack">
       @if (selectedExperiment) {
-        <mat-card appearance="outlined" class="summary-card">
-          <mat-card-content>
-            <div class="summary-label">Selected experiment</div>
-            <div class="summary-value">{{ selectedExperiment.title }}</div>
-            <div class="summary-meta">Video: {{ selectedExperiment.sequence }}</div>
-            <div class="summary-meta">Date/Time: {{ selectedExperiment.date }}</div>
-          </mat-card-content>
+        <mat-card class="summary-card">
+          <div class="summary-top">
+            <div>
+              <div class="summary-label">Selected experiment</div>
+              <div class="summary-value">{{ selectedExperiment.title }}</div>
+              <div class="summary-meta">Video: {{ selectedExperiment.name }}</div>
+              <div class="summary-meta">Date/Time: {{ selectedExperiment.date }}</div>
+            </div>
+
+            <div class="codec-legend">
+              @for (run of selectedExperiment.codecRuns; track $index) {
+                <div class="codec-legend-row">
+                  <span class="legend-swatch" [style.background]="run.color"></span>
+                  <strong>{{ run.codecName }}</strong>
+                  <small>{{ run.frameCount }} frames</small>
+                </div>
+              }
+            </div>
+          </div>
+
+          @for (run of selectedExperiment.codecRuns; track $index) {
+            @if (!run.success) {
+              <div class="notice-box">
+                {{ run.codecName }} failed{{ run.failureReason ? ': ' + run.failureReason : '.' }}
+              </div>
+            }
+          }
         </mat-card>
 
-        @if (!selectedExperiment.success) {
-          <div class="notice-box">
-            Experiment failed{{ selectedExperiment.failureReason ? ': ' + selectedExperiment.failureReason : '.' }}
-          </div>
-        }
-
-        <div class="summary-grid">
-          <mat-card appearance="outlined" class="summary-card">
-            <mat-card-content>
-              <div class="summary-label">Codec</div>
-              <div class="summary-value">{{ selectedExperiment.codec }}</div>
-              <div class="summary-meta">Codec used for this experiment</div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card appearance="outlined" class="summary-card">
-            <mat-card-content>
-              <div class="summary-label">Frames analysed</div>
-              <div class="summary-value">{{ selectedExperiment.frameCount }}</div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-
         <div class="metrics-grid">
-          <mat-card appearance="outlined" class="metric-card">
+          <mat-card class="metric-card">
             <div class="card-header">
               <h2>PSNR overview</h2>
               <span class="card-badge">Peak signal-to-noise ratio</span>
             </div>
 
-            <div class="summary-row">
-              @for (metric of selectedExperiment.psnrSummary; track metric.label) {
-                <div class="metric-pill">
-                  <span class="metric-label">{{ metric.label }}</span>
-                  <strong>{{ metric.value }}</strong>
-                  <small>{{ metric.hint }}</small>
-                </div>
-              }
-            </div>
+            <table class="metric-table">
+              <thead>
+                <tr>
+                  <th>Codec</th>
+                  <th>Y</th>
+                  <th>U</th>
+                  <th>V</th>
+                  <th>All</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (run of selectedExperiment.codecRuns; track $index) {
+                  <tr>
+                    <td class="metric-table-codec">
+                      <span class="legend-swatch" [style.background]="run.color"></span>
+                      {{ run.codecName }}
+                    </td>
+                    @for (metric of run.psnrSummary; track metric.label) {
+                      <td>{{ metric.value }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
 
             <div class="chart-area">
-              <svg viewBox="0 0 500 200" class="chart-svg" aria-label="PSNR trend chart">
+              <svg viewBox="0 0 500 200" preserveAspectRatio="none" class="chart-svg" aria-label="PSNR trend chart">
                 <line x1="24" y1="176" x2="476" y2="176" class="axis-line"></line>
                 <line x1="24" y1="24" x2="24" y2="176" class="axis-line"></line>
-                <path [attr.d]="psnrPath" class="trend-line"></path>
+                @for (line of psnrChartLines; track $index) {
+                  <path [attr.d]="line.path" [style.stroke]="line.color" class="trend-line"></path>
+                }
               </svg>
             </div>
           </mat-card>
 
-          <mat-card appearance="outlined" class="metric-card">
+          <mat-card class="metric-card">
             <div class="card-header">
               <h2>SSIM overview</h2>
               <span class="card-badge">Structural similarity</span>
             </div>
 
-            <div class="summary-row">
-              @for (metric of selectedExperiment.ssimSummary; track metric.label) {
-                <div class="metric-pill">
-                  <span class="metric-label">{{ metric.label }}</span>
-                  <strong>{{ metric.value }}</strong>
-                  <small>{{ metric.hint }}</small>
-                </div>
-              }
-            </div>
+            <table class="metric-table">
+              <thead>
+                <tr>
+                  <th>Codec</th>
+                  <th>Y</th>
+                  <th>U</th>
+                  <th>V</th>
+                  <th>All</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (run of selectedExperiment.codecRuns; track $index) {
+                  <tr>
+                    <td class="metric-table-codec">
+                      <span class="legend-swatch" [style.background]="run.color"></span>
+                      {{ run.codecName }}
+                    </td>
+                    @for (metric of run.ssimSummary; track metric.label) {
+                      <td>{{ metric.value }}</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
 
             <div class="chart-area">
-              <svg viewBox="0 0 500 200" class="chart-svg" aria-label="SSIM trend chart">
+              <svg viewBox="0 0 500 200" preserveAspectRatio="none" class="chart-svg" aria-label="SSIM trend chart">
                 <line x1="24" y1="176" x2="476" y2="176" class="axis-line"></line>
                 <line x1="24" y1="24" x2="24" y2="176" class="axis-line"></line>
-                <path [attr.d]="ssimPath" class="trend-line ssim"></path>
+                @for (line of ssimChartLines; track $index) {
+                  <path [attr.d]="line.path" [style.stroke]="line.color" class="trend-line"></path>
+                }
               </svg>
             </div>
           </mat-card>

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from queue_setup.publisher import publish_to_queue
@@ -34,6 +35,7 @@ def create_experiment(data):
         return saved
     if status == "finalised":
         last_saved = None
+        batch_id = str(uuid.uuid4())
         packet_losses = networkEmulation.get("packetLoss", [])
         delays = networkEmulation.get("delay", [])
         jitters = networkEmulation.get("jitter", [])
@@ -54,7 +56,8 @@ def create_experiment(data):
                         "date": date,
                         "encoders": [encoder],
                         "sequences": [{"videoFileId": seq["videoFileId"], "sequence_code": code}],
-                        "networkEmulation": [condition]
+                        "networkEmulation": [condition],
+                        "batchId": batch_id
                     }
                     last_saved = save_experiment(job)
                     payload = {
@@ -88,6 +91,7 @@ def update_experiment(experiment_id, data):
     if updated["status"] == "draft":
         return saved
     last_saved = None
+    batch_id = str(uuid.uuid4())
     network_emulation = updated["networkEmulation"]
     packet_losses = network_emulation.get("packetLoss", [])
     delays = network_emulation.get("delay", [])
@@ -114,7 +118,8 @@ def update_experiment(experiment_id, data):
                     "date": updated["date"],
                     "encoders": [encoder],
                     "sequences": [{"videoFileId": seq["videoFileId"],"sequence_code": code}],
-                    "networkEmulation": condition
+                    "networkEmulation": condition,
+                    "batchId": batch_id
                 }
                 last_saved = update_experiment_by_id(experiment_id, job)
                 payload = {

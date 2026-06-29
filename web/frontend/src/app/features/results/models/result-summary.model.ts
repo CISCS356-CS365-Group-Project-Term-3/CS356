@@ -8,6 +8,7 @@ export interface MetricAverage {
 export interface ResultSummary {
   experimentId: number;
   experimentName: string | null;
+  batchId: string | null;
   groupId: number | null;
   userId: number | null;
   createdAt: string | null;

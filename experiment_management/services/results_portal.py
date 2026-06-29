@@ -26,6 +26,7 @@ def clean_result(doc):
     cleaned_doc = {
     "experimentId": project.get("experiment_id"),
     "experimentName": experiment.get("name") if experiment else None,
+    "batchId": experiment.get("batchId") if experiment else None,
     "groupId": project.get("group_id"),
     "userId": project.get("user_id"),
     "createdAt": project.get("created_at"),
