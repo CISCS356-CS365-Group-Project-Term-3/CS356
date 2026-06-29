@@ -11,7 +11,6 @@ class SequenceUpdate(BaseModel):
 class SequenceCreate(BaseModel):
     name: str
     description: str
-    active: Literal[0, 1]
 
 class VideoFileUpdate(BaseModel):
     id: int
@@ -34,7 +33,6 @@ class VideoFileCreate(BaseModel):
     depth: int
     quality: str
     gamut: str
-    active: Literal[0, 1]
 
 
 class TransmissionConditionUpdate(BaseModel):
@@ -69,18 +67,18 @@ class IdDelete(BaseModel):
 class NameIdCreate(BaseModel):
     name: str
 
-class SequenceUpdate(BaseModel):
-    id: str
-    name: Optional[str] = None
-    description: Optional[str] = None
-    active: Optional[int] = None
-
 class NameIdUpdate(BaseModel):
     id: int
     name: Optional[str] = None
-    active: Optional[int] = None
+    active: Optional[Literal[0, 1]] = None
 
-class ToggleActiveRequest(BaseModel):
-    active: Literal[0, 1]
+class EncoderTypeCreate(BaseModel):
+    name: str
+    description: str
+
+class EncoderTypeUpdate(BaseModel):
     id: int
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 

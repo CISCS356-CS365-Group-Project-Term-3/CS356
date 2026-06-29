@@ -19,6 +19,24 @@ def sequence_update(row, body):
         row.active = 0
     return row
 
+def encoder_type_create(table, body):
+    name = body.get("name")
+    description = body.get("description")
+    active = 0
+    return table(name = name, description = description, active = active)
+
+def encoder_type_update(row, body):
+    name = body.get("name")
+    description = body.get("description")
+    row.name = name if name else row.name
+    row.description = description if description else row.description
+    if body.get("active") == 1 and row.supported == 1:
+        row.active = 1
+    elif body.get("active") == 0:
+        row.active = 0
+    return row
+
+
 def video_file_create(table, body):
     return table(
         sequence_id = body.get("sequence_id"),

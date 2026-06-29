@@ -129,7 +129,7 @@ def project_types():
 
 @app.route("/rest/encoder_types", methods=["GET", "POST", "PUT"])
 def encoder_types():
-    return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
+    return standard_crud(request, EncoderType, encoder_type_update, encoder_type_create, EncoderTypeUpdate, EncoderTypeCreate)
 
 @app.route("/rest/encoder_modes", methods=["GET", "POST", "PUT"])
 def encoder_modes():
