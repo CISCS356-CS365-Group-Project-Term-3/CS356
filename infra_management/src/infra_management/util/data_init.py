@@ -57,6 +57,7 @@ def data_init():
         transmission_condition.upper_bound = 999
         transmission_condition.unit = "ms"
         transmission_condition.active = 1
+        transmission_condition.supported = 1
         session.add(transmission_condition)
 
         transmission_condition2 = models.TransmissionCondition()
@@ -65,6 +66,7 @@ def data_init():
         transmission_condition2.upper_bound = 200
         transmission_condition2.unit = "ms"
         transmission_condition2.active = 1
+        transmission_condition2.supported = 1
         session.add(transmission_condition2)
 
         transmission_condition3 = models.TransmissionCondition()
@@ -73,6 +75,7 @@ def data_init():
         transmission_condition3.upper_bound = 20
         transmission_condition3.unit = "%"
         transmission_condition3.active = 1
+        transmission_condition3.supported = 1
         session.add(transmission_condition3)
 
         sequence = models.Sequence()

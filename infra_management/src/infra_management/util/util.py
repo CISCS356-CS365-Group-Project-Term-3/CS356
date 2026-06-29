@@ -54,10 +54,12 @@ def transmission_create(table, body): #These could be further colapsed into a si
     name = body.get("name")
     lower_bound = body.get("lower_bound")
     upper_bound = body.get("upper_bound")
+    unit = body.get("unit")
     return table(
         name = name,
         lower_bound = lower_bound,
         upper_bound = upper_bound,
+        unit = unit,
         active = 0
     )
 

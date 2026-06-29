@@ -69,14 +69,6 @@ class IdDelete(BaseModel):
 class NameIdCreate(BaseModel):
     name: str
 
-class SequenceCreate(BaseModel):
-    name: str
-    description: str
-
-class SequenceCreate(BaseModel):
-    name: str
-    description: str
-
 class SequenceUpdate(BaseModel):
     id: str
     name: Optional[str] = None
