@@ -117,11 +117,10 @@ export class Dashboard implements OnInit {
 
   ngOnInit() {
     // this.isAdmin = this.authService.isAdmin();
-    this.infrastructureService.getConfig().subscribe({
-      next: (config) => { this.config = config; },
-      error: () => {},
+    this.infrastructureService.getConfig().subscribe((config) => {
+      this.config = config;
+      this.loadExperiments();
     });
-    this.loadExperiments();
   }
 
   loadExperiments(): void {

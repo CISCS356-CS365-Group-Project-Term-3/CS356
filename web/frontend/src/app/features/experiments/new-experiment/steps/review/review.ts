@@ -49,26 +49,6 @@ export class ReviewStep implements OnInit {
     };
   }
 
-  get hasNetworkEmulation(): boolean {
-    const net = this.formService.form.networkEmulation;
-    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
-  }
-
-  get packetLossDisplay(): string {
-    const vals = this.formService.form.networkEmulation.packetLoss;
-    return vals.length > 0 ? vals.map((v) => v + '%').join(', ') : '—';
-  }
-
-  get delayDisplay(): string {
-    const vals = this.formService.form.networkEmulation.delay;
-    return vals.length > 0 ? vals.map((v) => v + 'ms').join(', ') : '—';
-  }
-
-  get jitterDisplay(): string {
-    const vals = this.formService.form.networkEmulation.jitter;
-    return vals.length > 0 ? vals.map((v) => v + 'ms').join(', ') : '—';
-  }
-
   getSequenceDisplay(seq: SequenceConfig): SequenceDisplay {
     const file = this.config?.sequences.flatMap((s) => s.videoFiles).find((f) => f.id === seq.videoFileId);
     const seqName = this.config?.sequences.find((s) => s.videoFiles.some((f) => f.id === seq.videoFileId))?.name ?? '—';
