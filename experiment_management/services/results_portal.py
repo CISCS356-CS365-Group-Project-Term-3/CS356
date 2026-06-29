@@ -30,6 +30,16 @@ def clean_result(doc):
 
     return cleaned_doc
 
+def get_experiment_frames(experiment_id):
+    doc = results_store.get_frame_data(experiment_id)
+    if not doc:
+        return None
+    result = doc.get("result", {})
+    return {
+        "psnr": result.get("psnr", {}).get("raw", {}),
+        "ssim": result.get("ssim", {}).get("raw", {}),
+    }
+
 def get_result_summaries():
     raw_results = results_store.get_all_results()
 

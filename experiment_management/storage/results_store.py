@@ -8,6 +8,17 @@ client = MongoClient(MONGO_URI)
 db = client[MONGO_DB_NAME]
 experiment_results = db["experiment_results"]
 
+def get_frame_data(experiment_id):
+    doc = experiment_results.find_one(
+        {"project.experiment_id": experiment_id},
+        {
+            "_id": 0,
+            "result.psnr.raw": 1,
+            "result.ssim.raw": 1,
+        }
+    )
+    return doc
+
 def get_all_results(limit=100):
     docs = (
         experiment_results.find(
