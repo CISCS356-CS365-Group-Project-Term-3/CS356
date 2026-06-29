@@ -46,7 +46,8 @@ class MessageConsumer:
 
         self.channel.queue_declare(
             queue=Settings.experiment_queue,
-            exclusive=True
+            durable=True
+            #exclusive=True
         )
 
     def listen(self):

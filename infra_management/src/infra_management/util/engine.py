@@ -7,13 +7,12 @@ engine = None
 Base = declarative_base()
 
 def generate_url(user, host, database):
-    password = os.getenv("db_password")
-    password = "Welcome1"
+    password = os.getenv("DB_PASSWORD")
     print(f"Password: {password}")
     connection_string = f"postgresql+psycopg2://{user}:{password}@{host}/{database}"
     return connection_string
 
-def get_engine(user="postgres", host="localhost", database="postgres"):
+def get_engine(user=os.getenv("DB_USER"), host=os.getenv("DB_HOST"), database=os.getenv("DB_DB")):
     global engine
     if engine:
         return engine

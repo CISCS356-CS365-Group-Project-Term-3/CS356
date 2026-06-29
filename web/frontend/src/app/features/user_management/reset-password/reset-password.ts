@@ -121,7 +121,7 @@ export class ResetPassword {
     const token = this.route.snapshot.queryParamMap.get('token');
     const new_password = this.resetPasswordForm.get('password')?.value;
 
-    this.http.post('http://localhost:8000/auth/reset_password/confirm', { token, new_password })
+    this.http.post('/user-management/auth/reset_password/confirm', { token, new_password })
       .subscribe({
         next: () => this.router.navigate(['/login']),
         error: (err) => console.error('Reset failed', err)

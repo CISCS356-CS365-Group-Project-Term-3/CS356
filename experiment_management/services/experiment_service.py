@@ -58,10 +58,12 @@ def create_experiment(data):
                     }
                     last_saved = save_experiment(job)
                     payload = {
-                        "experiment_id": last_saved["id"],
-                        "date": last_saved["date"],
-                        "sequence_code": code,
-                        "userId": data["userId"]
+                            "project": {
+                            "experiment_id": last_saved["id"],
+                            "created_at": last_saved["date"],
+                            "user_id": data["userId"]
+                        },
+                        "sequence": code,
                     }
                     print("Publishing to queue:", payload)
                     publish_to_queue(payload)

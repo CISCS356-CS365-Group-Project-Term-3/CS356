@@ -46,10 +46,9 @@ def update_experiment(experiment_id):
     return updated_experiment, 200
 
 
-@app.route("/experiments-results", methods=["GET"])
-def getresults():
-    results = results_portal.get_result_summaries()
-    return jsonify(results), 200
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
 
 if __name__ == "__main__":
     app.run(debug=True)
