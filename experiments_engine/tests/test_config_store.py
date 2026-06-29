@@ -1,0 +1,48 @@
+import pytest
+from unittest.mock import patch, Mock
+from experiments_engine.config_store import ConfigStore
+
+
+MOCK_MAPPINGS = {
+    "raw_file": {"001": "blue_sky_1080p25.y4m", "002": "bus_cif.y4m"},
+    "codec": {"001": "h264", "002": "h265"}
+}
+
+
+@pytest.fixture
+def mock_api():
+    mock_response = Mock()
+    mock_response.json.return_value = MOCK_MAPPINGS
+    mock_response.raise_for_status.return_value = None
+    with patch("experiments_engine.config_store.requests.get", return_value=mock_response) as mock_get:
+        yield mock_get
+
+
+def test_get_config_returns_api_mappings(mock_api):
+    cs = ConfigStore()
+    config = cs.get_config()
+    assert config["raw_file"] == MOCK_MAPPINGS["raw_file"]
+    assert config["codec"] == MOCK_MAPPINGS["codec"]
+
+
+def test_get_config_includes_static_fields(mock_api):
+    cs = ConfigStore()
+    config = cs.get_config()
+    assert config["loss"] == "DECIMAL"
+    assert config["delay"] == "INTEGER"
+    assert config["jitter"] == "INTEGER"
+    assert config["encoder_type"] == {"000": "standard", "001": "scalable"}
+
+
+def test_calls_correct_endpoint(mock_api):
+    ConfigStore()
+    called_url = mock_api.call_args[0][0]
+    assert called_url.endswith("/rest/mappings")
+
+
+def test_raises_on_api_error():
+    mock_response = Mock()
+    mock_response.raise_for_status.side_effect = Exception("API unavailable")
+    with patch("experiments_engine.config_store.requests.get", return_value=mock_response):
+        with pytest.raises(Exception):
+            ConfigStore()

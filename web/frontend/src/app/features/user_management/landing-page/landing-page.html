@@ -1,0 +1,46 @@
+<div class="page-wrap">
+  <div class="user-actions">
+    <button routerLink="/profile" matButton="filled">View profile</button>
+    <button class="log-out-button" matButton="filled" (click)="openConfirm()"> Log out</button>
+  </div>
+
+  <div class="page-header">
+    <h1>Welcome, User</h1>
+  </div>
+
+  <div class="portal-cards">
+    <div>
+      <h2> Infrastructure </h2>
+  <mat-card appearance="outlined" class="clickable-card" routerLink="/infrastructure">
+    <img mat-card-image  src="/assets/card-images/infrastructure-card-image.png" alt="Infrastructure image" >
+    <mat-card-content>
+      <p>
+        View or manage infrastructure
+      </p>
+    </mat-card-content>
+  </mat-card>
+    </div>
+
+    <div>
+      <h2> Experiments</h2>
+    <mat-card appearance="outlined" class="clickable-card" routerLink="/experiments">
+      <img mat-card-image src="/assets/card-images/experiments-card-image.png" alt="Experiments image" >
+      <mat-card-content>
+        <p>Build an experiment</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+    <div>
+      <h2> Results </h2>
+    <mat-card appearance="outlined" class="clickable-card" routerLink="/results">
+      <img mat-card-image src="/assets/card-images/results-card-image.png" alt="Results image">
+      <mat-card-content>
+        <p>View experiments results</p>
+      </mat-card-content>
+    </mat-card>
+      <div>
+  </div>
+    </div>
+    </div>
+    </div>

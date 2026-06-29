@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    env_file: db.env
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    #Auto init the users database with the schema.sql file
