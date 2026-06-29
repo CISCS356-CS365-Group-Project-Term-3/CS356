@@ -1,0 +1,47 @@
+<div class="page">
+  <div class="header-row">
+    <div>
+      <h1>Encoders</h1>
+      <p>Manage the codec options available to researchers.</p>
+    </div>
+
+    <div class="actions">
+      <button mat-flat-button color="primary" (click)="addEncoder()">
+        <mat-icon>add</mat-icon>
+        Add encoder
+      </button>
+      <button mat-stroked-button color="primary" (click)="editSelected()">
+        <mat-icon>edit</mat-icon>
+        Edit selected
+      </button>
+      <button mat-stroked-button color="warn" (click)="deleteSelected()">
+        <mat-icon>delete</mat-icon>
+        Delete selected
+      </button>
+    </div>
+  </div>
+
+  <mat-card class="panel">
+    <div class="panel-top">
+      <mat-form-field appearance="outline" class="search-box">
+        <mat-label>Search encoders</mat-label>
+        <input matInput [value]="searchText" (input)="onSearch($event)" />
+      </mat-form-field>
+    </div>
+
+    <div class="ag-theme-quartz grid-wrap">
+      <ag-grid-angular
+        style="width: 100%; height: 100%;"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [animateRows]="true"
+        [pagination]="true"
+        [paginationPageSize]="5"
+        rowSelection="single"
+        (gridReady)="onGridReady($event)"
+      >
+      </ag-grid-angular>
+    </div>
+  </mat-card>
+</div>
