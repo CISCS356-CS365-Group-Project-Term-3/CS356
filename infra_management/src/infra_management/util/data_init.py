@@ -175,7 +175,7 @@ def data_init():
 
         videofile4 = models.VideoFile()
         videofile4.name = "mobile_dif"
-        videofile.filepath = "mobile_sif.y4m"
+        videofile4.filepath = "mobile_sif.y4m"
         videofile4.sequence_id = 4
         videofile4.spacial_x = 352
         videofile4.spacial_y = 240
@@ -213,7 +213,7 @@ def data_init():
         videofile6.gamut = "Gamut 1"
         videofile6.active = 1
         videofile6.supported = 1
-        session.add(videofile5)
+        session.add(videofile6)
 
         videofile7 = models.VideoFile()
         videofile7.name = "forman_cif"

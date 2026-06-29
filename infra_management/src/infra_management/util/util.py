@@ -1,13 +1,22 @@
+from sqlalchemy.orm import Session
+from ..models import sql_models as models
+from ..util.engine import get_engine
+
 def sequence_create(table, body):
     name = body.get("name")
     description = body.get("description")
-    return table(name = name, description = description)
+    active = 0
+    return table(name = name, description = description, active = active)
 
 def sequence_update(row, body):
     name = body.get("name")
     description = body.get("description")
     row.name = name if name else row.name
     row.description = description if description else row.description
+    if body.get("active") == 1 and row.supported == 1:
+        row.active = 1
+    elif body.get("active") == 0:
+        row.active = 0
     return row
 
 def video_file_create(table, body):
@@ -20,7 +29,8 @@ def video_file_create(table, body):
         temporal = body.get("temporal"),
         depth = body.get("depth"),
         quality = body.get("quality"),
-        gamut = body.get("gamut")
+        gamut = body.get("gamut"),
+        active = 0
     )
 
 def video_file_update(row, body):
@@ -34,6 +44,10 @@ def video_file_update(row, body):
         row.spacial_x = body.get("spacial")[0]
         row.spacial_y = body.get("spacial")[1]
     row.spacial_x = body.get("spacial") if body.get("spacial") else row.spacial
+    if body.get("active") == 1 and row.supported == 1:
+        row.active = 1
+    elif body.get("active") == 0:
+        row.active = 0
     return row
 
 def transmission_create(table, body): #These could be further colapsed into a single function that creates a new instance using **kwargs
@@ -43,29 +57,45 @@ def transmission_create(table, body): #These could be further colapsed into a si
     return table(
         name = name,
         lower_bound = lower_bound,
-        upper_bound = upper_bound
+        upper_bound = upper_bound,
+        active = 0
     )
 
 def transmission_update(row, body):
     name = body.get("name")
     lower_bound = body.get("lower_bound")
     upper_bound = body.get("upper_bound")
+    unit = body.get("unit")
     row.name = name if name else row.name
     row.lower_bound = lower_bound if lower_bound else row.lower_bound
     row.upper_bound = upper_bound if upper_bound else row.upper_bound
+    row.unit = unit if unit else row.unit
+    if body.get("active") == 1 and row.supported == 1:
+        row.active = 1
+    elif body.get("active") == 0:
+        row.active = 0
     return row
 
 def codec_update(row, body):
     row.version = body.get("version") if body.get("version") else row.version
-    row.satus = body.get("status") if body.get("status") else row.status
-    row.filepath = body.get("filepath") if body.get("filepath") else row.filepath
+    row.encoder_type_id = body.get("encoder_type_id") if body.get("encoder_type_id") else row.encoder_type_id
+    if body.get("active") == 1 and row.supported == 1:
+        row.active = 1
+    elif body.get("active") == 0:
+        row.active = 0
     row.name = body.get("name") if body.get("name") else row.name
 
 def codec_create(table, body):
+    engine = get_engine()
+    with Session(engine) as session:
+        codec_type_query = session.query(models.EncoderType).filter(models.EncoderType.id == body.get("encoder_type_id")).all()
+        if len(codec_type_query) != 1:
+            raise Exception("Codec type not found")
     return table(
         name = body.get("name"),
-        active = body.get("active"),
-        version = body.get("version")
+        active = 0,
+        version = body.get("version"),
+        encoder_type_id = body.get("encoder_type_id")
     )
 
 def name_id_create(table, body):
@@ -74,5 +104,10 @@ def name_id_create(table, body):
 
 def name_id_update(row, body):
     name = body.get("name")
-    row.name = name
+    active = body.get("active")
+    row.name = name if name else row.name
+    if body.get("active") == 1 and row.supported == 1:
+        row.active = 1
+    elif body.get("active") == 0:
+        row.active = 0
     return row

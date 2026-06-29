@@ -25,7 +25,6 @@ class Codec(Base):
     __tablename__ = "codec"
     id = mapped_column(Integer, primary_key=True)
     version = mapped_column(String(64))
-    active = mapped_column(Integer)
     encoder_type_id = mapped_column(Integer, ForeignKey("encoder_type.id"))
     name = mapped_column(String(255))
     encoder_type = relationship("EncoderType", back_populates="codecs")
