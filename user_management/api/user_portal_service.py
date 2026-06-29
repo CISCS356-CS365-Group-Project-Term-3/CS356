@@ -236,14 +236,20 @@ def confirm_password_reset(token, new_password):
         raise Exception("Database connection failed")
     try:
         result = connection.execute(
-            text("SELECT user_email, expires_at, used FROM password_reset_tokens WHERE token = :token"),
+            text("""
+                 SELECT p.user_email, p.expires_at, p.used, u.user_id
+                 FROM password_reset_tokens p
+                          JOIN users u ON p.user_email = u.user_email
+                 WHERE p.token = :token
+                 """),
             {"token": token}
         )
         row = result.fetchone()
         if row is None:
             raise ValueError("Invalid or expired reset token")
 
-        user_email, expires_at, used = row
+        user_email, expires_at, used, target_user_id = row
+
         if used:
             raise ValueError("Reset token has already been used")
         if datetime.now() > expires_at:
@@ -258,7 +264,10 @@ def confirm_password_reset(token, new_password):
             text("UPDATE password_reset_tokens SET used = TRUE WHERE token = :token"),
             {"token": token}
         )
+
         connection.commit()
+        log_audit_action(target_user_id, target_user_id, 'PASSWORD_RESET')
+
     finally:
         connection.close()
 
@@ -364,6 +373,33 @@ def create_user(user_name, user_email, role, password):
         print(f"Error creating user: {e}")
         return False
 
+    finally:
+        connection.close()
+
+
+def log_audit_action(actor_user_id: int, target_user_id: int, action_type: str):
+    connection = create_db_connection()
+    if connection is None:
+        print("Failed to connect to DB for audit logging")
+        return False
+
+    try:
+        connection.execute(
+            text("""
+                 INSERT INTO user_audit_logs (actor_user_id, target_user_id, action_type)
+                 VALUES (:actor_id, :target_id, :action)
+                 """),
+            {
+                "actor_id": actor_user_id,
+                "target_id": target_user_id,
+                "action": action_type
+            }
+        )
+        connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error creating audit log: {e}")
+        return False
     finally:
         connection.close()
     

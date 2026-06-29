@@ -16,7 +16,7 @@ from user_management.api.user_portal_service import (
     send_reset_email,
     delete_user,
     update_user_role,
-    create_user,
+    create_user, log_audit_action,
 )
 
 class Test(TestCase):
@@ -222,7 +222,7 @@ class Test(TestCase):
         mock_conn = MagicMock()
         mock_db.return_value = mock_conn
         mock_result = MagicMock()
-        mock_result.fetchone.return_value = ("user@example.com", datetime.now() + timedelta(hours=1), True)
+        mock_result.fetchone.return_value = ("user@example.com", datetime.now() + timedelta(hours=1), True, 99)
         mock_conn.execute.return_value = mock_result
 
         with self.assertRaises(ValueError) as ctx:
@@ -235,7 +235,7 @@ class Test(TestCase):
         mock_conn = MagicMock()
         mock_db.return_value = mock_conn
         mock_result = MagicMock()
-        mock_result.fetchone.return_value = ("user@example.com", datetime.now() - timedelta(hours=1), False)
+        mock_result.fetchone.return_value = ("user@example.com", datetime.now() - timedelta(hours=1), False, 99)
         mock_conn.execute.return_value = mock_result
 
         with self.assertRaises(ValueError) as ctx:
@@ -243,12 +243,13 @@ class Test(TestCase):
         self.assertIn("expired", str(ctx.exception))
         mock_conn.close.assert_called_once()
 
+    @patch('user_management.api.user_portal_service.log_audit_action')
     @patch('user_management.api.user_portal_service.create_db_connection')
-    def test_confirm_password_reset_success(self, mock_db):
+    def test_confirm_password_reset_success(self, mock_db, mock_log_audit):
         mock_conn = MagicMock()
         mock_db.return_value = mock_conn
         mock_result = MagicMock()
-        mock_result.fetchone.return_value = ("user@example.com", datetime.now() + timedelta(hours=1), False)
+        mock_result.fetchone.return_value = ("user@example.com", datetime.now() + timedelta(hours=1), False, 99)
         mock_conn.execute.return_value = mock_result
 
         confirm_password_reset("validtoken", "newpassword")
@@ -256,6 +257,7 @@ class Test(TestCase):
         self.assertEqual(mock_conn.execute.call_count, 3)
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
+        mock_log_audit.assert_called_once_with(99, 99, 'PASSWORD_RESET')
 
     def test_send_reset_email_missing_env_vars(self):
         with patch.dict('os.environ', {}, clear=True):
@@ -424,4 +426,45 @@ class Test(TestCase):
         self.assertFalse(result)
         mock_conn.commit.assert_not_called()
         mock_conn.close.assert_called_once()
+
+
+@patch('user_management.api.user_portal_service.create_db_connection')
+def test_log_audit_action_success(self, mock_db):
+    mock_conn = MagicMock()
+    mock_db.return_value = mock_conn
+
+    result = log_audit_action(1, 2, "TEST_ACTION")
+
+    self.assertTrue(result)
+    mock_conn.execute.assert_called_once()
+    mock_conn.commit.assert_called_once()
+    mock_conn.close.assert_called_once()
+
+    call_args = mock_conn.execute.call_args
+    sql_call = call_args[0][0]
+    self.assertIn("INSERT INTO user_audit_logs", str(sql_call))
+
+    params = call_args[0][1]
+    self.assertEqual(params["actor_id"], 1)
+    self.assertEqual(params["target_id"], 2)
+    self.assertEqual(params["action"], "TEST_ACTION")
+
+
+@patch('user_management.api.user_portal_service.create_db_connection')
+def test_log_audit_action_db_connection_failure(self, mock_db):
+    mock_db.return_value = None
+    result = log_audit_action(1, 2, "TEST_ACTION")
+    self.assertFalse(result)
+
+
+@patch('user_management.api.user_portal_service.create_db_connection')
+def test_log_audit_action_db_error(self, mock_db):
+    mock_conn = MagicMock()
+    mock_db.return_value = mock_conn
+    mock_conn.execute.side_effect = Exception("DB Error")
+
+    result = log_audit_action(1, 2, "TEST_ACTION")
+    self.assertFalse(result)
+    mock_conn.commit.assert_not_called()
+    mock_conn.close.assert_called_once()
 
