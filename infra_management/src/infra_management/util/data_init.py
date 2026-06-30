@@ -248,4 +248,3 @@ def data_init():
         session.add(videofile8)
 
         session.commit()
-

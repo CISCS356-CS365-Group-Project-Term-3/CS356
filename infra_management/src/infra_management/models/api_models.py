@@ -81,4 +81,3 @@ class EncoderTypeUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     active: Optional[Literal[0, 1]] = None
-

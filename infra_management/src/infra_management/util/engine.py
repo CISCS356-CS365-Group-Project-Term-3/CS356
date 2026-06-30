@@ -16,7 +16,7 @@ def get_engine(user=os.getenv("DB_USER"), host=os.getenv("DB_HOST"), database=os
     global engine
     if engine:
         return engine
-    
+
     url = generate_url(user, host, database)
     engine = create_engine(url)
     return engine

@@ -105,12 +105,6 @@ def codec_update(row, body):
         row.active = 0
     row.name = body.get("name") if body.get("name") else row.name
 
-# def codec_create(table, body):
-#     return table(
-#         name = body.get("name"),
-#         active = body.get("active"),
-#         version = body.get("version")
-#     )
 def codec_create(table, body):
     engine = get_engine()
     with Session(engine) as session:
@@ -124,27 +118,9 @@ def codec_create(table, body):
         encoder_type_id = body.get("encoder_type_id")
     )
 
-# def name_id_create(table, body):
-#     name = body.get("name") #Name should already be validated at this point.
-#     return table(name=name)
-
 def name_id_create(table, body):
-
-    return table(
-        name=body.get("name"),
-        description=body.get("description"),
-        active=body.get("active", 0)
-    )
-
-# def name_id_update(row, body):
-#
-#     if body.get("name") is not None:
-#         row.name = body.get("name")
-#
-#     if body.get("active") is not None:
-#         row.active = body.get("active")
-#
-#     return row
+    name = body.get("name") #Name should already be validated at this point.
+    return table(name=name)
 
 def name_id_update(row, body):
     name = body.get("name")
