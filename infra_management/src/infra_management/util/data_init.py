@@ -20,6 +20,7 @@ def data_init():
         encoder_type = models.EncoderType()
         encoder_type.name = "Standard Encoder"
         encoder_type.active = 1
+        encoder_type.supported = 1
         session.add(encoder_type)
         session.commit()
 
