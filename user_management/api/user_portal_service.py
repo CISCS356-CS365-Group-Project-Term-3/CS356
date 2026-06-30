@@ -25,6 +25,7 @@ def get_stored_token(user_name: str) -> str | None:
     config.read(_PROPERTIES_PATH)
     return config.get(_SECTION, user_name, fallback=None)
 
+
 def validate_login(json):
     try:
         user_name = json['user_name']
@@ -32,10 +33,13 @@ def validate_login(json):
         if validate_credentials(user_name, user_password):
             user_details = get_user_info(user_name)
             if user_details is None:
-
                 return False
             try:
                 token = generate_token(user_details)
+
+                user_id = user_details['user_id']
+                log_audit_action(user_id, user_id, 'USER_LOGIN')
+
                 return token
             except Exception as e:
                 print(f"Error generating token: {e}")
@@ -344,6 +348,7 @@ def update_user_role(user_id, role):
     finally:
         connection.close()
 
+
 def create_user(user_name, user_email, role, password):
     connection = create_db_connection()
 
@@ -353,10 +358,11 @@ def create_user(user_name, user_email, role, password):
     try:
         hashed_password = hash_password(password)
 
-        connection.execute(
+        result = connection.execute(
             text(
                 "INSERT INTO users (user_name, user_email, password_hash, user_role) "
-                "VALUES (:user_name, :user_email, :password_hash, :user_role)"
+                "VALUES (:user_name, :user_email, :password_hash, :user_role) "
+                "RETURNING user_id"
             ),
             {
                 "user_name": user_name,
@@ -366,7 +372,12 @@ def create_user(user_name, user_email, role, password):
             }
         )
 
+        new_user_id = result.fetchone()[0]
+
         connection.commit()
+
+        log_audit_action(new_user_id, new_user_id, 'USER_CREATED')
+
         return True
 
     except Exception as e:

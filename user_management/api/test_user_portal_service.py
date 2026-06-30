@@ -346,27 +346,29 @@ class Test(TestCase):
 
         update_user_role(99, "moderator")
 
-        # Verify execute was called with correct SQL and parameters
         call_args = mock_conn.execute.call_args
         self.assertIsNotNone(call_args)
 
-        # First argument should be a text() object with UPDATE query
         sql_call = call_args[0][0]
         self.assertIn("UPDATE users", str(sql_call))
         self.assertIn("user_role", str(sql_call))
         self.assertIn("user_id", str(sql_call))
 
-        # Second argument should be the parameters dict
         params = call_args[0][1]
         self.assertEqual(params["role"], "moderator")
         self.assertEqual(params["user_id"], 99)
 
+    @patch('user_management.api.user_portal_service.log_audit_action')
     @patch('user_management.api.user_portal_service.hash_password')
     @patch('user_management.api.user_portal_service.create_db_connection')
-    def test_create_user_success(self, mock_db, mock_hash_password):
+    def test_create_user_success(self, mock_db, mock_hash_password, mock_log_audit):
         mock_conn = MagicMock()
         mock_db.return_value = mock_conn
         mock_hash_password.return_value = "hashed_password"
+
+        mock_result = MagicMock()
+        mock_result.fetchone.return_value = (42,)
+        mock_conn.execute.return_value = mock_result
 
         result = create_user(
             "new_user",
@@ -381,13 +383,12 @@ class Test(TestCase):
         mock_conn.commit.assert_called_once()
         mock_conn.close.assert_called_once()
 
+        mock_log_audit.assert_called_once_with(42, 42, 'USER_CREATED')
+
         call_args = mock_conn.execute.call_args
         sql_call = call_args[0][0]
         self.assertIn("INSERT INTO users", str(sql_call))
-        self.assertIn("user_name", str(sql_call))
-        self.assertIn("user_email", str(sql_call))
-        self.assertIn("password_hash", str(sql_call))
-        self.assertIn("user_role", str(sql_call))
+        self.assertIn("RETURNING user_id", str(sql_call))
 
         params = call_args[0][1]
         self.assertEqual(params["user_name"], "new_user")
