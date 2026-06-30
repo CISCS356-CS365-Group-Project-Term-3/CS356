@@ -301,17 +301,44 @@ export class InfrastructureCodecsComponent implements OnInit {
 
       }
 
-      const payload = {
 
-        name: result.name.trim(),
+      // Need to provide an encoder_type_id to the backend. Prefer the
+      // "Standard Encoder" type if present, otherwise fall back to the
+      // first available encoder type. This keeps the change frontend-only.
+      this.uiOptionsService.getUiOptions().subscribe({
 
-        version: result.version,
+        next: (data) => {
 
-        active: 0
+          const encoderTypes = data.encoder_types ?? [];
 
-      };
+          let encoderTypeId: number | undefined;
 
-      this.uiOptionsService.addCodec(payload).subscribe({
+          const standard = encoderTypes.find((e: any) => e.name === 'Standard Encoder');
+
+          if (standard) {
+            encoderTypeId = standard.id;
+          } else if (encoderTypes.length > 0) {
+            encoderTypeId = encoderTypes[0].id;
+          }
+
+          if (!encoderTypeId) {
+            this.snackBar.open(
+              'No encoder types available. Add an encoder type first.',
+              'Close',
+              { duration: 4000 }
+            );
+
+            return;
+          }
+
+          const payload: any = {
+            name: result.name.trim(),
+            version: result.version,
+            active: 0,
+            encoder_type_id: encoderTypeId
+          };
+
+          this.uiOptionsService.addCodec(payload).subscribe({
 
         next: () => {
 
@@ -333,17 +360,40 @@ export class InfrastructureCodecsComponent implements OnInit {
 
         },
 
+
+            error: () => {
+
+              this.snackBar.open(
+
+                'Failed to add codec.',
+
+                'Close',
+
+                {
+
+                  duration: 3000
+
+                }
+
+              );
+
+            }
+
+          });
+
+        },
+
         error: () => {
 
           this.snackBar.open(
 
-            'Failed to add codec.',
+            'Failed to fetch encoder types required to add codec.',
 
             'Close',
 
             {
 
-              duration: 3000
+              duration: 3500
 
             }
 

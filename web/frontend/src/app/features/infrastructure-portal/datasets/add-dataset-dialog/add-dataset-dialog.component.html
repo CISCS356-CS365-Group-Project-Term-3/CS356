@@ -1,0 +1,68 @@
+<h2 mat-dialog-title>
+  Add Dataset
+</h2>
+
+<mat-dialog-content>
+
+  <p class="dialog-description">
+    Create a new dataset and its primary video file.
+  </p>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Dataset Name</mat-label>
+    <input matInput [(ngModel)]="name" maxlength="100" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Description</mat-label>
+    <input matInput [(ngModel)]="description" maxlength="200" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Video filename</mat-label>
+    <input matInput [(ngModel)]="filename" maxlength="120" />
+    <mat-hint>Example: waterfall_cif.y4m</mat-hint>
+  </mat-form-field>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Width</mat-label>
+      <input type="number" matInput [(ngModel)]="width" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Height</mat-label>
+      <input type="number" matInput [(ngModel)]="height" />
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Frame rate</mat-label>
+      <input type="number" matInput [(ngModel)]="fps" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Bit depth</mat-label>
+      <input type="number" matInput [(ngModel)]="depth" />
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Quality</mat-label>
+    <input matInput [(ngModel)]="quality" maxlength="20" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Gamut</mat-label>
+    <input matInput [(ngModel)]="gamut" maxlength="40" />
+  </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" [disabled]="!isFormValid()" (click)="save()">
+    Add Dataset
+  </button>
+</mat-dialog-actions>

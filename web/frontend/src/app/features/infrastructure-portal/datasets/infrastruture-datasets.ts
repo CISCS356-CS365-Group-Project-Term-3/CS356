@@ -12,7 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { UiOptionsService } from '../services/ui-options.service';
-//import { AddDatasetDialogComponent } from './add-dataset-dialog/add-dataset-dialog';
+import { AddDatasetDialogComponent } from './add-dataset-dialog/add-dataset-dialog.component';
 
 interface DatasetCard {
 
@@ -93,7 +93,7 @@ export class InfrastructureDatasetsComponent implements OnInit {
 
     const image = event.target as HTMLImageElement;
 
-    image.src = 'assets/dataset-images/default.png';
+    image.src = 'assets/dataset-images/image.png';
 
   }
 
@@ -185,81 +185,182 @@ export class InfrastructureDatasetsComponent implements OnInit {
 
   }
 
-  // addDataset(): void {
-  //
-  //   const dialogRef = this.dialog.open(
-  //
-  //     AddDatasetDialogComponent,
-  //
-  //     {
-  //
-  //       width: '600px'
-  //
-  //     }
-  //
-  //   );
-  //
-  //   dialogRef.afterClosed().subscribe(result => {
-  //
-  //     if (!result) {
-  //
-  //       return;
-  //
-  //     }
-  //
-  //     this.uiOptionsService.addSequence({
-  //
-  //       ...result,
-  //
-  //       active: 0,
-  //
-  //       supported: 0
-  //
-  //     }).subscribe({
-  //
-  //       next: () => {
-  //
-  //         this.loadDatasets();
-  //
-  //         this.snackBar.open(
-  //
-  //           'Dataset added.',
-  //
-  //           'Close',
-  //
-  //           {
-  //
-  //             duration: 3000
-  //
-  //           }
-  //
-  //         );
-  //
-  //       },
-  //
-  //       error: () => {
-  //
-  //         this.snackBar.open(
-  //
-  //           'Unable to add dataset.',
-  //
-  //           'Close',
-  //
-  //           {
-  //
-  //             duration: 3000
-  //
-  //           }
-  //
-  //         );
-  //
-  //       }
-  //
-  //     });
-  //
-  //   });
-  //
-  // }
+  addDataset(): void {
+
+    const dialogRef = this.dialog.open(
+
+      AddDatasetDialogComponent,
+
+      {
+
+        width: '600px'
+
+      }
+
+    );
+
+    dialogRef.afterClosed().subscribe(result => {
+
+      if (!result) {
+
+        return;
+
+      }
+
+      this.uiOptionsService.addSequence({
+
+        name: result.name,
+
+        description: result.description
+
+      }).subscribe({
+
+        next: () => {
+
+          this.uiOptionsService.getUiOptions().subscribe({
+
+            next: data => {
+
+              const matches = (data.sequences ?? []).filter((seq: any) =>
+
+                seq.name === result.name && seq.description === result.description
+
+              );
+
+              const sequence = matches.sort((a: any, b: any) => b.id - a.id)[0];
+
+
+              if (!sequence) {
+
+                this.snackBar.open(
+
+                  'Dataset created, but sequence not found for video file creation.',
+
+                  'Close',
+
+                  { duration: 4000 }
+
+                );
+
+                this.loadDatasets();
+
+                return;
+
+              }
+
+              const videoPayload = {
+
+                sequence_id: sequence.id.toString(),
+
+                name: result.video_file.name,
+
+                filepath: result.video_file.filepath,
+
+                spacial: result.video_file.spacial,
+
+                temporal: result.video_file.temporal,
+
+                depth: result.video_file.depth,
+
+                quality: result.video_file.quality,
+
+                gamut: result.video_file.gamut
+
+              };
+
+              this.uiOptionsService.addVideoFile(videoPayload).subscribe({
+
+                next: () => {
+
+                  this.loadDatasets();
+
+                  this.snackBar.open(
+
+                    'Dataset added.',
+
+                    'Close',
+
+                    {
+
+                      duration: 3000
+
+                    }
+
+                  );
+
+                },
+
+                error: () => {
+
+                  this.snackBar.open(
+
+                    'Dataset added, but failed to add video file.',
+
+                    'Close',
+
+                    {
+
+                      duration: 4500
+
+                    }
+
+                  );
+
+                  this.loadDatasets();
+
+                }
+
+              });
+
+            },
+
+            error: () => {
+
+              this.snackBar.open(
+
+                'Dataset added, but failed to verify sequence.',
+
+                'Close',
+
+                {
+
+                  duration: 4000
+
+                }
+
+              );
+
+              this.loadDatasets();
+
+            }
+
+          });
+
+        },
+
+        error: () => {
+
+          this.snackBar.open(
+
+            'Unable to add dataset.',
+
+            'Close',
+
+            {
+
+              duration: 3000
+
+            }
+
+          );
+
+        }
+
+      });
+
+    });
+
+  }
 
   enableSelected(): void {
 

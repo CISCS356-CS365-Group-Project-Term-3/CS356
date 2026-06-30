@@ -20,15 +20,15 @@
 
     <div class="actions">
 
-<!--      <button-->
-<!--        mat-flat-button-->
-<!--        color="primary"-->
-<!--        (click)="addDataset()">-->
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addDataset()">
 
-<!--        <mat-icon>add</mat-icon>-->
-<!--        Add Dataset-->
+        <mat-icon>add</mat-icon>
+        Add Dataset
 
-<!--      </button>-->
+      </button>
 
       <button
         mat-stroked-button
@@ -71,12 +71,16 @@
       <strong>Datasets</strong>
 
       <p>
+        Select a dataset card, then use Enable or Disable to manage the dataset
+        infrastructure. Only datasets shown in <strong>green</strong> as
+        <strong>Active</strong> are available to researchers in the Experiments
+        Engine.
+      </p>
 
-        Datasets can be added to the Infrastructure Portal at any time.
-        Only datasets marked as <strong>Supported</strong> and
-        <strong>Active</strong> are available to researchers within the
-        Experiments Engine.
-
+      <p>
+        Disabled datasets appear in amber. Newly added datasets may initially be
+        shown in red as unsupported until they are enabled and supported by the
+        engine.
       </p>
 
     </div>
