@@ -7,7 +7,8 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-
+import {ActivatedRoute, Router} from '@angular/router';
+import {HttpClient} from '@angular/common/http';
 // custom validators
 function specialCharacterValidator(control: AbstractControl): ValidationErrors | null {
   const value = control.value;
@@ -66,7 +67,7 @@ export class ResetPassword {
   reenteredPasswordErrorMessage = signal('');
   hide = signal(true);
 
-  constructor() {
+  constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient) {
     merge(
       this.resetPasswordForm.valueChanges,
       this.resetPasswordForm.statusChanges
@@ -114,8 +115,16 @@ export class ResetPassword {
     }
   }
 
-  savePassword(){
+  savePassword() {
+    if (this.resetPasswordForm.invalid) return;
 
+    const token = this.route.snapshot.queryParamMap.get('token');
+    const new_password = this.resetPasswordForm.get('password')?.value;
 
+    this.http.post('/user-management/auth/reset_password/confirm', { token, new_password })
+      .subscribe({
+        next: () => this.router.navigate(['/login']),
+        error: (err) => console.error('Reset failed', err)
+      });
   }
 }

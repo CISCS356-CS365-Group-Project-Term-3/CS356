@@ -1,0 +1,3 @@
+db_hostname: postgres_server
+db_name: postgres
+db_user: postgres
