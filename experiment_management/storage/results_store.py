@@ -32,7 +32,9 @@ def get_all_results(limit=100):
                 "sequence": 1,
                 "success": 1,
                 "result.psnr.average": 1,
+                "result.psnr.raw.combined": 1,
                 "result.ssim.average": 1,
+                "result.reason": 1,
             },
         )
         .sort("project.created_at", -1)

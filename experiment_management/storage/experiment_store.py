@@ -13,7 +13,8 @@ def save_experiment(experiment):
         createdAt=experiment["date"],
         data={
             "encoders": experiment["encoders"],
-            "sequences": experiment["sequences"]
+            "sequences": experiment["sequences"],
+            "batchId": experiment.get("batchId")
         }
     )
 
@@ -77,7 +78,8 @@ def update_experiment_by_id(experiment_id, experiment):
     exp.createdAt = experiment["date"]
     exp.data = {
         "encoders": experiment["encoders"],
-        "sequences": experiment["sequences"]
+        "sequences": experiment["sequences"],
+        "batchId": experiment.get("batchId")
     }
     session.commit()
     session.refresh(exp)
@@ -92,5 +94,6 @@ def serialize(exp):
         "projectTypeId": exp.projectTypeId,
         "date": exp.createdAt.isoformat() if exp.createdAt else None,
         "encoders": exp.data.get("encoders", []),
-        "sequences": exp.data.get("sequences", [])
+        "sequences": exp.data.get("sequences", []),
+        "batchId": exp.data.get("batchId")
     }
