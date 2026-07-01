@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ResultSummary } from '../models/result-summary.model';
+import { ResultSummary, ExperimentFrames } from '../models/result-summary.model';
 
 const API_BASE = '/experiment-management';
 
@@ -12,5 +12,9 @@ export class ResultsService {
 
   getResultSummaries() {
     return this.http.get<ResultSummary[]>(`${API_BASE}/experiments-results`);
+  }
+
+  getFrames(experimentId: number) {
+    return this.http.get<ExperimentFrames>(`${API_BASE}/experiments-results/${experimentId}/frames`);
   }
 }

@@ -1,11 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { catchError, combineLatest, of } from 'rxjs';
+import { catchError, combineLatest, forkJoin, map, of, switchMap } from 'rxjs';
 import { ResultsService } from './services/results-service';
-import { MetricAverage, ResultSummary } from './models/result-summary.model';
+import { ExperimentFrames, MetricAverage, ResultSummary } from './models/result-summary.model';
 import { InfrastructureService } from '../experiments/services/infrastructure';
 import { InfrastructureConfig } from '../experiments/models/infrastructure-config.model';
+
+interface ResultWithFrames {
+  result: ResultSummary;
+  frames: ExperimentFrames | undefined;
+}
 
 const LINE_COLORS = ['#2563eb', '#0f766e', '#d97706', '#dc2626', '#7c3aed', '#059669', '#db2777', '#0891b2'];
 
@@ -71,11 +76,24 @@ export class ResultsPage implements OnInit {
     combineLatest([
       this.resultsService.getResultSummaries().pipe(catchError(() => of([] as ResultSummary[]))),
       this.infrastructureService.getConfig().pipe(catchError(() => of(undefined))),
-    ]).subscribe(([results, config]) => {
-      this.experimentHistory = this.groupIntoExperiments(results, config);
-      this.selectedExperiment = this.visibleExperiments[0];
-      this.loading = false;
-    });
+    ])
+      .pipe(
+        switchMap(([results, config]) =>
+          forkJoin(
+            results.map((result) =>
+              this.resultsService.getFrames(result.experimentId).pipe(
+                catchError(() => of(undefined)),
+                map((frames): ResultWithFrames => ({ result, frames })),
+              ),
+            ),
+          ).pipe(map((resultsWithFrames) => ({ resultsWithFrames, config }))),
+        ),
+      )
+      .subscribe(({ resultsWithFrames, config }) => {
+        this.experimentHistory = this.groupIntoExperiments(resultsWithFrames, config);
+        this.selectedExperiment = this.visibleExperiments[0];
+        this.loading = false;
+      });
   }
 
   get visibleExperiments(): ExperimentResult[] {
@@ -122,15 +140,15 @@ export class ResultsPage implements OnInit {
   }
 
   private groupIntoExperiments(
-    results: ResultSummary[],
+    resultsWithFrames: ResultWithFrames[],
     config: InfrastructureConfig | undefined,
   ): ExperimentResult[] {
-    const groups = new Map<string, ResultSummary[]>();
+    const groups = new Map<string, ResultWithFrames[]>();
 
-    for (const result of results) {
-      const key = `${result.batchId ?? result.experimentId}::${result.videoFileId ?? 'na'}`;
+    for (const entry of resultsWithFrames) {
+      const key = `${entry.result.batchId ?? entry.result.experimentId}::${entry.result.videoFileId ?? 'na'}`;
       const group = groups.get(key) ?? [];
-      group.push(result);
+      group.push(entry);
       groups.set(key, group);
     }
 
@@ -138,16 +156,16 @@ export class ResultsPage implements OnInit {
   }
 
   private toExperimentResult(
-    group: ResultSummary[],
+    group: ResultWithFrames[],
     config: InfrastructureConfig | undefined,
   ): ExperimentResult {
-    const first = group[0];
+    const first = group[0].result;
     const videoFile = config?.sequences
       .flatMap((sequence) => sequence.videoFiles)
       .find((file) => file.id === first.videoFileId);
     const sequenceName = videoFile?.name ?? first.sequenceCode ?? 'Unknown sequence';
 
-    const codecRuns = group.map((result, index) => this.toCodecRun(result, config, index));
+    const codecRuns = group.map((entry, index) => this.toCodecRun(entry, config, index));
 
     return {
       id: `${first.batchId ?? first.experimentId}::${first.videoFileId ?? 'na'}`,
@@ -159,7 +177,8 @@ export class ResultsPage implements OnInit {
     };
   }
 
-  private toCodecRun(result: ResultSummary, config: InfrastructureConfig | undefined, index: number): CodecRun {
+  private toCodecRun(entry: ResultWithFrames, config: InfrastructureConfig | undefined, index: number): CodecRun {
+    const { result, frames } = entry;
     const codecName = config?.codecs.find((codec) => codec.id === result.codecId)?.name ?? 'Unknown codec';
 
     return {
@@ -170,8 +189,8 @@ export class ResultsPage implements OnInit {
       frameCount: result.frameCount,
       psnrSummary: this.buildSummary(result.psnrAverage, (value) => `${value.toFixed(2)} dB`),
       ssimSummary: this.buildSummary(result.ssimAverage, (value) => value.toFixed(3)),
-      psnrSeries: this.mockSeriesAround(result.psnrAverage.combined ?? 0, 0.15),
-      ssimSeries: this.mockSeriesAround(result.ssimAverage.combined ?? 0, 0.01),
+      psnrSeries: frames?.psnr?.combined ?? [],
+      ssimSeries: frames?.ssim?.combined ?? [],
     };
   }
 
@@ -184,11 +203,6 @@ export class ResultsPage implements OnInit {
       { label: 'V', value: fmt(average.v), hint: 'Chrominance' },
       { label: 'All', value: fmt(average.combined), hint: 'Overall' },
     ];
-  }
-
-
-  private mockSeriesAround(average: number, spread: number, points = 12): number[] {
-    return Array.from({ length: points }, (_, index) => average + spread * Math.sin(index * 1.3));
   }
 
 

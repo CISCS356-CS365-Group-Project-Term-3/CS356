@@ -21,3 +21,15 @@ export interface ResultSummary {
   psnrAverage: MetricAverage;
   ssimAverage: MetricAverage;
 }
+
+export interface MetricSeries {
+  y: number[];
+  u: number[];
+  v: number[];
+  combined: number[];
+}
+
+export interface ExperimentFrames {
+  psnr: Partial<MetricSeries>;
+  ssim: Partial<MetricSeries>;
+}
