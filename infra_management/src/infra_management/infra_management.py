@@ -125,7 +125,7 @@ def get_active_ui_options():
 
 @app.route("/rest/project_types", methods=["GET", "POST", "PUT"])
 def project_types():
-     return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
+     return standard_crud(request, ProjectType, project_type_update, project_type_update, ProjectTypeUpdate, ProjectTypeCreate)
 
 @app.route("/rest/encoder_types", methods=["GET", "POST", "PUT"])
 def encoder_types():
