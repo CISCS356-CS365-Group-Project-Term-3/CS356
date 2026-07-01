@@ -9,7 +9,7 @@ export class UserManagementService {
   constructor(private  http: HttpClient) {}
 
     loginUser(user_name: string, password: string) {
-    const url = 'http://127.0.0.1:8000/auth/login';
+    const url = '/user-management/auth/login';
     const body = {
         user_name: user_name,
         password: password,
@@ -18,7 +18,7 @@ export class UserManagementService {
     }
 
     verifyUser() {
-    const url = 'http://127.0.0.1:8000/auth/verify';
+    const url = '/user-management/auth/verify';
     const token = localStorage.getItem('access_token');
       if (!token) throw new Error('Missing token');
 
@@ -30,17 +30,17 @@ export class UserManagementService {
 
 
     getAllUsers() {
-    const url = 'http://127.0.0.1:8000/auth/users';
+    const url = '/user-management/auth/users';
     return this.http.get(url);
     }
 
     deleteUser(user_id: string) {
-      const url = `http://127.0.0.1:8000/auth/users/delete/${user_id}`;
+      const url = `/user-management/auth/users/delete/${user_id}`;
       return this.http.post(url, {});
     }
 
     resetPassword(email: string) {
-      const url = 'http://127.0.0.1:8000/auth/reset_password';
+      const url = '/user-management/auth/reset_password';
       const body = {
         email: email,
       };
@@ -48,7 +48,7 @@ export class UserManagementService {
     }
 
     resetPasswordConfirm(token: any, new_password: string) {
-      const url = 'http://127.0.0.1:8000/auth/reset_password/confirm';
+      const url = '/user-management/auth/reset_password/confirm';
       if (!token) throw new Error('Missing token');
       const body = {
         token,
@@ -58,7 +58,7 @@ export class UserManagementService {
     }
 
     getUserInfo() {
-      const url = 'http://127.0.0.1:8000/users/me';
+      const url = '/user-management/users/me';
       const token = localStorage.getItem('access_token');
       if (!token) throw new Error('Missing token');
 
@@ -69,7 +69,7 @@ export class UserManagementService {
     }
 
     registerUser( username: string, password: string, confirmedPassword: string, email: string, role: string) {
-      const url = 'http://127.0.0.1:8000/auth/register';
+      const url = '/user-management/auth/register';
 
       const body = {
         user_name: username,
