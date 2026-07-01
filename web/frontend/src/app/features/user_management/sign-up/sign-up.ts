@@ -1,4 +1,5 @@
 import { Component, signal} from '@angular/core';
+import { UserManagementService } from '../user-management-service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -7,6 +8,7 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import { Router } from '@angular/router';
 
 // custom validators
 function specialCharacterValidator(control: AbstractControl): ValidationErrors | null {
@@ -70,8 +72,9 @@ export class SignUp {
   passwordErrorMessage = signal('');
   reenteredPasswordErrorMessage = signal('');
   hide = signal(true);
+  signUpErrorMessage: string = '';
 
-  constructor() {
+  constructor(private userManagementService: UserManagementService, private router: Router) {
     merge(
       this.accountForm.valueChanges,
       this.accountForm.statusChanges
@@ -141,12 +144,51 @@ export class SignUp {
 
 submitDetails(){
 
-  const username = this.accountForm.get('username');
-  const password = this.accountForm.get('password');
-  const accountType = this.accountForm.get('accountType');
+  const username = this.accountForm.get('username')?.value;
+  const email = this.accountForm.get('email')?.value;
+  const reenteredPassword = this.accountForm.get('reenteredPassword')?.value;
+  const password = this.accountForm.get('password')?.value;
+  const accountType = this.accountForm.get('accountType')?.value;
 
-  // submit details to API endpoint
-  // check if username exists
+  if (!username || !email || !reenteredPassword || !password || !accountType) {
+    return;
+  }
+
+  this.userManagementService.registerUser(username, password, reenteredPassword, email, accountType).subscribe({
+      next: (data: unknown) => {
+        if (!data || data === false) {
+          console.error('Sign up failed');
+          return;
+        }
+        this.userManagementService.loginUser(username, password).subscribe({
+          next: (data: unknown) => {
+            if (!data || data === false) {
+              console.error('Login failed');
+              return;
+            }
+
+            const token = (data as any).access_token;
+
+            localStorage.setItem('access_token', token);
+            console.log('Login successful');
+            this.router.navigate(['/landing-page']);
+          },
+          error: (err) => {
+            console.error('Login request failed', err);
+            this.signUpErrorMessage = err?.error?.error?.message || 'Login failed';
+
+          }
+        });
+
+
+
+    },
+    error: (err) => {
+      console.error('Failed to create an account', err);
+      this.signUpErrorMessage = err?.error?.error?.message || 'Failed to create an account';
+
+    }
+  });
 
 }
 }

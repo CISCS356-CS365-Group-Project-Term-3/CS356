@@ -9,6 +9,7 @@ import { NewExperimentFormService } from '../../new-experiment-form.service';
 
 @Component({
   selector: 'app-sequences',
+  standalone: true,
   imports: [MatCardModule, MatFormFieldModule, MatSelectModule, FormsModule],
   templateUrl: './sequences.html',
   styleUrl: './sequences.scss',
