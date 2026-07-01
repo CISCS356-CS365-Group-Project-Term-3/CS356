@@ -1,16 +1,13 @@
 <div class="page">
 
-  <!-- ================= Header ================= -->
-
   <div class="header-row">
 
     <div>
 
-      <h1>Network Profiles</h1>
-
+      <h1>Transmission Conditions</h1>
       <p>
         Manage transmission conditions available within the platform.
-        Only active supported network profiles can be used when creating
+        Only active supported transmission conditions can be used when creating
         experiments.
       </p>
 
@@ -57,8 +54,6 @@
 
   </div>
 
-  <!-- ================= Information ================= -->
-
   <mat-card class="info-card">
 
     <mat-icon color="primary">
@@ -92,8 +87,6 @@
 
   </mat-card>
 
-  <!-- ================= Table ================= -->
-
   <mat-card class="panel">
 
     <div class="panel-top">
@@ -102,29 +95,17 @@
 
     <div
       class="ag-theme-quartz grid-wrap">
-
       <ag-grid-angular
-
         style="width:100%;height:100%;"
-
         [rowData]="rowData"
-
         [columnDefs]="columnDefs"
-
         [defaultColDef]="defaultColDef"
-
         [rowClassRules]="rowClassRules"
-
         [animateRows]="true"
-
         [pagination]="true"
-
         [paginationPageSize]="10"
-
         rowSelection="single"
-
         (gridReady)="onGridReady($event)"
-
         (selectionChanged)="onSelectionChanged($event)">
 
       </ag-grid-angular>

@@ -67,8 +67,6 @@ interface CodecRow {
 })
 export class InfrastructureCodecsComponent implements OnInit {
 
-  private gridApi?: GridApi<CodecRow>;
-
   searchText = '';
 
   rowData: CodecRow[] = [];
@@ -76,12 +74,10 @@ export class InfrastructureCodecsComponent implements OnInit {
   selectedCodec?: CodecRow;
 
   readonly supportedCodecs = [
-
     'h261',
     'h263',
     'h264',
     'h265'
-
   ];
 
   columnDefs: ColDef<CodecRow>[] = [
@@ -124,9 +120,7 @@ export class InfrastructureCodecsComponent implements OnInit {
   defaultColDef: ColDef = {
 
     sortable: true,
-
     filter: true,
-
     resizable: true
 
   };
@@ -152,9 +146,7 @@ export class InfrastructureCodecsComponent implements OnInit {
   constructor(
 
     private uiOptionsService: UiOptionsService,
-
     private dialog: MatDialog,
-
     private snackBar: MatSnackBar
 
   ) {}
@@ -170,17 +162,11 @@ export class InfrastructureCodecsComponent implements OnInit {
     this.uiOptionsService.getUiOptions().subscribe({
 
       next: data => {
-
         this.rowData = (data.codecs ?? []).map((codec: any) => ({
-
           id: codec.id,
-
           name: codec.name,
-
           active: codec.active,
-
           encoder_type_id: codec.encoder_type_id,
-
           supported: this.supportedCodecs.includes(codec.name)
 
         }));
@@ -190,77 +176,41 @@ export class InfrastructureCodecsComponent implements OnInit {
       error: () => {
 
         this.snackBar.open(
-
           'Failed to load codecs.',
-
           'Close',
-
           {
-
             duration: 3000
-
           }
 
         );
-
       }
-
     });
 
   }
 
   onGridReady(params: GridReadyEvent<CodecRow>): void {
 
-    this.gridApi = params.api;
-
     params.api.sizeColumnsToFit();
 
   }
-
-  // onSearch(event: Event): void {
-  //
-  //   const value = (event.target as HTMLInputElement).value;
-  //
-  //   this.searchText = value;
-  //
-  //   this.gridApi?.setGridOption(
-  //
-  //     'quickFilterText',
-  //
-  //     value
-  //
-  //   );
-  //
-  // }
 
   onSelectionChanged(
 
     event: SelectionChangedEvent<CodecRow>
 
   ): void {
-
     const rows = event.api.getSelectedRows();
 
-    this.selectedCodec =
-
-      rows.length
-
-        ? rows[0]
-
-        : undefined;
-
+    this.selectedCodec = rows.length? rows[0]: undefined;
   }
 
   addCodec(): void {
 
     const dialogRef = this.dialog.open(
-
       AddCodecDialogComponent,
 
       {
-
         width: '520px'
-
       }
 
     );
@@ -268,7 +218,6 @@ export class InfrastructureCodecsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
 
       if (!result) {
-
         return;
 
       }
@@ -276,7 +225,6 @@ export class InfrastructureCodecsComponent implements OnInit {
       const duplicate = this.rowData.some(codec =>
 
         codec.name.trim().toLowerCase() ===
-
         result.name.trim().toLowerCase()
 
       );
@@ -290,28 +238,51 @@ export class InfrastructureCodecsComponent implements OnInit {
           'Close',
 
           {
-
             duration: 3500
-
           }
 
         );
-
         return;
-
       }
 
-      const payload = {
 
-        name: result.name.trim(),
+      // Need to provide an encoder_type_id to the backend. Prefer the
+      // "Standard Encoder" type if present, otherwise fall back to the
+      // first available encoder type. This keeps the change frontend-only.
+      this.uiOptionsService.getUiOptions().subscribe({
 
-        version: result.version,
+        next: (data) => {
 
-        active: 0
+          const encoderTypes = data.encoder_types ?? [];
 
-      };
+          let encoderTypeId: number | undefined;
 
-      this.uiOptionsService.addCodec(payload).subscribe({
+          const standard = encoderTypes.find((e: any) => e.name === 'Standard Encoder');
+
+          if (standard) {
+            encoderTypeId = standard.id;
+          } else if (encoderTypes.length > 0) {
+            encoderTypeId = encoderTypes[0].id;
+          }
+
+          if (!encoderTypeId) {
+            this.snackBar.open(
+              'No encoder types available. Add an encoder type first.',
+              'Close',
+              { duration: 4000 }
+            );
+
+            return;
+          }
+
+          const payload: any = {
+            name: result.name.trim(),
+            version: result.version,
+            active: 0,
+            encoder_type_id: encoderTypeId
+          };
+
+          this.uiOptionsService.addCodec(payload).subscribe({
 
         next: () => {
 
@@ -322,14 +293,34 @@ export class InfrastructureCodecsComponent implements OnInit {
             'Close',
 
             {
-
               duration: 3000
-
             }
-
           );
 
           this.loadCodecs();
+
+        },
+
+
+            error: () => {
+
+              this.snackBar.open(
+
+                'Failed to add codec.',
+
+                'Close',
+
+                {
+
+                  duration: 3000
+
+                }
+
+              );
+
+            }
+
+          });
 
         },
 
@@ -337,13 +328,13 @@ export class InfrastructureCodecsComponent implements OnInit {
 
           this.snackBar.open(
 
-            'Failed to add codec.',
+            'Failed to fetch encoder types required to add codec.',
 
             'Close',
 
             {
 
-              duration: 3000
+              duration: 3500
 
             }
 

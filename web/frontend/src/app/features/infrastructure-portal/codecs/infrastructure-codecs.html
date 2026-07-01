@@ -1,7 +1,4 @@
 <div class="page">
-
-  <!-- ================= Header ================= -->
-
   <div class="header-row">
 
     <div>
@@ -54,33 +51,21 @@
 
   </div>
 
-  <!-- ================= Information ================= -->
-
   <mat-card class="info-card">
 
     <mat-icon color="primary">
-
       info
-
     </mat-icon>
 
     <div>
-
       <strong>Supported Codecs</strong>
-
-      <p>
-
-        Supported codecs are shown in green when active.
-        Unsupported codecs may be stored in the platform but cannot
-        currently be enabled for the experiments engine.
-
-      </p>
+        <p>Supported codecs are shown in green when active.</p>
+        <p>Supported codecs may be disabled and are shown in amber</p>
+        <p>Unsupported codecs are shown in red and may be stored in the platform but cannot be enabled for the experiments engine.</p>
 
     </div>
 
   </mat-card>
-
-  <!-- ================= Table ================= -->
 
   <mat-card class="panel">
 
@@ -91,29 +76,17 @@
     <div class="ag-theme-quartz grid-wrap">
 
       <ag-grid-angular
-
         style="width:100%;height:100%;"
-
         [rowData]="rowData"
-
         [columnDefs]="columnDefs"
-
         [defaultColDef]="defaultColDef"
-
         [rowClassRules]="rowClassRules"
-
         [animateRows]="true"
-
         [pagination]="true"
-
         [paginationPageSize]="10"
-
         rowSelection="single"
-
         (gridReady)="onGridReady($event)"
-
         (selectionChanged)="onSelectionChanged($event)">
-
       </ag-grid-angular>
 
     </div>

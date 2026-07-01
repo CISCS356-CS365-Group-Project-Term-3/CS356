@@ -34,7 +34,7 @@ export class AddEncoderDialogComponent {
   save(): void {
     this.dialogRef.close({
       name: this.name.trim(),
-      description: this.description.trim() || null,
+      description: this.description.trim() || 'No description',
       active: 0
     });
   }

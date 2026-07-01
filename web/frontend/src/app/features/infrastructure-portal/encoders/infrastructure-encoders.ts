@@ -143,11 +143,6 @@ export class InfrastructureEncodersComponent implements OnInit {
           description: encoder.description,
           active: encoder.active
         }));
-
-        // if (this.gridApi) {
-        //   this.gridApi.setGridOption('rowData', this.rowData);
-        // }
-
       },
 
       error: (error) => {
@@ -283,7 +278,7 @@ export class InfrastructureEncodersComponent implements OnInit {
     if (this.selectedEncoder.name !== 'Standard Encoder') {
 
       this.snackBar.open(
-        'The Experiment Engine does not currently support this encoder type.',
+        'Encoder not supported by Experiments Engine',
         'Close',
         {
           duration: 3500
@@ -336,17 +331,20 @@ export class InfrastructureEncodersComponent implements OnInit {
       return;
     }
 
-    if (this.selectedEncoder.name !== 'Standard Encoder') {
+    // Prevent disabling the Standard Encoder because it's the only one
+    // supported by the experiment engine.
+    if (this.selectedEncoder.name === 'Standard Encoder') {
 
       this.snackBar.open(
-        'The Experiment Engine does not currently support this encoder type.',
+        "Unable to deactivate Engine supported Standard Encoder",
         'Close',
         {
-          duration: 3500
+          duration: 5000
         }
       );
 
       return;
+
     }
 
     this.uiOptionsService

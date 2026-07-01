@@ -30,8 +30,7 @@
       <button
         mat-stroked-button
         color="primary"
-        [disabled]="!selectedEncoder ||selectedEncoder.active === 1 ||selectedEncoder.name !== 'Standard Encoder'
-"
+        [disabled]="!selectedEncoder || selectedEncoder.active === 1"
         (click)="enableSelected()">
 
         <mat-icon>check_circle</mat-icon>
@@ -42,8 +41,7 @@
       <button
         mat-stroked-button
         color="warn"
-        [disabled]=" !selectedEncoder || selectedEncoder.active === 0 ||selectedEncoder.name !== 'Standard Encoder'
-"
+        [disabled]=" !selectedEncoder || selectedEncoder.active === 0"
         (click)="disableSelected()">
 
         <mat-icon>block</mat-icon>
@@ -70,11 +68,12 @@
       <strong>Availability</strong>
 
       <p>
-
-        Encoder types can be added to the platform at any time.
-        Only encoder types marked as <strong>Active</strong> will
-        be available for researchers when creating experiments.
-
+        Standard Encoder is always active and cannot be disabled, as it's the
+        only encoder supported by Engine.
+      </p>
+      <p>
+        New encoder types can be added at any time but will be marked as
+        <strong>Inactive</strong>.
       </p>
 
     </div>

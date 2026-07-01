@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 })
 export class UiOptionsService {
 
-  private apiUrl = 'http://localhost:5001/rest/get_ui_options';
+  private apiUrl = 'http://localhost:5002/rest/get_ui_options';
 
   constructor(private http: HttpClient) {}
 
@@ -16,14 +16,14 @@ export class UiOptionsService {
 
   addEncoderType(encoder: any) {
     return this.http.put(
-      'http://localhost:5001/rest/encoder_types',
+      'http://localhost:5002/rest/encoder_types',
       encoder
     );
   }
 
   toggleEncoderType(id: number, active: number) {
     return this.http.post(
-      'http://localhost:5001/rest/encoder_types/active',
+      'http://localhost:5002/rest/encoder_types',
       {
         id,
         active
@@ -33,7 +33,7 @@ export class UiOptionsService {
 
   deleteEncoderType(id: number) {
     return this.http.delete(
-      'http://localhost:5001/rest/encoder_types',
+      'http://localhost:5002/rest/encoder_types',
       {
         body: { id }
       }
@@ -42,7 +42,7 @@ export class UiOptionsService {
 
   enableEncoder(id: number) {
     return this.http.post(
-      'http://localhost:5001/rest/encoder_types',
+      'http://localhost:5002/rest/encoder_types',
       {
         id,
         active: 1
@@ -52,7 +52,7 @@ export class UiOptionsService {
 
   disableEncoder(id: number) {
     return this.http.post(
-      'http://localhost:5001/rest/encoder_types',
+      'http://localhost:5002/rest/encoder_types',
       {
         id,
         active: 0
@@ -61,79 +61,57 @@ export class UiOptionsService {
   }
 
   addCodec(codec: any) {
-
     return this.http.put(
-
-      'http://localhost:5001/rest/codecs',
-
+      'http://localhost:5002/rest/codecs',
       codec
-
     );
-
   }
+
   toggleCodec(id: number, active: number) {
     return this.http.post(
-
-      'http://localhost:5001/rest/codecs/active',
-
+      'http://localhost:5002/rest/codecs',
       {
         id,
         active
       }
-
     );
-
   }
 
   addTransmissionCondition(body: any) {
-
     return this.http.put(
-
-      'http://localhost:5001/rest/transmission_conditions',
-
+      'http://localhost:5002/rest/transmission_conditions',
       body
-
     );
-
   }
 
   toggleTransmissionCondition(body: any) {
-
     return this.http.post(
-      'http://localhost:5001/rest/transmission_conditions/active',
-
+      'http://localhost:5002/rest/transmission_conditions',
       body
     );
   }
 
   addSequence(sequence: any) {
-
-    return this.http.post(
-
-      `http://localhost:5001/rest/sequences`,
-
+    return this.http.put(
+      'http://localhost:5002/rest/sequences',
       sequence
-
     );
+  }
 
+  addVideoFile(videoFile: any) {
+    return this.http.put(
+      'http://localhost:5002/rest/video_files',
+      videoFile
+    );
   }
 
   toggleSequence(body: {
-
     id: number;
-
     active: number;
-
   }) {
-
     return this.http.post(
-
-      `http://localhost:5001/rest/sequences/active`,
-
+      'http://localhost:5002/rest/sequences',
       body
-
     );
-
   }
-
 }
