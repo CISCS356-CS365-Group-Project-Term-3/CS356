@@ -348,7 +348,7 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
 
       this.snackBar.open(
 
-        'This network profile is not currently supported by the Experiments Engine.',
+        'This condition is not currently supported by the Experiments Engine.',
 
         'Close',
 

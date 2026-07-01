@@ -67,8 +67,6 @@ interface CodecRow {
 })
 export class InfrastructureCodecsComponent implements OnInit {
 
-  private gridApi?: GridApi<CodecRow>;
-
   searchText = '';
 
   rowData: CodecRow[] = [];
@@ -76,12 +74,10 @@ export class InfrastructureCodecsComponent implements OnInit {
   selectedCodec?: CodecRow;
 
   readonly supportedCodecs = [
-
     'h261',
     'h263',
     'h264',
     'h265'
-
   ];
 
   columnDefs: ColDef<CodecRow>[] = [
@@ -124,9 +120,7 @@ export class InfrastructureCodecsComponent implements OnInit {
   defaultColDef: ColDef = {
 
     sortable: true,
-
     filter: true,
-
     resizable: true
 
   };
@@ -152,9 +146,7 @@ export class InfrastructureCodecsComponent implements OnInit {
   constructor(
 
     private uiOptionsService: UiOptionsService,
-
     private dialog: MatDialog,
-
     private snackBar: MatSnackBar
 
   ) {}
@@ -170,17 +162,11 @@ export class InfrastructureCodecsComponent implements OnInit {
     this.uiOptionsService.getUiOptions().subscribe({
 
       next: data => {
-
         this.rowData = (data.codecs ?? []).map((codec: any) => ({
-
           id: codec.id,
-
           name: codec.name,
-
           active: codec.active,
-
           encoder_type_id: codec.encoder_type_id,
-
           supported: this.supportedCodecs.includes(codec.name)
 
         }));
@@ -190,77 +176,41 @@ export class InfrastructureCodecsComponent implements OnInit {
       error: () => {
 
         this.snackBar.open(
-
           'Failed to load codecs.',
-
           'Close',
-
           {
-
             duration: 3000
-
           }
 
         );
-
       }
-
     });
 
   }
 
   onGridReady(params: GridReadyEvent<CodecRow>): void {
 
-    this.gridApi = params.api;
-
     params.api.sizeColumnsToFit();
 
   }
-
-  // onSearch(event: Event): void {
-  //
-  //   const value = (event.target as HTMLInputElement).value;
-  //
-  //   this.searchText = value;
-  //
-  //   this.gridApi?.setGridOption(
-  //
-  //     'quickFilterText',
-  //
-  //     value
-  //
-  //   );
-  //
-  // }
 
   onSelectionChanged(
 
     event: SelectionChangedEvent<CodecRow>
 
   ): void {
-
     const rows = event.api.getSelectedRows();
 
-    this.selectedCodec =
-
-      rows.length
-
-        ? rows[0]
-
-        : undefined;
-
+    this.selectedCodec = rows.length? rows[0]: undefined;
   }
 
   addCodec(): void {
 
     const dialogRef = this.dialog.open(
-
       AddCodecDialogComponent,
 
       {
-
         width: '520px'
-
       }
 
     );
@@ -268,7 +218,6 @@ export class InfrastructureCodecsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
 
       if (!result) {
-
         return;
 
       }
@@ -276,7 +225,6 @@ export class InfrastructureCodecsComponent implements OnInit {
       const duplicate = this.rowData.some(codec =>
 
         codec.name.trim().toLowerCase() ===
-
         result.name.trim().toLowerCase()
 
       );
@@ -290,15 +238,11 @@ export class InfrastructureCodecsComponent implements OnInit {
           'Close',
 
           {
-
             duration: 3500
-
           }
 
         );
-
         return;
-
       }
 
 
@@ -349,11 +293,8 @@ export class InfrastructureCodecsComponent implements OnInit {
             'Close',
 
             {
-
               duration: 3000
-
             }
-
           );
 
           this.loadCodecs();

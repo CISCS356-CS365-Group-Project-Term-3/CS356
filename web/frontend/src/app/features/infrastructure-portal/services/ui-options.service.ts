@@ -61,41 +61,27 @@ export class UiOptionsService {
   }
 
   addCodec(codec: any) {
-
     return this.http.put(
-
       'http://localhost:5002/rest/codecs',
-
       codec
-
     );
-
   }
+
   toggleCodec(id: number, active: number) {
-
     return this.http.post(
-
       'http://localhost:5002/rest/codecs',
-
       {
         id,
         active
       }
-
     );
-
   }
 
   addTransmissionCondition(body: any) {
-
     return this.http.put(
-
       'http://localhost:5002/rest/transmission_conditions',
-
       body
-
     );
-
   }
 
   toggleTransmissionCondition(body: any) {
@@ -106,45 +92,26 @@ export class UiOptionsService {
   }
 
   addSequence(sequence: any) {
-
     return this.http.put(
-
-      `http://localhost:5002/rest/sequences`,
-
+      'http://localhost:5002/rest/sequences',
       sequence
-
     );
-
   }
 
   addVideoFile(videoFile: any) {
-
     return this.http.put(
-
-      `http://localhost:5002/rest/video_files`,
-
+      'http://localhost:5002/rest/video_files',
       videoFile
-
     );
-
   }
 
   toggleSequence(body: {
-
     id: number;
-
     active: number;
-
   }) {
-
     return this.http.post(
-
-      `http://localhost:5002/rest/sequences`,
-
+      'http://localhost:5002/rest/sequences',
       body
-
     );
-
   }
-
 }

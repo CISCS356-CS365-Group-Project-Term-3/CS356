@@ -25,21 +25,13 @@ interface DatasetCard {
   active: number;
 
   supported: number;
-
   thumbnail: string;
-
   videoName: string;
-
   filepath: string;
-
   width: number;
-
   height: number;
-
   fps: number;
-
   bitDepth: number;
-
   gamut: string;
 
 }
@@ -110,29 +102,17 @@ export class InfrastructureDatasetsComponent implements OnInit {
           return {
 
             id: sequence.id,
-
             name: sequence.name,
-
             description: sequence.description,
-
             active: sequence.active,
-
             supported: sequence.supported,
-
             thumbnail: `assets/dataset-images/${sequence.name}.png`,
-
             videoName: video?.name ?? '',
-
             filepath: video?.filepath ?? '',
-
             width: video?.spacial?.[0] ?? 0,
-
             height: video?.spacial?.[1] ?? 0,
-
             fps: video?.temporal ?? 0,
-
             bitDepth: video?.depth ?? 0,
-
             gamut: video?.gamut ?? ''
 
           };
@@ -180,7 +160,6 @@ export class InfrastructureDatasetsComponent implements OnInit {
   }
 
   selectDataset(dataset: DatasetCard): void {
-
     this.selectedDataset = dataset;
 
   }
@@ -275,17 +254,11 @@ export class InfrastructureDatasetsComponent implements OnInit {
                   this.loadDatasets();
 
                   this.snackBar.open(
-
                     'Dataset added.',
-
                     'Close',
-
                     {
-
                       duration: 3000
-
                     }
-
                   );
 
                 },
@@ -389,7 +362,6 @@ export class InfrastructureDatasetsComponent implements OnInit {
       this.snackBar.open(
 
         'This dataset is not currently supported by the Experiments Engine.',
-
         'Close',
 
         {
@@ -415,17 +387,13 @@ export class InfrastructureDatasetsComponent implements OnInit {
       next: () => {
 
         this.loadDatasets();
-
         this.snackBar.open(
-
           'Dataset enabled.',
 
           'Close',
 
           {
-
             duration: 3000
-
           }
 
         );

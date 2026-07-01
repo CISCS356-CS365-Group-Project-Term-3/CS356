@@ -34,19 +34,13 @@ export class AddCodecDialogComponent {
     this.dialogRef.close({
 
       name: this.name.trim(),
-
       version: '1.0',
-
       active: 0
-
     });
-
   }
 
   cancel(): void {
 
     this.dialogRef.close();
-
   }
-
 }
