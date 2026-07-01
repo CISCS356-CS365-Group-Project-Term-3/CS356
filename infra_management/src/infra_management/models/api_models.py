@@ -81,3 +81,16 @@ class EncoderTypeUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     active: Optional[Literal[0, 1]] = None
+
+class ProjectTypeUpdate(BaseModel):
+    id: int
+    name: Optional[str] = None
+    network_enabled: Optional[int] = None
+    active: Optional[Literal[0, 1]] = None
+
+class ProjectTypeCreate(BaseModel):
+    id: int
+    name: str
+    network_enabled: int
+    active: Literal[0, 1]
+

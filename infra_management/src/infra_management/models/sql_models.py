@@ -9,6 +9,7 @@ class ProjectType(Base):
     __tablename__ = "project_type"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(String(255))
+    network_enabled = mapped_column(Integer)
     active = mapped_column(Integer)
     supported = mapped_column(Integer, nullable=False, default=0)
 

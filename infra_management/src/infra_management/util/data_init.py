@@ -8,6 +8,7 @@ def data_init():
         project_type = models.ProjectType()
         project_type.name = "Encoder Only"
         project_type.active = 1
+        project_type.network_enabled = 0
         project_type.supported = 1
         session.add(project_type)
 
@@ -15,6 +16,7 @@ def data_init():
         project_type2.name = "Network Simulation"
         project_type2.active = 1
         project_type2.supported = 1
+        project_type2.network_enabled = 1
         session.add(project_type2)
 
         encoder_type = models.EncoderType()
