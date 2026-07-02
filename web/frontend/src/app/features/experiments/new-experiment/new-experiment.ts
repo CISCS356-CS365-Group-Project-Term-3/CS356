@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { NewExperimentFormService } from './new-experiment-form.service';
 import { ExperimentsService } from '../services/experiments';
+import { InfrastructureService } from '../services/infrastructure';
 import { ProjectSetup } from './steps/project-setup/project-setup';
 import { EncodersStep } from './steps/encoders/encoders';
 import { SequencesStep } from './steps/sequences/sequences';
@@ -12,6 +13,7 @@ import { NetworkEmulationStep } from './steps/network-emulation/network-emulatio
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { UserManagementService } from '../../user_management/user-management-service';
+import { InfrastructureConfig } from '../models/infrastructure-config.model';
 
 @Component({
   selector: 'app-new-experiment',
@@ -35,12 +37,14 @@ export class NewExperiment implements OnInit {
   isSubmitting = false;
   visitedSteps = new Set<number>();
   private userId: number | null = null;
+  private config: InfrastructureConfig | null = null;
 
   constructor(
     public formService: NewExperimentFormService,
     public router: Router,
     private experimentsService: ExperimentsService,
     private userService: UserManagementService,
+    private infrastructureService: InfrastructureService,
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +55,15 @@ export class NewExperiment implements OnInit {
         error: () => {},
       });
     } catch {}
+    this.infrastructureService.getConfig().subscribe({
+      next: (config) => { this.config = config; },
+      error: () => {},
+    });
+  }
+
+  needsNetworkConfig(): boolean {
+    const projectTypeId = this.formService.form.projectTypeId;
+    return !!this.config?.projectTypes.find((pt) => pt.id === projectTypeId)?.networkEnabled;
   }
 
   get isFirstStep(): boolean {

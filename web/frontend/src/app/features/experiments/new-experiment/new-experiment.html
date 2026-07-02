@@ -43,9 +43,11 @@
         >
           <app-sequences />
         </mat-step>
-        <mat-step label="Network Emulation">
-          <app-network-emulation />
-        </mat-step>
+        @if (needsNetworkConfig()) {
+          <mat-step label="Network Emulation">
+            <app-network-emulation />
+          </mat-step>
+        }
 
         <mat-step label="Review">
           <app-review />
