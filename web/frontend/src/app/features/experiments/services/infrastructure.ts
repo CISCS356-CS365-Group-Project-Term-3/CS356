@@ -79,7 +79,7 @@ const MOCK_CONFIG: InfrastructureConfig = {
   ],
 
   transmissionConditions: [
-    { id: 1, name: 'Delay', lowerBound: '0ms', upperBound: '1000ms' },
-    { id: 2, name: 'Jitter', lowerBound: '0ms', upperBound: '1000ms' },
+    { id: 1, name: 'Delay', lowerBound: 0, upperBound: 1000 },
+    { id: 2, name: 'Jitter', lowerBound: 0, upperBound: 1000 },
   ],
 };

@@ -43,35 +43,29 @@ export class NewExperimentFormService {
   applyPendingTemplate(): void {
     if (this.pendingDraft) {
       const draft = this.pendingDraft;
-      this.editingId = draft.id;
+      const draftData = draft.draftData ?? { encoders: [], sequences: [], networkEmulation: { packetLoss: [], delay: [], jitter: [] } };
+      this.editingId = String(draft.groupID);
       this.form = {
         name: draft.name,
         projectTypeId: draft.projectTypeId,
-        encoders: draft.encoders.map((e) => ({ ...e })),
-        sequences: draft.sequences.map((s) => ({ ...s })),
-        networkEmulation: draft.networkEmulation
-          ? {
-              packetLoss: [...draft.networkEmulation.packetLoss],
-              delay: [...draft.networkEmulation.delay],
-              jitter: [...draft.networkEmulation.jitter],
-            }
+        encoders: draftData.encoders.map((e) => ({ ...e })),
+        sequences: draftData.sequences.map((s) => ({ ...s })),
+        networkEmulation: draftData.networkEmulation
+          ? { packetLoss: [...draftData.networkEmulation.packetLoss], delay: [...draftData.networkEmulation.delay], jitter: [...draftData.networkEmulation.jitter] }
           : { packetLoss: [], delay: [], jitter: [] },
       };
       this.pendingDraft = null;
     } else if (this.pendingTemplate) {
       const template = this.pendingTemplate;
+      const draftData = template.draftData ?? { encoders: [], sequences: [], networkEmulation: { packetLoss: [], delay: [], jitter: [] } };
       this.editingId = null;
       this.form = {
         name: template.name + ' (copy)',
         projectTypeId: template.projectTypeId,
-        encoders: template.encoders.map((e) => ({ ...e })),
-        sequences: template.sequences.map((s) => ({ ...s })),
-        networkEmulation: template.networkEmulation
-          ? {
-              packetLoss: [...template.networkEmulation.packetLoss],
-              delay: [...template.networkEmulation.delay],
-              jitter: [...template.networkEmulation.jitter],
-            }
+        encoders: draftData.encoders.map((e) => ({ ...e })),
+        sequences: draftData.sequences.map((s) => ({ ...s })),
+        networkEmulation: draftData.networkEmulation
+          ? { packetLoss: [...draftData.networkEmulation.packetLoss], delay: [...draftData.networkEmulation.delay], jitter: [...draftData.networkEmulation.jitter] }
           : { packetLoss: [], delay: [], jitter: [] },
       };
       this.pendingTemplate = null;
