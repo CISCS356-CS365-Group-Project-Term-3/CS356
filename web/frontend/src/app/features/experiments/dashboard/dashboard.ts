@@ -121,6 +121,7 @@ export class Dashboard implements OnInit {
       headerName: 'Date',
       field: 'date',
       flex: 1,
+      sort: 'desc',
       valueFormatter: (p) => {
         const d = new Date(p.value);
         return isNaN(d.getTime())
