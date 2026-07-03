@@ -1,5 +1,7 @@
 from storage import results_store
 import requests
+import os
+import json
 
 def get_experiment_metadata(experiment_id):
     """ look up the postgres experiment row tied to a mongo result, if any """
@@ -8,10 +10,16 @@ def get_experiment_metadata(experiment_id):
 
     try:
 
-        EXPERIMENT_MANAGAMENT_ADDRESS = os.getenv("EXPERIMENT_MANAGAMENT_ADDRESS", "localhost:5000")
-        url = f"{EXPERIMENT_MANAGAMENT_ADDRESS}/experiments/{experiment_id}"
-        return request.get(url)
-    except (TypeError, ValueError):
+        EXPERIMENT_MANAGEMENT_ADDRESS = os.getenv("EXPERIMENT_MANAGEMENT_ADDRESS", "localhost:5000")
+        url = f"{EXPERIMENT_MANAGEMENT_ADDRESS}/experiments/{experiment_id}"
+
+        response = requests.get(url)
+        if response.status_code != 200:
+            print("experiment metadata request to experiment managament container failed", flush=True)
+            return None
+        return response.json()
+    except Exception as e:
+        print(f'experiment metadata lookup failed: {e}', flush=True)
         return None
 
 def clean_result(doc):
