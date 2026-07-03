@@ -7,7 +7,6 @@ import { EncoderConfig, NewExperimentFormService, SequenceConfig } from '../../n
 interface EncoderDisplay {
   type: string;
   codec: string;
-  mode: string;
 }
 
 interface SequenceDisplay {
@@ -19,6 +18,7 @@ interface SequenceDisplay {
 
 @Component({
   selector: 'app-review',
+  standalone: true,
   imports: [MatCardModule],
   templateUrl: './review.html',
   styleUrl: './review.scss',
@@ -45,8 +45,27 @@ export class ReviewStep implements OnInit {
     return {
       type:  this.config?.encoderTypes.find((e) => e.id === encoder.encoderTypeId)?.name ?? '—',
       codec: this.config?.codecs.find((c) => c.id === encoder.codecId)?.name ?? '—',
-      mode:  this.config?.encoderModes.find((m) => m.id === encoder.encoderModeId)?.name ?? '—',
     };
+  }
+
+  get hasNetworkEmulation(): boolean {
+    const net = this.formService.form.networkEmulation;
+    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
+  }
+
+  get packetLossDisplay(): string {
+    const vals = this.formService.form.networkEmulation.packetLoss;
+    return vals.length > 0 ? vals.map((v) => v + '%').join(', ') : '—';
+  }
+
+  get delayDisplay(): string {
+    const vals = this.formService.form.networkEmulation.delay;
+    return vals.length > 0 ? vals.map((v) => v + 'ms').join(', ') : '—';
+  }
+
+  get jitterDisplay(): string {
+    const vals = this.formService.form.networkEmulation.jitter;
+    return vals.length > 0 ? vals.map((v) => v + 'ms').join(', ') : '—';
   }
 
   getSequenceDisplay(seq: SequenceConfig): SequenceDisplay {

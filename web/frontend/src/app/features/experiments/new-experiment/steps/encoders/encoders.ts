@@ -5,12 +5,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { Codec, EncoderMode, EncoderType } from '../../../models/infrastructure-config.model';
+import { Codec, EncoderType } from '../../../models/infrastructure-config.model';
 import { InfrastructureService } from '../../../services/infrastructure';
 import { EncoderConfig, NewExperimentFormService } from '../../new-experiment-form.service';
 
 @Component({
   selector: 'app-encoders',
+  standalone: true,
   imports: [FormsModule, MatCardModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatSelectModule],
   templateUrl: './encoders.html',
   styleUrl: './encoders.scss',
@@ -18,8 +19,6 @@ import { EncoderConfig, NewExperimentFormService } from '../../new-experiment-fo
 export class EncodersStep implements OnInit {
   encoderTypes: EncoderType[] = [];
   allCodecs: Codec[] = [];
-  allModes: EncoderMode[] = [];
-
   constructor(
     private infrastructureService: InfrastructureService,
     public formService: NewExperimentFormService,
@@ -29,27 +28,27 @@ export class EncodersStep implements OnInit {
     this.infrastructureService.getConfig().subscribe((data) => {
       this.encoderTypes = data.encoderTypes;
       this.allCodecs = data.codecs;
-      this.allModes = data.encoderModes;
     });
   }
 
-  availableCodecs(encoder: EncoderConfig): Codec[] {
+  availableCodecs(encoder: EncoderConfig, index: number): Codec[] {
     const et = this.encoderTypes.find((e) => e.id === encoder.encoderTypeId);
     if (!et) return [];
-    return this.allCodecs.filter((c) => et.activeCodecs.includes(c.id));
+    const base = !et.activeCodecs?.length
+      ? this.allCodecs
+      : this.allCodecs.filter((c) => et.activeCodecs.includes(c.id));
+    const usedCodecIds = this.formService.form.encoders
+      .filter((e, i) => i !== index && e.encoderTypeId === encoder.encoderTypeId && e.codecId !== null)
+      .map((e) => e.codecId);
+    return base.filter((c) => !usedCodecIds.includes(c.id));
   }
 
   onEncoderTypeChange(encoder: EncoderConfig): void {
     encoder.codecId = null;
-    encoder.encoderModeId = null;
-  }
-
-  onCodecChange(encoder: EncoderConfig): void {
-    encoder.encoderModeId = null;
   }
 
   addEncoder(): void {
-    this.formService.form.encoders.push({ encoderTypeId: null, codecId: null, encoderModeId: null });
+    this.formService.form.encoders.push({ encoderTypeId: null, codecId: null });
   }
 
   removeEncoder(index: number): void {

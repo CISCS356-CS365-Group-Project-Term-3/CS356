@@ -10,6 +10,7 @@ import { NewExperimentFormService } from '../../new-experiment-form.service';
 
 @Component({
   selector: 'app-project-setup',
+  standalone: true,
   imports: [FormsModule, MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   templateUrl: './project-setup.html',
   styleUrl: './project-setup.scss',

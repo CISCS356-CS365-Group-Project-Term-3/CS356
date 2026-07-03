@@ -12,11 +12,12 @@ import {
   RowSelectionOptions,
 } from 'ag-grid-community';
 import { ExperimentsService } from '../services/experiments';
-import { Experiment, ExperimentRun } from '../models/experiment.model';
+import { Experiment, ExperimentRun, ExperimentStatus } from '../models/experiment.model';
 import { Router, RouterLink } from '@angular/router';
 import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
 import { InfrastructureService } from '../services/infrastructure';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
+import { UserManagementService } from '../../user_management/user-management-service';
 import { CommonModule } from '@angular/common';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -41,7 +42,8 @@ export class Dashboard implements OnInit {
   showAllExperiments = false;
   showDraftsOnly = false;
   isLoading = true;
-  isAdmin: boolean = false; // TODO: replace with real auth check once JWT structure is known
+  isAdmin: boolean = false;
+  private userId: number | null = null;
   private config: InfrastructureConfig | null = null;
 
   colDefs: ColDef[] = [
@@ -198,23 +200,30 @@ export class Dashboard implements OnInit {
     private formService: NewExperimentFormService,
     private router: Router,
     private infrastructureService: InfrastructureService,
+    // private userService: UserManagementService,
   ) {}
 
   ngOnInit() {
-    // this.isAdmin = this.authService.isAdmin();
     this.infrastructureService.getConfig().subscribe({
-      next: (config) => {
-        this.config = config;
-      },
+      next: (config) => { this.config = config; },
       error: () => {},
     });
+    //try {
+    //  this.userService.getUserInfo().subscribe({
+    //    next: (user: any) => {
+    //      this.userId = user.user_id;
+    //      this.isAdmin = user.user_role === 'admin';
+    //      this.loadExperiments();
+    //    },
+    //    error: () => {},
+    //  });
+    //} catch {}
     this.loadExperiments();
   }
 
   loadExperiments(): void {
-    // const scope = this.isAdmin && this.showAllExperiments ? 'all' : 'mine';
-    // this.experimentsService.getExperiments(scope).subscribe(data => { this.experiments = data; });
-    this.experimentsService.getExperiments().subscribe({
+    const userId = (this.isAdmin && this.showAllExperiments) ? undefined : this.userId;
+    this.experimentsService.getExperiments(userId ?? undefined).subscribe({
       next: (data) => {
         this.experiments = data;
         this.isLoading = false;
@@ -261,7 +270,6 @@ export class Dashboard implements OnInit {
       if (params.data.status === 'draft') {
         return `<span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Draft</span>`;
       }
-
       return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Pending</span>`;
     }
 

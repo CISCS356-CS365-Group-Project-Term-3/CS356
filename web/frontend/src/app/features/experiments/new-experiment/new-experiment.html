@@ -43,22 +43,9 @@
         >
           <app-sequences />
         </mat-step>
-        <!--
-        <mat-step label="Scalability">
-          <p>Coming soon</p>
+        <mat-step label="Network Emulation">
+          <app-network-emulation />
         </mat-step>
-
-        <mat-step label="Network">
-          <p>Coming soon</p>
-        </mat-step> -->
-
-        <!-- <mat-step label="Analysis">
-          <p>Coming soon</p>
-        </mat-step>
-
-        <mat-step label="Outputs">
-          <p>Coming soon</p>
-        </mat-step> -->
 
         <mat-step label="Review">
           <app-review />
@@ -76,7 +63,15 @@
           <button mat-stroked-button (click)="onBack()">
             {{ isFirstStep ? 'Cancel' : 'Back' }}
           </button>
-          <button mat-raised-button color="primary" (click)="onNext()" [disabled]="isLastStep && isSubmitting">
+          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting || !canSaveDraft()">
+            Save Draft
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="onNext()"
+            [disabled]="isSubmitting || (isLastStep && !isFormComplete())"
+          >
             {{ isLastStep && isSubmitting ? 'Submitting…' : isLastStep ? 'Submit' : 'Next' }}
           </button>
         </div>
@@ -84,17 +79,3 @@
     </mat-card>
   </div>
 </div>
-
-@if (showDraftModal) {
-  <div class="modal-backdrop" (click)="showDraftModal = false">
-    <mat-card class="modal-card" appearance="outlined" (click)="$event.stopPropagation()">
-      <mat-icon class="modal-icon">info</mat-icon>
-      <h3>Incomplete experiment</h3>
-      <p>Some steps are incomplete. This experiment will be saved as a draft and can be finalised later.</p>
-      <div class="modal-actions">
-        <button mat-stroked-button (click)="showDraftModal = false">Cancel</button>
-        <button mat-raised-button color="primary" (click)="confirmDraft()">Save as Draft</button>
-      </div>
-    </mat-card>
-  </div>
-}

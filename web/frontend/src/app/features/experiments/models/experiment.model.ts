@@ -1,4 +1,4 @@
-export type ExperimentStatus = 'Complete' | 'Running' | 'Failed';
+export type ExperimentStatus = 'draft' | 'pending' | 'running' | 'complete' | 'failed';
 
 export interface ExperimentRun {
   id: number;
