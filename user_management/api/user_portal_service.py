@@ -25,6 +25,7 @@ def get_stored_token(user_name: str) -> str | None:
     config.read(_PROPERTIES_PATH)
     return config.get(_SECTION, user_name, fallback=None)
 
+
 def validate_login(json):
     try:
         user_name = json['user_name']
@@ -32,10 +33,13 @@ def validate_login(json):
         if validate_credentials(user_name, user_password):
             user_details = get_user_info(user_name)
             if user_details is None:
-
                 return False
             try:
                 token = generate_token(user_details)
+
+                user_id = user_details['user_id']
+                log_audit_action(user_id, user_id, 'USER_LOGIN')
+
                 return token
             except Exception as e:
                 print(f"Error generating token: {e}")
@@ -236,14 +240,20 @@ def confirm_password_reset(token, new_password):
         raise Exception("Database connection failed")
     try:
         result = connection.execute(
-            text("SELECT user_email, expires_at, used FROM password_reset_tokens WHERE token = :token"),
+            text("""
+                 SELECT p.user_email, p.expires_at, p.used, u.user_id
+                 FROM password_reset_tokens p
+                          JOIN users u ON p.user_email = u.user_email
+                 WHERE p.token = :token
+                 """),
             {"token": token}
         )
         row = result.fetchone()
         if row is None:
             raise ValueError("Invalid or expired reset token")
 
-        user_email, expires_at, used = row
+        user_email, expires_at, used, target_user_id = row
+
         if used:
             raise ValueError("Reset token has already been used")
         if datetime.now() > expires_at:
@@ -258,7 +268,10 @@ def confirm_password_reset(token, new_password):
             text("UPDATE password_reset_tokens SET used = TRUE WHERE token = :token"),
             {"token": token}
         )
+
         connection.commit()
+        log_audit_action(target_user_id, target_user_id, 'PASSWORD_RESET')
+
     finally:
         connection.close()
 
@@ -335,6 +348,7 @@ def update_user_role(user_id, role):
     finally:
         connection.close()
 
+
 def create_user(user_name, user_email, role, password):
     connection = create_db_connection()
 
@@ -344,10 +358,11 @@ def create_user(user_name, user_email, role, password):
     try:
         hashed_password = hash_password(password)
 
-        connection.execute(
+        result = connection.execute(
             text(
                 "INSERT INTO users (user_name, user_email, password_hash, user_role) "
-                "VALUES (:user_name, :user_email, :password_hash, :user_role)"
+                "VALUES (:user_name, :user_email, :password_hash, :user_role) "
+                "RETURNING user_id"
             ),
             {
                 "user_name": user_name,
@@ -357,13 +372,45 @@ def create_user(user_name, user_email, role, password):
             }
         )
 
+        new_user_id = result.fetchone()[0]
+
         connection.commit()
+
+        log_audit_action(new_user_id, new_user_id, 'USER_CREATED')
+
         return True
 
     except Exception as e:
         print(f"Error creating user: {e}")
         return False
 
+    finally:
+        connection.close()
+
+
+def log_audit_action(actor_user_id: int, target_user_id: int, action_type: str):
+    connection = create_db_connection()
+    if connection is None:
+        print("Failed to connect to DB for audit logging")
+        return False
+
+    try:
+        connection.execute(
+            text("""
+                 INSERT INTO user_audit_logs (actor_user_id, target_user_id, action_type)
+                 VALUES (:actor_id, :target_id, :action)
+                 """),
+            {
+                "actor_id": actor_user_id,
+                "target_id": target_user_id,
+                "action": action_type
+            }
+        )
+        connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error creating audit log: {e}")
+        return False
     finally:
         connection.close()
     

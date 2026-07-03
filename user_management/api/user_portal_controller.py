@@ -142,18 +142,6 @@ def register(register_details: RegisterUser):
 
     return {"message": "Account created successfully"}
 
-
-
-
-
-
-
-
-
-
-
-
-
 class LoginRequest(BaseModel):
     user_name: str
     password: str
@@ -300,17 +288,26 @@ def admin_delete_user(user_id: str):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
         if not user_portal_service.verify_token(token):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
-        _, role = user_portal_service.get_user_id_and_role(token)
-        if role != "admin":
+
+        actor_id, user_role = user_portal_service.get_user_id_and_role(token)
+
+        if user_role != "admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-        user_portal_service.delete_user(user_id)
-        return {"message": f"User with ID {user_id} deleted successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+
+        try:
+            user_portal_service.log_audit_action(actor_id, user_id, "DELETE_USER")
+            user_portal_service.delete_user(user_id)
+            return {"message": f"User with ID {user_id} deleted successfully"}
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @app.get("/users/me")
-def getUserDetails(authorization: Optional[str] = Header(None)):
+def get_user_details(authorization: Optional[str] = Header(None)):
     try:
         if not authorization:
             raise HTTPException(
@@ -355,12 +352,15 @@ def admin_update_user_role(user_id: str, role: str):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="No active session - please log in")
         if not user_portal_service.verify_token(token):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Session token is invalid or expired")
-        _, user_role = user_portal_service.get_user_id_and_role(token)
+
+        actor_id, user_role = user_portal_service.get_user_id_and_role(token)
+
         if user_role != "admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
         updated = user_portal_service.update_user_role(user_id, role)
         if updated:
+            user_portal_service.log_audit_action(actor_id, user_id, f"UPDATE_ROLE_{role.upper()}")
             return {"message": f"User with ID {user_id} updated to role {role} successfully"}
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {user_id} not found")
@@ -370,4 +370,5 @@ def admin_update_user_role(user_id: str, role: str):
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error updating user role: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Error updating user role: {str(e)}")
