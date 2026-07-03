@@ -294,13 +294,16 @@ def admin_delete_user(user_id: str):
         if user_role != "admin":
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
-        user_portal_service.delete_user(user_id)
-
-        user_portal_service.log_audit_action(actor_id, user_id, "DELETE_USER")
-
-        return {"message": f"User with ID {user_id} deleted successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+        try:
+            user_portal_service.log_audit_action(actor_id, user_id, "DELETE_USER")
+            user_portal_service.delete_user(user_id)
+            return {"message": f"User with ID {user_id} deleted successfully"}
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting user: {str(e)}")
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @app.get("/users/me")
