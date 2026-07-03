@@ -3,4 +3,3 @@ flask-cors
 psycopg2-binary
 sqlalchemy
 pika
-pymongo
