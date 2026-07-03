@@ -10,6 +10,8 @@ services:
         condition: service_healthy
       user-management:
         condition: service_healthy
+      results-management:
+        condition: service_healthy
 
   engine:
     privileged: true
@@ -48,8 +50,19 @@ services:
       - DB_NAME=experiments_management
       - DB_USER=postgres
       - DB_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  results-management:
+    build: ./results_management
+    environment:
       - OUTPUT_MONGO_URI=mongodb://admin:admin@mongo:27017/
       - OUTPUT_MONGO_DB_NAME=experiment_storage
+      - EXPERIMENT_MANAGEMENT_ADDRESS=http://experiment-management:5000
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
       interval: 10s
