@@ -1,6 +1,8 @@
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 
+const API_BASE_URL = 'http://localhost:8000';
+
 @Injectable({
     providedIn: "root"
 })
@@ -9,7 +11,7 @@ export class UserManagementService {
   constructor(private  http: HttpClient) {}
 
     loginUser(user_name: string, password: string) {
-    const url = '/user-management/auth/login';
+    const url = `${API_BASE_URL}/auth/login`;
     const body = {
         user_name: user_name,
         password: password,
@@ -18,29 +20,29 @@ export class UserManagementService {
     }
 
     verifyUser() {
-    const url = '/user-management/auth/verify';
+    const url = `${API_BASE_URL}/auth/verify`;
     const token = localStorage.getItem('access_token');
       if (!token) throw new Error('Missing token');
 
         const headers = new HttpHeaders({
-          Authorisation: `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         });
         return this.http.get(url, { headers });
       }
 
 
     getAllUsers() {
-    const url = '/user-management/auth/users';
+    const url = `${API_BASE_URL}/auth/users`;
     return this.http.get(url);
     }
 
     deleteUser(user_id: string) {
-      const url = `/user-management/auth/users/delete/${user_id}`;
+      const url = `${API_BASE_URL}/auth/users/delete/${user_id}`;
       return this.http.post(url, {});
     }
 
     resetPassword(email: string) {
-      const url = '/user-management/auth/reset_password';
+      const url = `${API_BASE_URL}/auth/reset_password`;
       const body = {
         email: email,
       };
@@ -48,7 +50,7 @@ export class UserManagementService {
     }
 
     resetPasswordConfirm(token: any, new_password: string) {
-      const url = '/user-management/auth/reset_password/confirm';
+      const url = `${API_BASE_URL}/auth/reset_password/confirm`;
       if (!token) throw new Error('Missing token');
       const body = {
         token,
@@ -58,18 +60,18 @@ export class UserManagementService {
     }
 
     getUserInfo() {
-      const url = '/user-management/users/me';
+      const url = `${API_BASE_URL}/users/me`;
       const token = localStorage.getItem('access_token');
       if (!token) throw new Error('Missing token');
 
       const headers = new HttpHeaders({
-        Authorisation: `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       });
       return this.http.get(url, { headers });
     }
 
     registerUser( username: string, password: string, confirmedPassword: string, email: string, role: string) {
-      const url = '/user-management/auth/register';
+      const url = `${API_BASE_URL}/auth/register`;
 
       const body = {
         user_name: username,

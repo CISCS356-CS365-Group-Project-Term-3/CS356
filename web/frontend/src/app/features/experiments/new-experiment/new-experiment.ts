@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
@@ -18,6 +19,7 @@ import { UserManagementService } from '../../user_management/user-management-ser
   imports: [
     MatStepperModule,
     MatButtonModule,
+    CommonModule,
     ProjectSetup,
     EncodersStep,
     SequencesStep,
@@ -27,12 +29,13 @@ import { UserManagementService } from '../../user_management/user-management-ser
     MatIconModule,
   ],
   templateUrl: './new-experiment.html',
-  styleUrl: './new-experiment.scss',
+  styleUrls: ['./new-experiment.scss'],
 })
 export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
   isSubmitting = false;
+  showDraftModal = false;
   visitedSteps = new Set<number>();
   private userId: number | null = null;
 

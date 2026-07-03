@@ -18,6 +18,7 @@ from user_management.api.user_portal_controller import (
 
 
 class TestUserPortalController(TestCase):
+
     def assert_error_response(self, response, expected_status_code, expected_message):
         self.assertEqual(response.status_code, expected_status_code)
         self.assertEqual(
@@ -31,7 +32,7 @@ class TestUserPortalController(TestCase):
             "password": "password123",
             "user_email": "test@example.com",
             "confirm_password": "password123",
-            "user_role": "General user"
+            "user_role": "user"
         }
         details.update(overrides)
         return RegisterUser(**details)
@@ -129,7 +130,7 @@ class TestUserPortalController(TestCase):
         mock_create_user.assert_called_once_with(
             "test",
             "test@example.com",
-            "General user",
+            "user",
             "password123"
         )
 
@@ -156,12 +157,12 @@ class TestUserPortalController(TestCase):
     @patch("user_management.api.user_portal_controller.user_portal_service.create_user")
     @patch("user_management.api.user_portal_controller.user_portal_service.get_user_info")
     def test_register_invalid_role_returns_400(
-        self,
-        mock_get_user_info,
-        mock_create_user
+            self,
+            mock_get_user_info,
+            mock_create_user
     ):
         with self.assertRaises(HTTPException) as ctx:
-            register(self.valid_register_details(user_role="admin"))
+            register(self.valid_register_details(user_role="invalid_role"))
 
         response = asyncio.run(http_exception_handler(None, ctx.exception))
 
@@ -219,6 +220,56 @@ class TestUserPortalController(TestCase):
         mock_create_user.assert_called_once_with(
             "test",
             "test@example.com",
-            "General user",
+            "user",
             "password123"
         )
+
+    @patch("user_management.api.user_portal_controller.user_portal_service.log_audit_action")
+    @patch("user_management.api.user_portal_controller.user_portal_service.update_user_role")
+    @patch("user_management.api.user_portal_controller.user_portal_service.get_user_id_and_role")
+    @patch("user_management.api.user_portal_controller.user_portal_service.verify_token")
+    @patch("user_management.api.user_portal_controller.get_current_token")
+    def test_admin_update_user_role_logs_audit_action(
+            self,
+            mock_get_token,
+            mock_verify,
+            mock_get_id_role,
+            mock_update,
+            mock_log_audit
+    ):
+        mock_get_token.return_value = "valid_token"
+        mock_verify.return_value = True
+        mock_get_id_role.return_value = (1, "admin")
+        mock_update.return_value = True
+
+        from user_management.api.user_portal_controller import admin_update_user_role
+
+        result = admin_update_user_role(42, "moderator")
+
+        self.assertEqual(result, {"message": "User with ID 42 updated to role moderator successfully"})
+        mock_log_audit.assert_called_once_with(1, 42, "UPDATE_ROLE_MODERATOR")
+
+
+    @patch("user_management.api.user_portal_controller.user_portal_service.log_audit_action")
+    @patch("user_management.api.user_portal_controller.user_portal_service.delete_user")
+    @patch("user_management.api.user_portal_controller.user_portal_service.get_user_id_and_role")
+    @patch("user_management.api.user_portal_controller.user_portal_service.verify_token")
+    @patch("user_management.api.user_portal_controller.get_current_token")
+    def test_admin_delete_user_logs_audit_action(
+            self,
+            mock_get_token,
+            mock_verify,
+            mock_get_id_role,
+            mock_delete,
+            mock_log_audit
+    ):
+        mock_get_token.return_value = "valid_token"
+        mock_verify.return_value = True
+        mock_get_id_role.return_value = (1, "admin")
+
+        from user_management.api.user_portal_controller import admin_delete_user
+
+        result = admin_delete_user(42)
+
+        self.assertEqual(result, {"message": "User with ID 42 deleted successfully"})
+        mock_log_audit.assert_called_once_with(1, 42, "DELETE_USER")

@@ -64,25 +64,12 @@ export class NetworkEmulationStep implements OnInit {
   }
 
   addValue(field: NetworkField, event: MatChipInputEvent): void {
-    const raw = event.value.trim();
+    const num = parseFloat(event.value.trim());
     const c = this.conditions[field];
+    const min = c?.lowerBound ?? 0;
     const max = c?.upperBound ?? Infinity;
-    let num: number;
-
-    if (field === 'packetLoss') {
-      num = Math.round(parseFloat(raw) * 10) / 10;
-      if (isNaN(num) || num < 0.1 || num > max) { event.chipInput.clear(); return; }
-    } else {
-      const parsed = parseFloat(raw);
-      if (isNaN(parsed) || !Number.isInteger(parsed)) { event.chipInput.clear(); return; }
-      num = parsed;
-      const min = c?.lowerBound ?? 0;
-      if (num < min || num > max) { event.chipInput.clear(); return; }
-    }
-
-    const current = this.formService.form.networkEmulation[field];
-    if (!current.includes(num)) {
-      current.push(num);
+    if (!isNaN(num) && num >= min && num <= max) {
+      this.formService.form.networkEmulation[field].push(num);
     }
     event.chipInput.clear();
   }

@@ -1,6 +1,6 @@
 import { Component, signal} from '@angular/core';
 import { UserManagementService } from '../user-management-service';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -9,7 +9,6 @@ import {merge} from 'rxjs';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-import {RouterLink} from '@angular/router';
 
 /** @title Login page */
 @Component({

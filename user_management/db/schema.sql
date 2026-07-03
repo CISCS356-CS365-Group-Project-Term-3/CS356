@@ -7,6 +7,15 @@ CREATE TABLE users (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE user_audit_logs (
+    id             SERIAL PRIMARY KEY,
+    actor_user_id  INTEGER NOT NULL REFERENCES users(user_id),
+    target_user_id INTEGER REFERENCES users(user_id),
+    action_type    VARCHAR(100) NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE password_reset_tokens (
     token         VARCHAR(64) PRIMARY KEY,
     user_email    VARCHAR(255) NOT NULL,
