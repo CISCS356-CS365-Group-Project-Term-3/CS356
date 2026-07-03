@@ -1,5 +1,5 @@
 from storage import results_store
-from storage.experiment_store import get_by_id as get_experiment_by_id
+import requests
 
 def get_experiment_metadata(experiment_id):
     """ look up the postgres experiment row tied to a mongo result, if any """
@@ -7,7 +7,10 @@ def get_experiment_metadata(experiment_id):
         return None
 
     try:
-        return get_experiment_by_id(int(experiment_id))
+
+        EXPERIMENT_MANAGAMENT_ADDRESS = os.getenv("EXPERIMENT_MANAGAMENT_ADDRESS", "localhost:5000")
+        url = f"{EXPERIMENT_MANAGAMENT_ADDRESS}/experiments/{experiment_id}"
+        return request.get(url)
     except (TypeError, ValueError):
         return None
 
