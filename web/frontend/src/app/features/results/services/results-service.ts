@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ResultSummary, ExperimentFrames } from '../models/result-summary.model';
 
-const API_BASE = '/experiment-management';
+const API_BASE = '/results-management';
 
 @Injectable({
   providedIn: 'root',
