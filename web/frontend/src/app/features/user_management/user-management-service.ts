@@ -1,7 +1,7 @@
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = '/user-management';
 
 @Injectable({
     providedIn: "root"
