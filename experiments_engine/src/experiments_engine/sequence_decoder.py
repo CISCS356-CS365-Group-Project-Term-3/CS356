@@ -17,11 +17,12 @@ class SequenceDecoder:
     # This dictionary maps each segment position (0-9) to the field it represents
     FIELD_NAMES = {
         0: "raw_file",
-        1: "codec",
-        2: "encoder_type",
-        3: "loss",
-        4: "delay",
-        5: "jitter",
+        1: "encoder_type",
+        2: "codec",
+        3: "encoder_mode",
+        4: "loss",
+        5: "delay",
+        6: "jitter",
     }
 
     SEGMENT_LENGTH = 3

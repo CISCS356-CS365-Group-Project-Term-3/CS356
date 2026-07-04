@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { Experiment } from '../models/experiment.model';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = '/experiment-management';
 
 @Injectable({
   providedIn: 'root',
@@ -11,9 +11,9 @@ const API_BASE = 'http://localhost:5000';
 export class ExperimentsService {
   constructor(private http: HttpClient) {}
 
-  getExperiments() {
-    // TODO: replace hardcoded userId=1 once auth is wired up
-    return this.http.get<Experiment[]>(`${API_BASE}/experiments?userId=1`);
+  getExperiments(userId?: number) {
+    const url = userId != null ? `${API_BASE}/experiments?userId=${userId}` : `${API_BASE}/experiments`;
+    return this.http.get<Experiment[]>(url);
     // return of(this.mockExperiments);
   }
 

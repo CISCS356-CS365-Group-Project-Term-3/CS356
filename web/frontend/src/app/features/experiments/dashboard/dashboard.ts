@@ -16,6 +16,7 @@ import { Router, RouterLink } from '@angular/router';
 import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
 import { InfrastructureService } from '../services/infrastructure';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
+import { UserManagementService } from '../../user_management/user-management-service';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -32,7 +33,8 @@ export class Dashboard implements OnInit {
   showAllExperiments = false;
   showDraftsOnly = false;
   isLoading = true;
-  isAdmin: boolean = false; // TODO: replace with real auth check once JWT structure is known
+  isAdmin: boolean = false;
+  private userId: number | null = null;
   private config: InfrastructureConfig | null = null;
 
   colDefs: ColDef[] = [
@@ -113,21 +115,29 @@ export class Dashboard implements OnInit {
     private formService: NewExperimentFormService,
     private router: Router,
     private infrastructureService: InfrastructureService,
+    private userService: UserManagementService,
   ) {}
 
   ngOnInit() {
-    // this.isAdmin = this.authService.isAdmin();
     this.infrastructureService.getConfig().subscribe({
       next: (config) => { this.config = config; },
       error: () => {},
     });
-    this.loadExperiments();
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.userId = user.user_id;
+          this.isAdmin = user.user_role === 'admin';
+          this.loadExperiments();
+        },
+        error: () => {},
+      });
+    } catch {}
   }
 
   loadExperiments(): void {
-    // const scope = this.isAdmin && this.showAllExperiments ? 'all' : 'mine';
-    // this.experimentsService.getExperiments(scope).subscribe(data => { this.experiments = data; });
-    this.experimentsService.getExperiments().subscribe({
+    const userId = (this.isAdmin && this.showAllExperiments) ? undefined : this.userId;
+    this.experimentsService.getExperiments(userId ?? undefined).subscribe({
       next: (data) => {
         this.experiments = data;
         this.isLoading = false;

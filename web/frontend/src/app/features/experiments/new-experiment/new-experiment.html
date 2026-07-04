@@ -49,14 +49,6 @@
           <app-network-emulation></app-network-emulation>
         </mat-step>
 
-        <!-- <mat-step label="Analysis">
-          <p>Coming soon</p>
-        </mat-step>
-
-        <mat-step label="Outputs">
-          <p>Coming soon</p>
-        </mat-step> -->
-
         <mat-step label="Review">
           <app-review></app-review>
         </mat-step>
@@ -72,7 +64,7 @@
           <button mat-stroked-button (click)="onBack()">
             {{ isFirstStep ? 'Cancel' : 'Back' }}
           </button>
-          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting">
+          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting || !canSaveDraft()">
             Save Draft
           </button>
           <button

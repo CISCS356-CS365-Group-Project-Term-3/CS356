@@ -22,6 +22,8 @@ class Settings:
     temp_directory = os.getenv("TEMP_DIR", "./experiments_engine/tests/test_data/temp")
     output_directory = os.getenv("OUTPUT_DIR", "./experiments_engine/tests/test_data/output")
 
+    infra_api_url: str = os.getenv('INFRA_API_URL', 'http://infra-management:5001')
+
     log_level = os.getenv("LOG_LEVEL", "INFO")
 
     class NetworkSimSettings:

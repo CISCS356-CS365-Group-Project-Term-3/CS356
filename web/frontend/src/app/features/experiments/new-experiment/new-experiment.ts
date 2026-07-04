@@ -12,6 +12,7 @@ import { ReviewStep } from './steps/review/review';
 import { NetworkEmulationStep } from './steps/network-emulation/network-emulation';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { UserManagementService } from '../../user_management/user-management-service';
 
 @Component({
   selector: 'app-new-experiment',
@@ -36,15 +37,23 @@ export class NewExperiment implements OnInit {
   isSubmitting = false;
   showDraftModal = false;
   visitedSteps = new Set<number>();
+  private userId: number | null = null;
 
   constructor(
     public formService: NewExperimentFormService,
     public router: Router,
     private experimentsService: ExperimentsService,
+    private userService: UserManagementService,
   ) {}
 
   ngOnInit(): void {
     this.formService.applyPendingTemplate();
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => { this.userId = user.user_id; },
+        error: () => {},
+      });
+    } catch {}
   }
 
   get isFirstStep(): boolean {
@@ -72,6 +81,10 @@ export class NewExperiment implements OnInit {
     }
   }
 
+  canSaveDraft(): boolean {
+    return this.isProjectSetupComplete();
+  }
+
   onSaveDraft(): void {
     this.doSubmit('draft');
   }
@@ -95,10 +108,6 @@ export class NewExperiment implements OnInit {
 
   isFormComplete(): boolean {
     return this.isProjectSetupComplete() && this.isEncodersComplete() && this.isSequencesComplete();
-  }
-
-  isNetworkComplete(): boolean {
-    return true;
   }
 
   isStepError(stepIndex: number): boolean {
@@ -133,7 +142,7 @@ export class NewExperiment implements OnInit {
     this.submitError = null;
     const request$ = editingId
       ? this.experimentsService.patchExperiment(editingId, basePayload)
-      : this.experimentsService.createExperiment({ userId: 1, ...basePayload }); // TODO: replace userId with JWT
+      : this.experimentsService.createExperiment({ userId: this.userId, ...basePayload });
     request$.subscribe({
       next: () => this.router.navigate(['/experiments']),
       error: () => {
