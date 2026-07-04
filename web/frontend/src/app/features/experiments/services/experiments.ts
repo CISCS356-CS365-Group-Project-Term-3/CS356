@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 import { Experiment } from '../models/experiment.model';
 
-const API_BASE = '/experiment-management';
+// const API_BASE = '/experiment-management';
+const API_BASE = 'http://localhost:5000';
 
 @Injectable({
   providedIn: 'root',

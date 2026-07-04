@@ -28,16 +28,6 @@ def get_experiments():
 
     return experiment_store.get_all_groups(), 200
 
-# TO-DO : I forgot what this is used for or if it is still used clarify with scott
-#@app.route("/experiments/<int:experiment_id>", methods=["GET"])
-#def get_experiment(experiment_id):
-#    """ get an experiment by id """
-#    experiment = experiment_store.get_by_id(experiment_id)
-#
-#    if not experiment:
-#        return {"error": "Experiment not found"}, 404
-#    return experiment, 200
-
 @app.route("/experiments/<int:group_id>", methods=["PATCH"])
 def update_experiment(group_id):
     """ update an experiment """

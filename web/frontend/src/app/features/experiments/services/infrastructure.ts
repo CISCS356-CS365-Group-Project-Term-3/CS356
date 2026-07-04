@@ -4,7 +4,8 @@ import { Observable, shareReplay, map } from 'rxjs';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
 import { camelizeKeys } from 'humps';
 
-const API_BASE = '/infra';
+// const API_BASE = '/infra';
+const API_BASE = 'http://localhost:5002';
 
 @Injectable({
   providedIn: 'root',

@@ -11,12 +11,13 @@ import {
   SelectionChangedEvent,
 } from 'ag-grid-community';
 import { ExperimentsService } from '../services/experiments';
-import { Experiment, ExperimentStatus } from '../models/experiment.model';
+import { Experiment, ExperimentRun, ExperimentStatus } from '../models/experiment.model';
 import { Router, RouterLink } from '@angular/router';
 import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
 import { InfrastructureService } from '../services/infrastructure';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
 import { UserManagementService } from '../../user_management/user-management-service';
+import { CommonModule } from '@angular/common';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -115,7 +116,7 @@ export class Dashboard implements OnInit {
     private formService: NewExperimentFormService,
     private router: Router,
     private infrastructureService: InfrastructureService,
-    private userService: UserManagementService,
+    // private userService: UserManagementService,
   ) {}
 
   ngOnInit() {
@@ -123,16 +124,17 @@ export class Dashboard implements OnInit {
       next: (config) => { this.config = config; },
       error: () => {},
     });
-    try {
-      this.userService.getUserInfo().subscribe({
-        next: (user: any) => {
-          this.userId = user.user_id;
-          this.isAdmin = user.user_role === 'admin';
-          this.loadExperiments();
-        },
-        error: () => {},
-      });
-    } catch {}
+    //try {
+    //  this.userService.getUserInfo().subscribe({
+    //    next: (user: any) => {
+    //      this.userId = user.user_id;
+    //      this.isAdmin = user.user_role === 'admin';
+    //      this.loadExperiments();
+    //    },
+    //    error: () => {},
+    //  });
+    //} catch {}
+    this.loadExperiments();
   }
 
   loadExperiments(): void {

@@ -1,4 +1,4 @@
-export type ExperimentStatus = 'Complete' | 'Running' | 'Failed';
+export type ExperimentStatus = 'draft' | 'pending' | 'running' | 'complete' | 'failed';
 
 export interface Experiment {
   id: string;
@@ -7,7 +7,10 @@ export interface Experiment {
   engineStatus?: ExperimentStatus;
   date: string;
   projectTypeId: number;
-  encoders: { encoderTypeId: number; codecId: number }[];
-  sequences: { videoFileId: number }[];
-  networkEmulation?: { packetLoss: number[]; delay: number[]; jitter: number[] };
+  draftData?: {
+    encoders: { encoderTypeId: number; codecId: number; encoderModeId: number }[];
+    sequences: { videoFileId: number }[];
+    networkEmulation?: { packetLoss: number[]; delay: number[]; jitter: number[] };
+  };
+  runs: ExperimentRun[];
 }
