@@ -3,12 +3,14 @@
   display: flex;
   align-items: center;
   font-size: 20px;
+  color: #111827;
 }
 
 :host ::ng-deep .ag-theme-quartz .ag-header-cell-text {
 
   font-size: 18px;
   font-weight: 600;
+  color: #111827;
 }
 
 .page {
@@ -53,8 +55,6 @@
   margin-right: 6px;
 }
 
-/* ---------------- Info Card ---------------- */
-
 .info-card {
   display: flex;
   align-items: flex-start;
@@ -87,8 +87,6 @@
   line-height: 1.5;
 }
 
-/* ---------------- Table Card ---------------- */
-
 .panel {
   width: 100%;
   padding: 24px;
@@ -105,15 +103,10 @@
   width: 340px;
 }
 
-/* ---------------- Grid ---------------- */
-
 .grid-wrap {
   height: 300px;
   width: 100%;
 }
-
-/* ---------------- AG Grid Status Colours ---------------- */
-
 
 .status-active {
   color: #15803d;
@@ -135,26 +128,19 @@
   font-weight: 700;
 }
 
-/* ---------------- Selected Row ---------------- */
-
 ::ng-deep .ag-row-selected {
   background-color: #e8f2ff !important;
 }
 
-/* ---------------- Hover ---------------- */
 
 ::ng-deep .ag-row:hover {
   background-color: #f8fafc !important;
 }
 
-/* ---------------- Header ---------------- */
-
 ::ng-deep .ag-header {
   font-weight: 600;
   font-size: 14px;
 }
-
-/* ---------------- Responsive ---------------- */
 
 @media (max-width: 900px) {
 
@@ -177,28 +163,22 @@
 
 }
 
-/* Active rows */
 
 ::ng-deep .row-active {
 
-  background: #b7f5c1 !important;
+  background: #c8f7c5 !important;
 
 }
 
-/* Inactive rows */
 
 ::ng-deep .row-inactive {
 
-  background: #fdeaea !important;
-
+  background: #ffd9d9 !important;
   color: #7b1e1e;
 
 }
 
-/* Selected row */
-
 ::ng-deep .ag-row-selected {
-
   border-left: 4px solid #1976d2 !important;
 
 }

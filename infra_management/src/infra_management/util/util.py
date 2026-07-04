@@ -126,8 +126,26 @@ def name_id_update(row, body):
     name = body.get("name")
     active = body.get("active")
     row.name = name if name else row.name
-    if body.get("active") == 1 and row.supported == 1:
+    if active == 1 and row.supported == 1:
         row.active = 1
-    elif body.get("active") == 0:
+    elif active == 0:
         row.active = 0
     return row
+
+def project_type_update(row, body):
+    name = body.get("name")
+    active = body.get("active")
+    network_enabled = body.get("network_enabled")
+    row.network_enabled = network_enabled if network_enabled else row.network_enabled
+    row.name = name if name else row.name
+    if active == 1 and row.supported == 1:
+        row.active = 1
+    elif active == 0:
+        row.active = 0
+    return row
+
+def project_type_create(table, body):
+    name = body.get("name")
+    active = body.get("active")
+    network_enabled = body.get("network_enabled")
+    return table(name=name, active=active, network_enabled=network_enabled, supported=0)

@@ -6,8 +6,7 @@
 
       <h1>Datasets</h1>
 
-      <p>
-
+      <p style="font-size: 18px;">
         Manage the datasets available within the Infrastructure Portal.
         Only supported and active datasets are available for researchers
         when creating experiments.
@@ -54,8 +53,6 @@
 
   </div>
 
-  <!-- ================= Information ================= -->
-
   <mat-card class="info-card">
 
     <mat-icon color="primary">
@@ -64,19 +61,18 @@
 
     </mat-icon>
 
-    <div>
+    <div style="font-size: 18px;">
 
       <strong>Datasets</strong>
 
       <p>
-        Select a dataset card, then use Enable or Disable to manage the dataset
-        infrastructure. Only datasets shown in <strong>green</strong> as
-        <strong>Active</strong> are available to researchers in the Experiments
-        Engine.
-      </p>
-
-      <p>
-        Disabled datasets appear in amber. Newly added datasets may initially be
+        -Select a dataset card, then use Enable or Disable to manage the dataset
+        infrastructure. <br>
+        -Only datasets shown in <strong>green</strong> as
+        <strong>active</strong> are available to researchers in the Experiments
+        Engine. <br>
+      
+        -Disabled datasets appear in amber. Newly added datasets may initially be
         shown in red as unsupported until they are enabled and supported by the
         engine.
       </p>
@@ -112,13 +108,11 @@
 
   </div>
 
-  <!-- ================= Dataset Cards ================= -->
-
   <div class="dataset-grid">
 
     <mat-card
 
-      *ngFor="let dataset of filteredDatasets"
+      *ngFor="let dataset of filteredDatasets; trackBy: trackByDataset"
 
       class="dataset-card"
 
@@ -132,8 +126,6 @@
 
       [class.unsupported-card]="dataset.supported === 0">
 
-      <!-- Image -->
-
       <img
 
         class="thumbnail"
@@ -144,81 +136,57 @@
 
         [alt]="dataset.name">
 
-      <!-- Content -->
-
       <div class="content">
 
         <h2>
-
           {{ dataset.name }}
-
         </h2>
 
         <p class="description">
-
           {{ dataset.description }}
-
         </p>
-
         <div class="details">
 
           <div>
-
             <strong>Video</strong>
-
             <span>{{ dataset.videoName }}</span>
-
           </div>
 
           <div>
 
             <strong>Resolution</strong>
-
             <span>{{ dataset.width }} × {{ dataset.height }}</span>
 
           </div>
 
           <div>
-
             <strong>Frame Rate</strong>
-
             <span>{{ dataset.fps }} fps</span>
 
           </div>
-
           <div>
 
             <strong>Bit Depth</strong>
-
             <span>{{ dataset.bitDepth }} bit</span>
 
           </div>
-
           <div>
 
             <strong>Colour Gamut</strong>
-
             <span>{{ dataset.gamut }}</span>
 
           </div>
-
           <div>
 
             <strong>File</strong>
-
             <span class="filepath">
-
               {{ dataset.filepath }}
-
             </span>
 
           </div>
-
         </div>
 
       </div>
-
-      <!-- Footer -->
 
       <div class="footer">
 
@@ -228,27 +196,19 @@
           Active
 
         </span>
-
         <span
           class="status-badge disabled"
           *ngIf="dataset.supported === 1 && dataset.active === 0">
-
           Disabled
-
         </span>
 
         <span
           class="status-badge unsupported"
           *ngIf="dataset.supported === 0">
-
           Unsupported
-
         </span>
 
       </div>
-
-    </mat-card>
-
+    </mat-card> 
   </div>
-
 </div>
