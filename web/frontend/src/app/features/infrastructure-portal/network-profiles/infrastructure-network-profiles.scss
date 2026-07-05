@@ -1,3 +1,7 @@
+:host {
+  font-size: 16px;
+}
+
 :host ::ng-deep .ag-theme-quartz .ag-cell {
 
   display: flex;
@@ -25,7 +29,7 @@
 
 .header-row h1 {
   margin: 0;
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 700;
   color: #111827;
 }
@@ -33,6 +37,7 @@
 .header-row p {
   margin: 6px 0 0;
   color: #6b7280;
+  font-size: 16px;
 }
 
 .actions {
@@ -65,7 +70,7 @@
 }
 
 .grid-wrap {
-  height: 520px;
+  height: 470px;
   width: 100%;
 }
 
@@ -104,6 +109,38 @@
 
   background:#ffd9d9 !important;
 
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+
+  padding: 18px 22px;
+  margin-bottom: 20px;
+
+  border-left: 5px solid #1976d2;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.info-card mat-icon {
+  margin-top: 2px;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.info-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.info-card p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
 }
 
 @media (max-width: 900px) {

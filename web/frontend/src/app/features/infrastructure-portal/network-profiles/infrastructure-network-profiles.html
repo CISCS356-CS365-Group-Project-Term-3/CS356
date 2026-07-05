@@ -5,7 +5,7 @@
     <div>
 
       <h1>Transmission Conditions</h1>
-      <p>
+      <p style="font-size: 18px;">
         Manage transmission conditions available within the platform.
         Only active supported transmission conditions can be used when creating
         experiments.
@@ -62,28 +62,13 @@
 
     </mat-icon>
 
-    <div>
+<div style="font-size: 18px; color: #3c4554;">
+  <strong>Network Profiles</strong>
 
-      <strong>Network Profiles</strong>
-
-      <p>
-
-        Network profiles represent transmission conditions that are used
-        during experiment execution.
-
-      </p>
-
-      <p>
-
-        Only network profiles marked as
-        <strong>Supported</strong>
-        and
-        <strong>Active</strong>
-        can be selected by researchers.
-
-      </p>
-
-    </div>
+  -Network profiles represent transmission conditions that are used during experiment execution.<br>
+  -Only network profiles marked as supported and active can be selected by researchers.<br>
+  -Supported network profiles are shown in green when active and in amber when disabled.
+</div>
 
   </mat-card>
 
@@ -106,9 +91,24 @@
         [paginationPageSize]="10"
         rowSelection="single"
         (gridReady)="onGridReady($event)"
-        (selectionChanged)="onSelectionChanged($event)">
+        (selectionChanged)="onSelectionChanged($event)"
+        (cellEditingStarted)="onCellEditingStarted($event)"
+        (cellEditingStopped)="onCellEditingStopped($event)"
+        (cellValueChanged)="onCellValueChanged($event)">
 
       </ag-grid-angular>
+
+      <div class="panel-footer" style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
+        <div style="color:#374151;font-size:1px;">
+          Only supported and active transmission conditions may be edited. Modify the Lower and Upper bound values, then click
+          <strong style="margin-left:6px;">Save</strong>
+          to apply your changes.
+        </div>
+
+        <div>
+          <button mat-flat-button color="primary" (click)="saveChanges()" [disabled]="!hasEdits()">Save</button>
+        </div>
+      </div>
 
     </div>
 
