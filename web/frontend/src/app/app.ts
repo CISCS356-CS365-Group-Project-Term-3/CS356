@@ -13,7 +13,7 @@ const NO_NAVBAR_ROUTES = [
   '/forgot-password',
   '/reset-password',
   '/home',
-  'landing-page',
+  '/landing-page',
 ];
 
 @Component({

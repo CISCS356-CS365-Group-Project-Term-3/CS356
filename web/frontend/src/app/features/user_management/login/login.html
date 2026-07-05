@@ -43,7 +43,7 @@
         </button>
       </mat-form-field>
     </div>
-
+    <mat-error>{{ loginErrorMessage }}</mat-error>
     <div class="form-element">
       <div class="example-button-row">
         <button [disabled]="loginForm.invalid" matButton="filled" type="submit">Log in</button>
