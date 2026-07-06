@@ -35,6 +35,7 @@ export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
   isSubmitting = false;
+  userInfoLoaded = false;
   visitedSteps = new Set<number>();
   private userId: number | null = null;
   private config: InfrastructureConfig | null = null;
@@ -51,10 +52,15 @@ export class NewExperiment implements OnInit {
     this.formService.applyPendingTemplate();
     try {
       this.userService.getUserInfo().subscribe({
-        next: (user: any) => { this.userId = user.user_id; },
-        error: () => {},
+        next: (user: any) => {
+          this.userId = user.user_id;
+          this.userInfoLoaded = true;
+        },
+        error: () => { this.userInfoLoaded = true; },
       });
-    } catch {}
+    } catch {
+      this.userInfoLoaded = true;
+    }
     this.infrastructureService.getConfig().subscribe({
       next: (config) => { this.config = config; },
       error: () => {},

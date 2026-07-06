@@ -228,7 +228,7 @@ export class Dashboard implements OnInit {
     private formService: NewExperimentFormService,
     private router: Router,
     private infrastructureService: InfrastructureService,
-    // private userService: UserManagementService,
+    private userService: UserManagementService,
   ) {}
 
   ngOnInit() {
@@ -237,17 +237,18 @@ export class Dashboard implements OnInit {
       next: (config) => { this.config = config; },
       error: () => {},
     });
-    //try {
-    //  this.userService.getUserInfo().subscribe({
-    //    next: (user: any) => {
-    //      this.userId = user.user_id;
-    //      this.isAdmin = user.user_role === 'admin';
-    //      this.loadExperiments();
-    //    },
-    //    error: () => {},
-    //  });
-    //} catch {}
-    this.loadExperiments();
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.userId = user.user_id;
+          this.isAdmin = user.user_role === 'admin';
+          this.loadExperiments();
+        },
+        error: () => { this.loadExperiments(); },
+      });
+    } catch {
+      this.loadExperiments();
+    }
   }
 
   loadExperiments(): void {
