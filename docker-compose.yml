@@ -59,6 +59,8 @@ services:
 
   results-management:
     build: ./results_management
+    ports:
+      - "5003:5000"
     environment:
       - OUTPUT_MONGO_URI=mongodb://admin:admin@mongo:27017/
       - OUTPUT_MONGO_DB_NAME=experiment_storage
