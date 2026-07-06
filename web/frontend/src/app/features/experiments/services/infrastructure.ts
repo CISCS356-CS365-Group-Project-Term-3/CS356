@@ -13,7 +13,11 @@ export class InfrastructureService {
   private config$: Observable<InfrastructureConfig>;
 
   constructor(private http: HttpClient) {
-    this.config$ = this.http.get(`${API_BASE}/rest/get_active_ui_options`).pipe(
+    this.config$ = this.fetchConfig();
+  }
+
+  private fetchConfig(): Observable<InfrastructureConfig> {
+    return this.http.get(`${API_BASE}/rest/get_active_ui_options`).pipe(
       map((data) => {
         const config = camelizeKeys(data) as InfrastructureConfig;
         // activeCodecs not yet returned by backend — being added next sprint
@@ -30,13 +34,17 @@ export class InfrastructureService {
   getConfig(): Observable<InfrastructureConfig> {
     return this.config$;
   }
+
+  refreshConfig(): void {
+    this.config$ = this.fetchConfig();
+  }
 }
 
 const MOCK_CONFIG: InfrastructureConfig = {
   projectTypes: [
-    { id: 1, name: 'Encoder Only' },
-    { id: 2, name: 'Live Streaming' },
-    { id: 3, name: 'Stream & Record' },
+    { id: 1, name: 'Encoder Only', networkEnabled: 0 },
+    { id: 2, name: 'Live Streaming', networkEnabled: 1 },
+    { id: 3, name: 'Stream & Record', networkEnabled: 1 },
   ],
 
   encoderTypes: [
