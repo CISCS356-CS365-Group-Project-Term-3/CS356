@@ -1,0 +1,43 @@
+.dialog-description {
+
+  margin-bottom: 18px;
+
+  color: #475569;
+
+  line-height: 1.5;
+
+}
+
+mat-form-field {
+
+  width: 100%;
+
+  margin-bottom: 12px;
+
+}
+
+.bounds {
+
+  display: flex;
+
+  gap: 16px;
+
+}
+
+.bounds mat-form-field {
+
+  flex: 1;
+
+}
+
+@media (max-width: 700px) {
+
+  .bounds {
+
+    flex-direction: column;
+
+    gap: 0;
+
+  }
+
+}

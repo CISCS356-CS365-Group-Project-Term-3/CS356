@@ -24,9 +24,9 @@ def standard_crud(request, table, handle_update, handle_create, post_model, put_
             if proc:
                 proc(rows)
             return rows
-            
+
         elif request.method == "POST":
-            try: 
+            try:
                 post_model.model_validate(request.json)
             except ValidationError as e:
                 print("Json not in correct form")
@@ -36,15 +36,15 @@ def standard_crud(request, table, handle_update, handle_create, post_model, put_
             rows = session.query(table).filter(table.id == id).all()
             if len(rows) == 1:
                 row = rows[0]
-                row = handle_update(row, body)
+                handle_update(row, body)
                 session.commit()
                 return {"status": True, "message": "row successfully updated."}
             else:
                 print("id not found")
-                {"status": False, "message": "Error, no rows matching ID"}
+                return {"status": False, "message": "Error, no rows matching ID"}
         elif request.method == "PUT":
             body = request.json
-            try: 
+            try:
                 put_model.model_validate(request.json)
             except ValidationError as e:
                 print("Json not in correct form")
@@ -74,32 +74,6 @@ def standard_crud(request, table, handle_update, handle_create, post_model, put_
                 session.delete(row)
                 session.commit()
                 return {"status": True, "message": "row successfully deleted."}
-
-def standard_activate(request, table, proc=None):
-    with Session(engine) as session:
-        if request.method == "GET":
-            rows = query_result_as_list(session.query(table).all())
-            if proc:
-                proc(rows)
-            return rows
-            
-        elif request.method == "POST":
-            try: 
-                ToggleActiveRequest.model_validate(request.json)
-            except ValidationError as e:
-                print("Json not in correct form")
-                return {"status": False, "message": "Error, request malformed."}
-            print("Got a POST request")
-            body = request.json
-            id = body.get("id")
-            rows = session.query(table).filter(table.id == id).all()
-            if len(rows) != 1:
-                print(f"Could not find a row with id {id}")
-                return {"status": False, "message": f"Error, could not find row with id {id}"}
-            row = rows[0]
-            row.active = body.get("active")
-            session.commit()
-            return {"status": True, "message": f"Successfully set row with id {id} to active {body.get("active")}"}
 
 
 def get_ui_options(filter=False):
@@ -140,7 +114,7 @@ def get_ui_options(filter=False):
         }
 
         return output
-    
+
 @app.route("/rest/get_ui_options", methods=["GET"])
 def get_all_ui_options():
     return get_ui_options(filter=False)
@@ -151,16 +125,16 @@ def get_active_ui_options():
 
 @app.route("/rest/project_types", methods=["GET", "POST", "PUT"])
 def project_types():
-     return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
+     return standard_crud(request, ProjectType, project_type_update, project_type_update, ProjectTypeUpdate, ProjectTypeCreate)
 
 @app.route("/rest/encoder_types", methods=["GET", "POST", "PUT"])
 def encoder_types():
-    return standard_crud(request, EncoderType, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
+    return standard_crud(request, EncoderType, encoder_type_update, encoder_type_create, EncoderTypeUpdate, EncoderTypeCreate)
 
 @app.route("/rest/encoder_modes", methods=["GET", "POST", "PUT"])
 def encoder_modes():
     return standard_crud(request, EncoderMode, name_id_update, name_id_create, NameIdUpdate, NameIdCreate)
-            
+
 @app.route("/rest/codecs", methods=["GET", "POST", "PUT"])
 def codecs():
     return standard_crud(request, Codec, codec_update, codec_create, CodecUpdate, CodecCreate)

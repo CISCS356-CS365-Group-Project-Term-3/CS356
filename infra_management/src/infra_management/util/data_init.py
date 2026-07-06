@@ -8,6 +8,7 @@ def data_init():
         project_type = models.ProjectType()
         project_type.name = "Encoder Only"
         project_type.active = 1
+        project_type.network_enabled = 0
         project_type.supported = 1
         session.add(project_type)
 
@@ -15,11 +16,13 @@ def data_init():
         project_type2.name = "Network Simulation"
         project_type2.active = 1
         project_type2.supported = 1
+        project_type2.network_enabled = 1
         session.add(project_type2)
 
         encoder_type = models.EncoderType()
         encoder_type.name = "Standard Encoder"
         encoder_type.active = 1
+        encoder_type.supported = 1
         session.add(encoder_type)
         session.commit()
 
@@ -57,6 +60,7 @@ def data_init():
         transmission_condition.upper_bound = 999
         transmission_condition.unit = "ms"
         transmission_condition.active = 1
+        transmission_condition.supported = 1
         session.add(transmission_condition)
 
         transmission_condition2 = models.TransmissionCondition()
@@ -65,6 +69,7 @@ def data_init():
         transmission_condition2.upper_bound = 200
         transmission_condition2.unit = "ms"
         transmission_condition2.active = 1
+        transmission_condition2.supported = 1
         session.add(transmission_condition2)
 
         transmission_condition3 = models.TransmissionCondition()
@@ -73,6 +78,7 @@ def data_init():
         transmission_condition3.upper_bound = 20
         transmission_condition3.unit = "%"
         transmission_condition3.active = 1
+        transmission_condition3.supported = 1
         session.add(transmission_condition3)
 
         sequence = models.Sequence()
@@ -175,7 +181,7 @@ def data_init():
 
         videofile4 = models.VideoFile()
         videofile4.name = "mobile_dif"
-        videofile.filepath = "mobile_sif.y4m"
+        videofile4.filepath = "mobile_sif.y4m"
         videofile4.sequence_id = 4
         videofile4.spacial_x = 352
         videofile4.spacial_y = 240
@@ -213,7 +219,7 @@ def data_init():
         videofile6.gamut = "Gamut 1"
         videofile6.active = 1
         videofile6.supported = 1
-        session.add(videofile5)
+        session.add(videofile6)
 
         videofile7 = models.VideoFile()
         videofile7.name = "forman_cif"
@@ -244,4 +250,3 @@ def data_init():
         session.add(videofile8)
 
         session.commit()
-

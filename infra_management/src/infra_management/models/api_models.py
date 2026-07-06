@@ -4,26 +4,25 @@ from annotated_types import Len
 
 class SequenceUpdate(BaseModel):
     id: int
-    name: Optional[str]
-    description: Optional[str]
-    active: Optional[Literal[0, 1]]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 
 class SequenceCreate(BaseModel):
     name: str
     description: str
-    active: Literal[0, 1]
 
 class VideoFileUpdate(BaseModel):
     id: int
-    sequence_id: Optional[str]
-    name: Optional[str]
-    filepath: Optional[str]
-    spacial: Optional[Annotated[List, Len(min_length=2, max_length=2)]]
-    temporal: Optional[int]
-    depth: Optional[int]
-    quality: Optional[str]
-    gamut: Optional[str]
-    active: Optional[Literal[0, 1]]
+    sequence_id: Optional[str] = None
+    name: Optional[str] = None
+    filepath: Optional[str] = None
+    spacial: Optional[Annotated[List, Len(min_length=2, max_length=2)]] = None
+    temporal: Optional[int] = None
+    depth: Optional[int] = None
+    quality: Optional[str] = None
+    gamut: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 
 class VideoFileCreate(BaseModel):
     sequence_id: str
@@ -34,62 +33,64 @@ class VideoFileCreate(BaseModel):
     depth: int
     quality: str
     gamut: str
-    active: Literal[0, 1]
 
 
 class TransmissionConditionUpdate(BaseModel):
     id: int
-    name: Optional[str]
-    lower_bound: Optional[int]
-    upper_bound: Optional[int]
-    active: Optional[Literal[0, 1]]
+    name: Optional[str] = None
+    lower_bound: Optional[int] = None
+    upper_bound: Optional[int] = None
+    unit: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 
 class TransmissionConditionCreate(BaseModel):
     name: str
     lower_bound: int
     upper_bound: int
-    active: Literal[0, 1]
+    unit: str
 
 class CodecCreate(BaseModel):
     version: str
-    active: Literal[0, 1]
     name: str
+    encoder_type_id: int
 
 class CodecUpdate(BaseModel):
     id: int
-    version: Optional[str]
-    active: Optional[Literal[0, 1]]
-    name: Optional[str]
+    version: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
+    name: Optional[str] = None
+    encoder_type_id: Optional[int] = None
 
 class IdDelete(BaseModel):
     id: int
 
 class NameIdCreate(BaseModel):
     name: str
-    active: int
-
-class SequenceCreate(BaseModel):
-    name: str
-    description: str
-    active: int
-
-class SequenceCreate(BaseModel):
-    name: str
-    description: str
-    active: int
-
-class SequenceUpdate(BaseModel):
-    id: str
-    name: Optional[str]
-    description: Optional[str]
-    active: Optional[int]
 
 class NameIdUpdate(BaseModel):
     id: int
-    name: Optional[str]
-    active: Optional[int]
+    name: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
 
-class ToggleActiveRequest(BaseModel):
-    active: Literal[0, 1]
+class EncoderTypeCreate(BaseModel):
+    name: str
+    description: str
+
+class EncoderTypeUpdate(BaseModel):
     id: int
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[Literal[0, 1]] = None
+
+class ProjectTypeUpdate(BaseModel):
+    id: int
+    name: Optional[str] = None
+    network_enabled: Optional[int] = None
+    active: Optional[Literal[0, 1]] = None
+
+class ProjectTypeCreate(BaseModel):
+    id: int
+    name: str
+    network_enabled: int
+    active: Literal[0, 1]
 

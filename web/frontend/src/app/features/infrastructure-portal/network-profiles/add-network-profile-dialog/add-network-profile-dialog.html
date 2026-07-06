@@ -1,0 +1,119 @@
+<h2 mat-dialog-title>
+
+  Add Network Profile
+
+</h2>
+
+<mat-dialog-content>
+
+  <p class="dialog-description">
+
+    Add a transmission condition to the Infrastructure Portal.
+
+    Newly created network profiles are stored as
+    <strong>Inactive</strong> until supported by the engine
+
+  </p>
+
+  <mat-form-field appearance="outline">
+
+    <mat-label>
+
+      Network Profile Name
+
+    </mat-label>
+
+    <input
+      matInput
+      [(ngModel)]="name"
+      maxlength="100">
+
+    <mat-hint>
+
+      Example: Delay
+
+    </mat-hint>
+
+  </mat-form-field>
+
+  <div class="bounds">
+
+    <mat-form-field appearance="outline">
+
+      <mat-label>
+
+        Lower Bound
+
+      </mat-label>
+
+      <input
+        matInput
+        type="number"
+        [(ngModel)]="lower_bound">
+
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+
+      <mat-label>
+
+        Upper Bound
+
+      </mat-label>
+
+      <input
+        matInput
+        type="number"
+        [(ngModel)]="upper_bound">
+
+    </mat-form-field>
+
+  </div>
+
+  <mat-form-field appearance="outline">
+
+    <mat-label>
+
+      Unit
+
+    </mat-label>
+
+    <input
+      matInput
+      [(ngModel)]="unit"
+      maxlength="15">
+
+    <mat-hint>
+
+      Example: ms or %
+
+    </mat-hint>
+
+  </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-button
+    (click)="cancel()">
+
+    Cancel
+
+  </button>
+
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="
+      name.trim().length === 0 ||
+      unit.trim().length === 0
+    "
+    (click)="save()">
+
+    Add Network Profile
+
+  </button>
+
+</mat-dialog-actions>
