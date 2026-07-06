@@ -160,3 +160,20 @@ def update_group_by_id(group_id, group_data):
     session.close()
 
     return group_dict
+# update a runs status field in the db
+def update_run_status(run_id, status):
+    session = SessionLocal()
+    run = (
+        session.query(ExperimentRun)
+        .filter(ExperimentRun.id == run_id)
+        .first()
+    )
+    if not run:
+        session.close()
+        return None
+
+    run.status = status
+    session.commit()
+    session.refresh(run)
+    session.close()
+    return run

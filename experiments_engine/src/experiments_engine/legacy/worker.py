@@ -1,19 +1,30 @@
+import json
+
 import pika
 
-
+from experiment_management.services.experiment_service import mark_run_running, mark_run_complete, mark_run_failed
 # Settings are used throughout the code for the name of the queue and the name of the queue container
 from .config import Settings
 
 # Callback function to process messages
 # The callback function is called when a message is consumed from the queue
 def callback(ch, method, properties, body):
+        message = json.loads(body)
+        run_id = message["run_id"]
+        try:
+           # run the experiment on the body of the message
+           #experiment(body)
+           mark_run_running(run_id)
 
-        # run the experiment on the body of the message
-        #experiment(body)
+           # only acknowledge the message AFTER we have finished running the experiment
+           ch.basic_ack(delivery_tag=method.delivery_tag)
+           mark_run_complete(run_id)
 
-        # only acknowledge the message AFTER we have finished running the experiment
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
+        # send acknowledgement AFTER finished running experiment
+        except Exception:
+           # Failure
+           ch.basic_ack(delivery_tag=method.delivery_tag)
+           mark_run_failed(run_id)
 def setup_consume(channel):
 
         # This step sets up what happens when a message is "consumed" from the queue
