@@ -7,6 +7,18 @@ from storage.experiment_store import get_group_by_id
 from utils.encoding import generate_sequence_code
 
 
+def _build_queue_payload(group_id, run_id, date, sequence_code, user_id):
+    return {
+        "project": {
+            "experiment_id": run_id,
+            "group_id": group_id,
+            "user_id": user_id,
+            "created_at": date
+        },
+        "sequence": sequence_code
+    }
+
+
 def create_experiment(data):
     user_id = data.get("userId")
     status = data.get("status", "draft")
@@ -59,13 +71,13 @@ def create_experiment(data):
                     "networkData": condition
                 })
                 runs.append(run)
-                publish_to_queue({
-                    "group_id": group["id"],
-                    "run_id": run["id"],
-                    "date": date,
-                    "sequence_code": code,
-                    "userId": user_id
-                })
+                publish_to_queue(_build_queue_payload(
+                    group_id=group["id"],
+                    run_id=run["id"],
+                    date=date,
+                    sequence_code=code,
+                    user_id=user_id
+                ))
     return {
         "group": group,
         "runs": runs
@@ -138,13 +150,13 @@ def update_experiment(group_id, data):
                     "networkData": condition
                 })
                 runs.append(run)
-                publish_to_queue({
-                    "group_id": group_id,
-                    "run_id": run["id"],
-                    "date": updated["date"],
-                    "sequence_code": code,
-                    "userId": updated["userId"]
-                })
+                publish_to_queue(_build_queue_payload(
+                    group_id=group_id,
+                    run_id=run["id"],
+                    date=updated["date"],
+                    sequence_code=code,
+                    user_id=updated["userId"]
+                ))
     return {
         "group": group,
         "runs": runs
