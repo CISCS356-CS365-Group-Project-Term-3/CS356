@@ -487,16 +487,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
   }
 
   enableSelected(): void {
-
-    if (!this.isAdmin) {
-      this.snackBar.open(
-        'Error: you are not authorized to enable network profiles.',
-        'Close',
-        { duration: 4000 }
-      );
-      return;
-    }
-
     if (!this.selectedProfile) {
       this.snackBar.open(
         'Please select a network profile.',
@@ -547,16 +537,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
   }
 
   disableSelected(): void {
-
-    if (!this.isAdmin) {
-      this.snackBar.open(
-        'Error: you are not authorised to disable network profiles.',
-        'Close',
-        { duration: 4000 }
-      );
-      return;
-    }
-
     if (!this.selectedProfile) {
       this.snackBar.open(
         'Please select a network profile.',
