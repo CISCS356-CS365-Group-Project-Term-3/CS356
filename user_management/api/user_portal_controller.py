@@ -105,42 +105,89 @@ class RegisterUser(BaseModel):
 
 @app.post("/auth/register")
 def register(register_details: RegisterUser):
-    if register_details.password != register_details.confirm_password:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Passwords do not match"
+    try:
+        print("\n" + "="*60)
+        print(f"REGISTRATION REQUEST: {register_details.user_name}")
+        print("="*60)
+        
+        if register_details.password != register_details.confirm_password:
+            print("[FAIL] Password mismatch")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Passwords do not match"
+            )
+
+        allowed_roles = ["user", "admin"]
+
+        if register_details.user_role not in allowed_roles:
+            print(f"[FAIL] Invalid role: {register_details.user_role}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User role is not valid"
+            )
+
+        # Check if username already exists
+        print(f"[CHECK] Username availability: {register_details.user_name}")
+        existing_user = user_portal_service.get_user_info(register_details.user_name)
+        if existing_user is not None:
+            print(f"[FAIL] Username already taken: {register_details.user_name}")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This username is already taken"
+            )
+        print("[OK] Username available")
+
+        # Check if email already exists
+        print(f"[CHECK] Email availability: {register_details.user_email}")
+        if user_portal_service.user_email_exists(register_details.user_email):
+            print(f"[FAIL] Email already registered: {register_details.user_email}")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This email is already registered"
+            )
+        print("[OK] Email available")
+
+        # Create user
+        print("[ACTION] Creating user...")
+        result = user_portal_service.create_user(
+            register_details.user_name,
+            register_details.user_email,
+            register_details.user_role,
+            register_details.password
         )
 
-    allowed_roles = ["user", "admin"]
+        # Handle response - could be dict or bool
+        if isinstance(result, dict):
+            if result.get("success"):
+                print("[SUCCESS] User created successfully")
+                return {"message": "Account created successfully"}
+            else:
+                error_msg = result.get("error", "Unable to create user account")
+                print(f"[FAIL] User creation failed: {error_msg}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=error_msg
+                )
+        elif not result:
+            print("[FAIL] User creation failed (returned False)")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unable to create user account"
+            )
 
-    if register_details.user_role not in allowed_roles:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User role is not valid"
-        )
-
-    existing_user = user_portal_service.get_user_info(register_details.user_name)
-
-    if existing_user is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Username already exists"
-        )
-
-    user_created = user_portal_service.create_user(
-        register_details.user_name,
-        register_details.user_email,
-        register_details.user_role,
-        register_details.password
-    )
-
-    if not user_created:
+        print("[SUCCESS] Registration complete")
+        return {"message": "Account created successfully"}
+        
+    except HTTPException as e:
+        print(f"[EXCEPTION] HTTPException: {e.detail}")
+        raise
+    except Exception as e:
+        print(f"[ERROR] Unexpected error: {e}")
+        print(f"[ERROR] Error type: {type(e).__name__}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="User could not be created"
+            detail="Unable to process registration"
         )
-
-    return {"message": "Account created successfully"}
 
 class LoginRequest(BaseModel):
     user_name: str

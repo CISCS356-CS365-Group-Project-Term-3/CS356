@@ -128,6 +128,25 @@ def get_user_info(user_name):
         if connection:
             connection.close()
 
+def user_email_exists(user_email):
+    connection = create_db_connection()
+    if connection is None:
+        return False
+
+    try:
+        result = connection.execute(
+            text("SELECT user_id FROM users WHERE user_email = :user_email"),
+            {"user_email": user_email}
+        )
+        return result.fetchone() is not None
+    except Exception as e:
+        print(f"Error checking email: {e}")
+        return False
+    finally:
+        if connection:
+            connection.close()
+
+
 def verify_token(token):
     try:
         public_key = load_public_key()
@@ -355,11 +374,15 @@ def create_user(user_name, user_email, role, password):
     connection = create_db_connection()
 
     if connection is None:
-        return False
+        error_msg = "Database connection failed"
+        print(f"[ERROR] {error_msg}")
+        return {"success": False, "error": error_msg}
 
     try:
         hashed_password = hash_password(password)
 
+        print(f"[ACTION] Creating user: {user_name} ({user_email})")
+        
         result = connection.execute(
             text(
                 "INSERT INTO users (user_name, user_email, password_hash, user_role) "
@@ -375,19 +398,54 @@ def create_user(user_name, user_email, role, password):
         )
 
         new_user_id = result.fetchone()[0]
-
         connection.commit()
 
         log_audit_action(new_user_id, new_user_id, 'USER_CREATED')
 
-        return True
+        print(f"[SUCCESS] User created: {user_name} (ID: {new_user_id})")
+        return {"success": True}
 
     except Exception as e:
-        print(f"Error creating user: {e}")
-        return False
+        error_msg = str(e)
+        print(f"[ERROR] Creating user '{user_name}': {error_msg}")
+        
+        # Check for specific constraint violations
+        if "unique constraint" in error_msg.lower():
+            if "user_name" in error_msg.lower():
+                print(f"[DETAIL] Duplicate username: '{user_name}'")
+                try:
+                    connection.rollback()
+                except:
+                    pass
+                return {"success": False, "error": f"Username '{user_name}' is already taken"}
+            elif "user_email" in error_msg.lower():
+                print(f"[DETAIL] Duplicate email: '{user_email}'")
+                try:
+                    connection.rollback()
+                except:
+                    pass
+                return {"success": False, "error": f"Email '{user_email}' is already registered"}
+        
+        if "duplicate" in error_msg.lower():
+            print(f"[DETAIL] Duplicate key detected")
+            try:
+                connection.rollback()
+            except:
+                pass
+            return {"success": False, "error": "Username or email already exists"}
+        
+        print(f"[DETAIL] Other database error: {error_msg}")
+        try:
+            connection.rollback()
+        except:
+            pass
+        return {"success": False, "error": "Unable to create user account. Please try again."}
 
     finally:
-        connection.close()
+        try:
+            connection.close()
+        except:
+            pass
 
 
 def log_audit_action(actor_user_id: int, target_user_id: int, action_type: str):
