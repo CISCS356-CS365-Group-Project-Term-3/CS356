@@ -26,6 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 
 import { UiOptionsService } from '../services/ui-options.service';
+import { UserManagementService } from '../../user_management/user-management-service';
 import { AddEncoderDialogComponent } from './add-encoder-dialog/add-encoder-dialog';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -63,6 +64,7 @@ export class InfrastructureEncodersComponent implements OnInit {
   rowData: EncoderRow[] = [];
 
   selectedEncoder?: EncoderRow;
+  isAdmin = false;
 
   rowClassRules = {
     'row-active': (params: RowClassParams<EncoderRow>) =>
@@ -121,12 +123,29 @@ export class InfrastructureEncodersComponent implements OnInit {
 
   constructor(
     private uiOptionsService: UiOptionsService,
+    private userService: UserManagementService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    this.loadUserRole();
     this.loadEncoderTypes();
+  }
+
+  private loadUserRole(): void {
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.isAdmin = user.user_role === 'admin';
+        },
+        error: () => {
+          this.isAdmin = false;
+        }
+      });
+    } catch {
+      this.isAdmin = false;
+    }
   }
 
   loadEncoderTypes(): void {
@@ -326,7 +345,7 @@ export class InfrastructureEncodersComponent implements OnInit {
   }
 
   disableSelected(): void {
-
+    
     if (!this.selectedEncoder) {
       return;
     }

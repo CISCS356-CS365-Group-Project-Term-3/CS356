@@ -12,6 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { UiOptionsService } from '../services/ui-options.service';
+import { UserManagementService } from '../../user_management/user-management-service';
 import { AddDatasetDialogComponent } from './add-dataset-dialog/add-dataset-dialog.component';
 
 interface DatasetCard {
@@ -61,17 +62,35 @@ export class InfrastructureDatasetsComponent implements OnInit {
   datasets: DatasetCard[] = [];
   filteredDatasets: DatasetCard[] = [];
   selectedDataset?: DatasetCard;
+  isAdmin = false;
   private datasetOrder: number[] = [];
 
   constructor(
 
     private uiOptionsService: UiOptionsService,
+    private userService: UserManagementService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    this.loadUserRole();
     this.loadDatasets();
+  }
+
+  private loadUserRole(): void {
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.isAdmin = user.user_role === 'admin';
+        },
+        error: () => {
+          this.isAdmin = false;
+        }
+      });
+    } catch {
+      this.isAdmin = false;
+    }
   }
 
   onImageError(event: Event): void {
@@ -263,7 +282,7 @@ export class InfrastructureDatasetsComponent implements OnInit {
   }
 
   enableSelected(): void {
-
+    
     if (!this.selectedDataset) {
       this.snackBar.open(
         'Please select a dataset.',

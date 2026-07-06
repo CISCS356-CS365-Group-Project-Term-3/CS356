@@ -20,7 +20,8 @@
       <button
         mat-flat-button
         color="primary"
-        (click)="addDataset()">
+        (click)="addDataset()"
+        [disabled]="!isAdmin">
 
         <mat-icon>add</mat-icon>
         Add Dataset
@@ -30,7 +31,7 @@
       <button
         mat-stroked-button
         color="primary"
-        [disabled]="!selectedDataset || selectedDataset.active === 1"
+        [disabled]="!isAdmin || !selectedDataset || selectedDataset.active === 1"
         (click)="enableSelected()">
 
         <mat-icon>check_circle</mat-icon>
@@ -41,7 +42,7 @@
       <button
         mat-stroked-button
         color="warn"
-        [disabled]="!selectedDataset || selectedDataset.active === 0"
+        [disabled]="!isAdmin || !selectedDataset || selectedDataset.active === 0"
         (click)="disableSelected()">
 
         <mat-icon>block</mat-icon>

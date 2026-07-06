@@ -26,6 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 
 import { UiOptionsService } from '../services/ui-options.service';
+import { UserManagementService } from '../../user_management/user-management-service';
 import { forkJoin } from 'rxjs';
 import { AddNetworkProfileDialogComponent } from './add-network-profile-dialog/add-network-profile-dialog';
 
@@ -69,6 +70,7 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
 
   selectedProfile?: NetworkProfileRow;
   pendingEdits: Map<number, Partial<NetworkProfileRow>> = new Map();
+  isAdmin = false;
   // True while a cell is being edited (enables save immediately on edit start)
   isEditing = false;
 
@@ -91,7 +93,7 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
       field: 'lower_bound',
       headerName: 'Lower Bound',
       width: 160,
-      editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1,
+      editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1 && this.isAdmin,
       valueParser: (params: any) => Number(params.newValue)
     },
 
@@ -99,7 +101,7 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
       field: 'upper_bound',
       headerName: 'Upper Bound',
       width: 160,
-      editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1,
+      editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1 && this.isAdmin,
       valueParser: (params: any) => Number(params.newValue)
     },
 
@@ -172,13 +174,30 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
   constructor(
 
     private uiOptionsService: UiOptionsService,
+    private userService: UserManagementService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
 
   ) {}
 
   ngOnInit(): void {
+    this.loadUserRole();
     this.loadNetworkProfiles();
+  }
+
+  private loadUserRole(): void {
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.isAdmin = user.user_role === 'admin';
+        },
+        error: () => {
+          this.isAdmin = false;
+        }
+      });
+    } catch {
+      this.isAdmin = false;
+    }
   }
 
   private isBoundValidationTarget(row: NetworkProfileRow | undefined): boolean {
@@ -448,6 +467,15 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
 
   enableSelected(): void {
 
+    if (!this.isAdmin) {
+      this.snackBar.open(
+        'Error: you are not authorized to enable network profiles.',
+        'Close',
+        { duration: 4000 }
+      );
+      return;
+    }
+
     if (!this.selectedProfile) {
       this.snackBar.open(
         'Please select a network profile.',
@@ -498,6 +526,15 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
   }
 
   disableSelected(): void {
+
+    if (!this.isAdmin) {
+      this.snackBar.open(
+        'Error: you are not authorised to disable network profiles.',
+        'Close',
+        { duration: 4000 }
+      );
+      return;
+    }
 
     if (!this.selectedProfile) {
       this.snackBar.open(
