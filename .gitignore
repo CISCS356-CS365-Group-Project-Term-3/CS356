@@ -6,5 +6,9 @@ experiments_engine/tests/test_data/*
 resources/*
 
 **/.env
+**/__pycache__
 
 .vscode
+
+.idea
+.iml
