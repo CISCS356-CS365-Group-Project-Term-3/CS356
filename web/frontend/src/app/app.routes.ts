@@ -30,7 +30,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: InfrastructureDashboardComponent },
       { path: 'encoders', component: InfrastructureEncodersComponent },
-      {path: 'codecs', component: InfrastructureCodecsComponent},
+      { path: 'codecs', component: InfrastructureCodecsComponent},
       { path: 'network-profiles', component: InfrastructureNetworkProfilesComponent },
       { path: 'infrastructure-datasets',component:InfrastructureDatasetsComponent},
     ],

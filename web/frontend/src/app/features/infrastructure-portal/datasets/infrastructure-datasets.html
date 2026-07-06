@@ -113,27 +113,18 @@
     <mat-card
 
       *ngFor="let dataset of filteredDatasets; trackBy: trackByDataset"
-
       class="dataset-card"
-
       (click)="selectDataset(dataset)"
-
       [class.selected]="selectedDataset?.id === dataset.id"
-
       [class.active-card]="dataset.supported === 1 && dataset.active === 1"
-
       [class.disabled-card]="dataset.supported === 1 && dataset.active === 0"
-
       [class.unsupported-card]="dataset.supported === 0">
 
       <img
 
         class="thumbnail"
-
         [src]="'assets/dataset-images/' + dataset.name + '.png'"
-
         (error)="onImageError($event)"
-
         [alt]="dataset.name">
 
       <div class="content">

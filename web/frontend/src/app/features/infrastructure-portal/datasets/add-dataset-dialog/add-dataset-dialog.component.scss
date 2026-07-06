@@ -1,4 +1,19 @@
-.full-width { width: 100%; }
-.half-width { width: calc(50% - 8px); margin-right: 16px; }
-.row { display: flex; gap: 16px; margin-bottom: 16px; }
-.dialog-description { margin-bottom: 16px; color: rgba(0, 0, 0, 0.7); }
+.full-width {
+	width: 100%;
+}
+
+.half-width {
+	width: calc(50% - 8px);
+	margin-right: 16px;
+}
+
+.row {
+	display: flex;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.dialog-description {
+	margin-bottom: 16px;
+	color: rgba(0, 0, 0, 0.7);
+}

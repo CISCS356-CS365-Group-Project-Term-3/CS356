@@ -24,21 +24,13 @@ import { MatButtonModule } from '@angular/material/button';
 export class AddDatasetDialogComponent {
 
   name = '';
-
   description = '';
-
   filename = '';
-
   width = 352;
-
   height = 288;
-
   fps = 30;
-
   depth = 10;
-
   quality = '20';
-
   gamut = 'Gamut 1';
 
   constructor(
