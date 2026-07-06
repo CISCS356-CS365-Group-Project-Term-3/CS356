@@ -9,6 +9,7 @@ import { LandingPage } from './features/user_management/landing-page/landing-pag
 import { ResetPassword } from './features/user_management/reset-password/reset-password';
 import { ForgotPassword } from './features/user_management/forgot-password/forgot-password';
 import { Profile } from './features/user_management/profile/profile';
+import { ResultsPage } from './features/results/results';
 
 export const routes: Routes = [
   { path: 'experiments', component: Dashboard, canActivate: [AuthGuard] },
@@ -20,5 +21,9 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPassword },
   { path: 'home', component: Home },
   { path: 'landing-page', component: LandingPage },
+  { path: 'reset-password', component: ResetPassword },
+  { path: 'forgot-password', component: ForgotPassword },
+  { path: 'profile', component: Profile },
+  { path: 'results', component: ResultsPage },
   { path: '', component: Home },
 ];

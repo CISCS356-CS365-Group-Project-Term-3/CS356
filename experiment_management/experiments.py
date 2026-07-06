@@ -3,9 +3,11 @@ from flask_cors import CORS
 from services import experiment_service
 from storage import experiment_store
 from storage.db import engine, Base
+
 app = Flask(__name__)
 Base.metadata.create_all(bind=engine)
 CORS(app)
+
 @app.route("/experiments", methods=["POST"])
 def create_experiment_endpoint():
     """ create an experiment endpoint """
@@ -13,7 +15,7 @@ def create_experiment_endpoint():
     created_experiment = experiment_service.create_experiment(data)
 
     return {
-        "id": created_experiment["id"]
+        "id": created_experiment["group"]["id"]
     }, 201
 
 @app.route("/experiments", methods=["GET"])
@@ -22,27 +24,31 @@ def get_experiments():
     user_id = request.args.get("userId")
 
     if user_id:
-        return experiment_store.get_all_by_user(int(user_id)), 200
+        return experiment_store.get_groups_by_userID(int(user_id)), 200
 
-    return experiment_store.get_all_experiments(),200
+    return experiment_store.get_all_groups(), 200
 
-@app.route("/experiments/<int:experiment_id>", methods=["GET"])
-def get_experiment(experiment_id):
-    """ get an experiment by id """
-    experiment = experiment_store.get_by_id(experiment_id)
+@app.route("/experiments/user/<int:user_id>", methods=["GET"])
+def get_experiments_by_user(user_id):
+    """ get all experiments or experiments by users id"""
 
-    if not experiment:
-        return {"error": "Experiment not found"}, 404
-    return experiment, 200
+    if user_id:
+        return experiment_store.get_groups_by_userID(int(user_id)), 200
 
-@app.route("/experiments/<int:experiment_id>", methods=["PATCH"])
-def update_experiment(experiment_id):
+    return experiment_store.get_all_groups(), 200
+
+@app.route("/experiments/<int:group_id>", methods=["PATCH"])
+def update_experiment(group_id):
     """ update an experiment """
     data = request.get_json()
-    updated_experiment = experiment_service.update_experiment(experiment_id, data)
+    updated_experiment = experiment_service.update_experiment(group_id, data)
     if not updated_experiment:
         return {"error": "Experiment not found"}, 404
     return updated_experiment, 200
+
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
 
 if __name__ == "__main__":
     app.run(debug=True)
