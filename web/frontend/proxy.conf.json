@@ -1,6 +1,28 @@
 {
-  "/api": {
+  "/experiment-management": {
+    "target": "http://localhost:5000",
+    "pathRewrite": { "^/experiment-management": "" },
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/infra": {
     "target": "http://localhost:5002",
+    "pathRewrite": { "^/infra": "" },
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/results-management": {
+    "target": "http://localhost:5003",
+    "pathRewrite": { "^/results-management": "" },
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/user-management": {
+    "target": "http://localhost:5001",
+    "pathRewrite": { "^/user-management": "" },
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

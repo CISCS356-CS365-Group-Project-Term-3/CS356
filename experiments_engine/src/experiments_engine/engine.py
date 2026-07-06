@@ -169,8 +169,6 @@ class Engine:
 
             logger.info("experiment run complete")
 
-            teardown_network()
-
             logger.info("network namespaces removed")
 
             metrics = self._calculate_metrics(input_path, output_path)
@@ -183,9 +181,13 @@ class Engine:
 
             result = metrics
 
+            teardown_network()
+
             return (True, result)
 
         except Exception as e:
+            teardown_network()
+
             msg = f"Experiment {experiment_id} error, sequence '{sequence}' failed: {str(e)}. "
             logger.error(
                 msg

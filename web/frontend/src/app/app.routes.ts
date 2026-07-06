@@ -14,6 +14,7 @@ import { InfrastructureNetworkProfilesComponent } from './features/infrastructur
 import { InfrastructureCodecsComponent } from './features/infrastructure-portal/codecs/infrastructure-codecs';
 import { Profile } from './features/user_management/profile/profile';
 import { InfrastructureDatasetsComponent} from './features/infrastructure-portal/datasets/infrastruture-datasets';
+import { ResultsPage } from './features/results/results';
 
 export const routes: Routes = [
   { path: 'experiments', component: Dashboard },
@@ -35,4 +36,6 @@ export const routes: Routes = [
       { path: 'infrastructure-datasets',component:InfrastructureDatasetsComponent},
     ],
   },
+  { path: 'results', component: ResultsPage },
+  { path: '', component: Home },
 ];
