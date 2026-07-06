@@ -28,6 +28,15 @@ def get_experiments():
 
     return experiment_store.get_all_groups(), 200
 
+@app.route("/experiments/user/<int:user_id>", methods=["GET"])
+def get_experiments_by_user(user_id):
+    """ get all experiments or experiments by users id"""
+
+    if user_id:
+        return experiment_store.get_groups_by_userID(int(user_id)), 200
+
+    return experiment_store.get_all_groups(), 200
+
 @app.route("/experiments/<int:group_id>", methods=["PATCH"])
 def update_experiment(group_id):
     """ update an experiment """

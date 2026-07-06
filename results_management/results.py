@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from services import results_portal
 from storage import results_store
@@ -10,6 +10,14 @@ CORS(app)
 def getresults():
     results = results_portal.get_result_summaries()
     return jsonify(results), 200
+
+@app.route("/user/experiments-results", methods=["GET"])
+def get_user_results():
+    user_id = request.args.get("userId")
+
+    results = results_portal.get_user_result_summaries(user_id)
+    return jsonify(results), 200
+
 
 @app.route("/experiments-results/<int:experiment_id>/frames", methods=["GET"])
 def get_experiment_frames(experiment_id):
