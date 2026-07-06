@@ -27,7 +27,6 @@ import { MatInputModule } from '@angular/material/input';
 
 import { UiOptionsService } from '../services/ui-options.service';
 import { UserManagementService } from '../../user_management/user-management-service';
-import { UserManagementService } from '../../user_management/user-management-service';
 import { forkJoin } from 'rxjs';
 import { AddNetworkProfileDialogComponent } from './add-network-profile-dialog/add-network-profile-dialog';
 
@@ -72,7 +71,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
   selectedProfile?: NetworkProfileRow;
   pendingEdits: Map<number, Partial<NetworkProfileRow>> = new Map();
   isAdmin = false;
-  isAdmin = false;
   // True while a cell is being edited (enables save immediately on edit start)
   isEditing = false;
 
@@ -96,7 +94,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
       headerName: 'Lower Bound',
       width: 160,
       editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1 && this.isAdmin,
-      editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1 && this.isAdmin,
       valueParser: (params: any) => Number(params.newValue)
     },
 
@@ -104,7 +101,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
       field: 'upper_bound',
       headerName: 'Upper Bound',
       width: 160,
-      editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1 && this.isAdmin,
       editable: (params: any) => !!params.data && params.data.supported === 1 && params.data.active === 1 && this.isAdmin,
       valueParser: (params: any) => Number(params.newValue)
     },
@@ -179,7 +175,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
 
     private uiOptionsService: UiOptionsService,
     private userService: UserManagementService,
-    private userService: UserManagementService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
 
@@ -189,21 +184,6 @@ export class InfrastructureNetworkProfilesComponent implements OnInit {
     this.loadUserRole();
     this.loadUserRole();
     this.loadNetworkProfiles();
-  }
-
-  private loadUserRole(): void {
-    try {
-      this.userService.getUserInfo().subscribe({
-        next: (user: any) => {
-          this.isAdmin = user.user_role === 'admin';
-        },
-        error: () => {
-          this.isAdmin = false;
-        }
-      });
-    } catch {
-      this.isAdmin = false;
-    }
   }
 
   private loadUserRole(): void {
