@@ -1,29 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+const API_BASE = '/infra/rest';
+
 @Injectable({
   providedIn: 'root'
 })
 export class UiOptionsService {
 
-  private apiUrl = 'http://localhost:5002/rest/get_ui_options';
-
   constructor(private http: HttpClient) {}
 
   getUiOptions(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
+    return this.http.get<any>(`${API_BASE}/get_ui_options`);
   }
 
   addEncoderType(encoder: any) {
     return this.http.put(
-      'http://localhost:5002/rest/encoder_types',
+      `${API_BASE}/encoder_types`,
       encoder
     );
   }
 
   toggleEncoderType(id: number, active: number) {
     return this.http.post(
-      'http://localhost:5002/rest/encoder_types',
+      `${API_BASE}/encoder_types`,
       {
         id,
         active
@@ -33,7 +34,7 @@ export class UiOptionsService {
 
   deleteEncoderType(id: number) {
     return this.http.delete(
-      'http://localhost:5002/rest/encoder_types',
+      `${API_BASE}/encoder_types`,
       {
         body: { id }
       }
@@ -42,7 +43,7 @@ export class UiOptionsService {
 
   enableEncoder(id: number) {
     return this.http.post(
-      'http://localhost:5002/rest/encoder_types',
+      `${API_BASE}/encoder_types`,
       {
         id,
         active: 1
@@ -52,7 +53,7 @@ export class UiOptionsService {
 
   disableEncoder(id: number) {
     return this.http.post(
-      'http://localhost:5002/rest/encoder_types',
+      `${API_BASE}/encoder_types`,
       {
         id,
         active: 0
@@ -62,14 +63,14 @@ export class UiOptionsService {
 
   addCodec(codec: any) {
     return this.http.put(
-      'http://localhost:5002/rest/codecs',
+      `${API_BASE}/codecs`,
       codec
     );
   }
 
   toggleCodec(id: number, active: number) {
     return this.http.post(
-      'http://localhost:5002/rest/codecs',
+      `${API_BASE}/codecs`,
       {
         id,
         active
@@ -79,28 +80,28 @@ export class UiOptionsService {
 
   addTransmissionCondition(body: any) {
     return this.http.put(
-      'http://localhost:5002/rest/transmission_conditions',
+      `${API_BASE}/transmission_conditions`,
       body
     );
   }
 
   toggleTransmissionCondition(body: any) {
     return this.http.post(
-      'http://localhost:5002/rest/transmission_conditions',
+      `${API_BASE}/transmission_conditions`,
       body
     );
   }
 
   addSequence(sequence: any) {
     return this.http.put(
-      'http://localhost:5002/rest/sequences',
+      `${API_BASE}/sequences`,
       sequence
     );
   }
 
   addVideoFile(videoFile: any) {
     return this.http.put(
-      'http://localhost:5002/rest/video_files',
+      `${API_BASE}/video_files`,
       videoFile
     );
   }
@@ -110,7 +111,7 @@ export class UiOptionsService {
     active: number;
   }) {
     return this.http.post(
-      'http://localhost:5002/rest/sequences',
+      `${API_BASE}/sequences`,
       body
     );
   }
