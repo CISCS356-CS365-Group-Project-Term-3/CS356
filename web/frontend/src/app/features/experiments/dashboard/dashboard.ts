@@ -144,12 +144,26 @@ export class Dashboard implements OnInit {
       ? this.experiments.filter((e) => e.status === 'draft')
       : this.experiments;
     if (this.activeStatusFilter) {
-      experiments = experiments.filter((exp) =>
-        exp.runs?.some((run) => run.status === this.activeStatusFilter),
+      experiments = experiments.filter(
+        (exp) => this.getGroupStatus(exp) === this.activeStatusFilter,
       );
     }
 
     return experiments;
+  }
+
+  private getGroupStatus(exp: Experiment): string {
+    const runs = exp.runs ?? [];
+    if (runs.length === 0) return 'pending';
+    const hasFailed = runs.some((r) => r.status === 'failed');
+    const hasRunning = runs.some((r) => r.status === 'running');
+    const allComplete = runs.every((r) => r.status === 'complete');
+
+    if (hasFailed) return 'failed';
+    if (hasRunning) return 'running';
+    if (allComplete) return 'complete';
+
+    return 'pending';
   }
 
   get filteredRuns(): ExperimentRun[] {
@@ -164,31 +178,19 @@ export class Dashboard implements OnInit {
   }
 
   get pendingRunsCount() {
-    return this.experiments.reduce(
-      (sum, exp) => sum + (exp.runs?.filter((r) => r.status === 'pending').length || 0),
-      0,
-    );
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'pending').length;
   }
 
   get runningRunsCount() {
-    return this.experiments.reduce(
-      (sum, exp) => sum + (exp.runs?.filter((r) => r.status === 'running').length || 0),
-      0,
-    );
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'running').length;
   }
 
   get completedRunsCount() {
-    return this.experiments.reduce(
-      (sum, exp) => sum + (exp.runs?.filter((r) => r.status === 'complete').length || 0),
-      0,
-    );
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'complete').length;
   }
 
   get failedRunsCount() {
-    return this.experiments.reduce(
-      (sum, exp) => sum + (exp.runs?.filter((r) => r.status === 'failed').length || 0),
-      0,
-    );
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'failed').length;
   }
 
   setStatusFilter(status: string): void {
