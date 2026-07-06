@@ -26,7 +26,7 @@ export const routes: Routes = [
   { path: 'forgot-password', component: ForgotPassword},
   { path: 'profile', component: Profile },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-  {path: 'infrastructurePortal', component: InfrastructurePortalComponent,
+  { path: 'infrastructurePortal', component: InfrastructurePortalComponent,
     children: [
       { path: '', component: InfrastructureDashboardComponent },
       { path: 'encoders', component: InfrastructureEncodersComponent },
