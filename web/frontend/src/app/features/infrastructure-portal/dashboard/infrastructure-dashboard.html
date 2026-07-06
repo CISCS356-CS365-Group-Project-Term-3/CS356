@@ -1,10 +1,16 @@
 <div class="page">
   <div class="notice-card">
-    <div>
+    <div *ngIf="isAdmin; else generalNotice">
       <strong>Admin area only.</strong>
       Manage encoders, network profiles, datasets and infrastructure resources that feed the
       experiment system.
     </div>
+    <ng-template #generalNotice>
+      <div>
+        <strong>General User:</strong>
+         View only access is enabled! You are not authorised to create, modify or delete Infrastructure Portal resources.
+      </div>
+    </ng-template>
   </div>
 
   <div class="heading-row">

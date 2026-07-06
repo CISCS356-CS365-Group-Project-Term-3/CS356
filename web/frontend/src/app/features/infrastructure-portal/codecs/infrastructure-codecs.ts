@@ -26,6 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 
 import { UiOptionsService } from '../services/ui-options.service';
+import { UserManagementService } from '../../user_management/user-management-service';
 import { AddCodecDialogComponent } from './add-codec-dialog/add-codec-dialog.component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -72,6 +73,7 @@ export class InfrastructureCodecsComponent implements OnInit {
   rowData: CodecRow[] = [];
 
   selectedCodec?: CodecRow;
+  isAdmin = false;
 
   readonly supportedCodecs = [
     'h261',
@@ -146,15 +148,30 @@ export class InfrastructureCodecsComponent implements OnInit {
   constructor(
 
     private uiOptionsService: UiOptionsService,
+    private userService: UserManagementService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
 
   ) {}
 
   ngOnInit(): void {
-
+    this.loadUserRole();
     this.loadCodecs();
+  }
 
+  private loadUserRole(): void {
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.isAdmin = user.user_role === 'admin';
+        },
+        error: () => {
+          this.isAdmin = false;
+        }
+      });
+    } catch {
+      this.isAdmin = false;
+    }
   }
 
   loadCodecs(): void {
@@ -234,21 +251,13 @@ export class InfrastructureCodecsComponent implements OnInit {
         this.snackBar.open(
 
           'A codec with this name already exists.',
-
           'Close',
-
           {
             duration: 3500
           }
-
         );
         return;
       }
-
-
-      // Need to provide an encoder_type_id to the backend. Prefer the
-      // "Standard Encoder" type if present, otherwise fall back to the
-      // first available encoder type. This keeps the change frontend-only.
       this.uiOptionsService.getUiOptions().subscribe({
 
         next: (data) => {
@@ -287,65 +296,42 @@ export class InfrastructureCodecsComponent implements OnInit {
         next: () => {
 
           this.snackBar.open(
-
             'Codec added.',
-
             'Close',
-
             {
               duration: 3000
             }
           );
-
           this.loadCodecs();
-
         },
 
 
             error: () => {
 
               this.snackBar.open(
-
                 'Failed to add codec.',
-
                 'Close',
-
                 {
-
                   duration: 3000
-
                 }
 
               );
-
             }
-
           });
-
         },
 
         error: () => {
 
           this.snackBar.open(
-
             'Failed to fetch encoder types required to add codec.',
-
             'Close',
-
             {
-
               duration: 3500
-
             }
-
           );
-
         }
-
       });
-
     });
-
   }
 
   enableSelected(): void {
@@ -417,9 +403,7 @@ export class InfrastructureCodecsComponent implements OnInit {
   }
 
   disableSelected(): void {
-
     if (!this.selectedCodec) {
-
       this.snackBar.open(
         'Please select a codec.',
         'Close',
@@ -466,7 +450,5 @@ export class InfrastructureCodecsComponent implements OnInit {
         }
 
       });
-
   }
-
 }
