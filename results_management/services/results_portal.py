@@ -1,27 +1,57 @@
-from storage import results_store
-import requests
-import os
 import json
+import logging
+import os
+
+import requests
+
+from storage import results_store
+
+
+logger = logging.getLogger(__name__)
+
+
+def _metadata_object(value):
+    """Return metadata stored as an object, including legacy one-item lists."""
+    if isinstance(value, list):
+        value = value[0] if value else {}
+    return value if isinstance(value, dict) else {}
+
 
 def get_all_user_experiment_metadata(user_id, all_users=False):
     """ look up the postgres experiment row tied to a mongo result, if any """
-    if user_id is None:
+    if user_id is None and all_users == False:
         return None
     try:
         EXPERIMENT_MANAGEMENT_ADDRESS = os.getenv("EXPERIMENT_MANAGEMENT_ADDRESS", "localhost:5000")
 
         if all_users:
-            url = f"{EXPERIMENT_MANAGEMENT_ADDRESS}/experiments/"
+            url = f"{EXPERIMENT_MANAGEMENT_ADDRESS}/experiments"
         else:
             url = f"{EXPERIMENT_MANAGEMENT_ADDRESS}/experiments/user/{user_id}"
 
         response = requests.get(url)
         if response.status_code != 200:
-            print("experiment metadata request to experiment managament container failed", flush=True)
+            logger.error(
+                "Experiment metadata request failed: url=%s status=%s response=%s",
+                url,
+                response.status_code,
+                response.text,
+            )
             return None
-        return response.json()
-    except Exception as e:
-        print(f'experiment metadata lookup failed: {e}', flush=True)
+
+        body = response.json()
+
+        logger.info("experiment metadata response: %s", body)
+
+        runs = []
+        for group in body:
+            for run in group.get("runs"):
+                run['name']=group.get('name')
+                runs.append(run)
+
+        return runs
+    except Exception:
+        logger.exception("Experiment metadata lookup failed")
         return None
     
 
@@ -33,14 +63,14 @@ def clean_result(doc, metadata):
     ssim_average = result.get("ssim", {}).get("average", {})
     psnr_raw_combined = result.get("psnr", {}).get("raw", {}).get("combined", [])
 
-    experiment = metadata
-    encoder = (experiment.get("encoders") or [{}])[0] if experiment else {}
-    sequence = (experiment.get("sequences") or [{}])[0] if experiment else {}
+    experiment = metadata or {}
+    encoder = _metadata_object(experiment.get("encoderData"))
+    sequence = _metadata_object(experiment.get("sequenceData"))
 
     cleaned_doc = {
     "experimentId": project.get("experiment_id"),
     "experimentName": experiment.get("name") if experiment else None,
-    "batchId": experiment.get("group_id") if experiment else None,
+    "batchId": experiment.get("groupId") if experiment else None,
     "groupId": project.get("group_id"),
     "userId": project.get("user_id"),
     "createdAt": project.get("created_at"),
@@ -83,21 +113,27 @@ def get_user_result_summaries(user_id):
 
     return _get_result_summaries(raw_results, raw_metadata)
 
-def get_all_result_summaries(user_id):
+def get_all_result_summaries():
     raw_results = results_store.get_all_results()
     
-    raw_metadata = get_all_user_experiment_metadata(user_id, all_users=True)
+    raw_metadata = get_all_user_experiment_metadata(user_id=None, all_users=True)
+
+    logger.info("Raw experiment metadata: %s", raw_metadata)
 
     return _get_result_summaries(raw_results, raw_metadata)
 
-def _get_result_summaries(raw_metadata, raw_results):
-    sorted_metadata = sorted(metadata, key=lambda md : md.get("date"))    
-    sorted_results = sorted(raw_results, key=lambda r : r.get("created_at"))
+def _get_result_summaries(raw_results, raw_metadata):
+    metadata_by_id = {
+          str(metadata.get("id")): metadata
+          for metadata in (raw_metadata or [])
+      }
 
     cleaned_results = []
 
-    for raw_doc, raw_metadata in zip(sorted_results, sorted_metadata) :
-        cleaned = clean_result(raw_doc, raw_metadata)
+    for raw_result in raw_results:
+        cleaned = clean_result(raw_result, metadata_by_id.get(
+            str(raw_result.get("project", {}).get("experiment_id"))
+        ))
         cleaned_results.append(cleaned)
 
     return cleaned_results
