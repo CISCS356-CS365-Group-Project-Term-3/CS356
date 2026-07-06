@@ -25,7 +25,7 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPassword},
   { path: 'forgot-password', component: ForgotPassword},
   { path: 'profile', component: Profile },
-  { path: '', component: Home },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {path: 'infrastructurePortal', component: InfrastructurePortalComponent,
     children: [
       { path: '', component: InfrastructureDashboardComponent },
