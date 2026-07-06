@@ -1,6 +1,7 @@
 export interface ProjectType {
   id: number;
   name: string;
+  networkEnabled: number;
 }
 
 export interface EncoderType {

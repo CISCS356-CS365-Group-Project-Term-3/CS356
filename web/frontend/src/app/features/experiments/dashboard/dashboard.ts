@@ -204,6 +204,7 @@ export class Dashboard implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.infrastructureService.refreshConfig();
     this.infrastructureService.getConfig().subscribe({
       next: (config) => { this.config = config; },
       error: () => {},
