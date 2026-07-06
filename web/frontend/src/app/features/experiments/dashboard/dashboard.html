@@ -17,36 +17,27 @@
   </div>
 
   <div class="stats">
-    <mat-card (click)="setStatusFilter(null)" [class.active-total]="activeStatusFilter === null">
+    <mat-card (click)="setStatusFilter('pending')" [class.active]="activeStatusFilter === 'pending'">
       <mat-card-content>
-        <div class="stat-val blue">{{ totalCount }}</div>
-        <div class="stat-lbl">Total</div>
+        <div class="stat-val blue">{{ pendingRunsCount }}</div>
+        <div class="stat-lbl">Pending</div>
       </mat-card-content>
     </mat-card>
-    <mat-card
-      (click)="setStatusFilter('Complete')"
-      [class.active-complete]="activeStatusFilter === 'Complete'"
-    >
+    <mat-card (click)="setStatusFilter('running')" [class.active]="activeStatusFilter === 'running'">
       <mat-card-content>
-        <div class="stat-val green">{{ completedCount }}</div>
-        <div class="stat-lbl">Completed</div>
-      </mat-card-content>
-    </mat-card>
-    <mat-card
-      (click)="setStatusFilter('Running')"
-      [class.active-running]="activeStatusFilter === 'Running'"
-    >
-      <mat-card-content>
-        <div class="stat-val warn">{{ runningCount }}</div>
+        <div class="stat-val warn">{{ runningRunsCount }}</div>
         <div class="stat-lbl">Running</div>
       </mat-card-content>
     </mat-card>
-    <mat-card
-      (click)="setStatusFilter('Failed')"
-      [class.active-failed]="activeStatusFilter === 'Failed'"
-    >
+    <mat-card (click)="setStatusFilter('complete')" [class.active]="activeStatusFilter === 'complete'">
       <mat-card-content>
-        <div class="stat-val red">{{ failedCount }}</div>
+        <div class="stat-val green">{{ completedRunsCount }}</div>
+        <div class="stat-lbl">Completed</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('failed')" [class.active]="activeStatusFilter === 'failed'">
+      <mat-card-content>
+        <div class="stat-val red">{{ failedRunsCount }}</div>
         <div class="stat-lbl">Failed</div>
       </mat-card-content>
     </mat-card>
@@ -56,11 +47,8 @@
     <button mat-stroked-button (click)="toggleDrafts()">
       {{ showDraftsOnly ? 'Show All' : 'Show Drafts' }}
     </button>
-    @if (activeStatusFilter) {
-      <span class="filter-label">Filtered by: {{ activeStatusFilter }}</span>
-    }
     @if (selectedExperiment) {
-      <span class="selected-label">{{ selectedExperiment.id }} {{ selectedExperiment.name }}</span>
+      <span class="selected-label">Group {{ selectedExperiment.groupID }}: {{ selectedExperiment.name }}</span>
       @if (selectedExperiment.status === 'draft') {
         <button mat-stroked-button (click)="openDraft()">Edit Draft</button>
       }
@@ -78,11 +66,23 @@
     <ag-grid-angular
       [rowData]="filteredExperiments"
       [columnDefs]="colDefs"
-      [rowSelection]="'single'"
+      [rowSelection]="rowSelection"
       [getRowId]="getRowId"
       domLayout="autoHeight"
       (selectionChanged)="onSelectionChanged($event)"
       (rowClicked)="onRowClicked($event)"
     />
+
+    @if (selectedExperiment && selectedExperiment.runs && selectedExperiment.runs.length > 0) {
+      <div class="runs-section">
+        <h3>Runs for Group {{ selectedExperiment.groupID }}</h3>
+        <ag-grid-angular
+          [rowData]="filteredRuns"
+          [columnDefs]="detailColDefs"
+          domLayout="autoHeight"
+          class="runs-grid"
+        />
+      </div>
+    }
   }
 </div>

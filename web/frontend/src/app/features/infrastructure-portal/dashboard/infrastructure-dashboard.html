@@ -9,7 +9,7 @@
 
   <div class="heading-row">
     <div>
-      <h1>Dashboard</h1>
+      <h2>Infrastructure Dashboard</h2>
       <p>Overview of available infrastructure resources.</p>
     </div>
   </div>
@@ -22,8 +22,21 @@
           <h2>Encoders</h2>
         </div>
 
-        <p>
-          View and manage codec options available to researchers for experiment processing.
+        <p style="font-size: 20px;">
+          View and manage encoder types and their available codec options.
+        </p>
+      </mat-card>
+    </a>
+
+    <a class="quick-link" routerLink="/infrastructurePortal/codecs">
+      <mat-card class="quick-card">
+        <div class="quick-header">
+          <mat-icon>tune</mat-icon>
+          <h2>Codecs</h2>
+        </div>
+
+        <p style="font-size: 20px;">
+          Manage codec configurations available to researchers for experiment encoding.
         </p>
       </mat-card>
     </a>
@@ -32,39 +45,28 @@
       <mat-card class="quick-card">
         <div class="quick-header">
           <mat-icon>dns</mat-icon>
-          <h2>Network Profiles</h2>
+          <h2>Transmission Conditions</h2>
         </div>
 
-        <p>
-          Configure packet loss, delay, jitter and other simulated transmission conditions.
+        <p style="font-size: 20px;">
+          Configure packet loss, delay, jitter upper/ lower bound conditions.
         </p>
       </mat-card>
     </a>
 
-    <mat-card class="quick-card disabled-card">
+    <a class="quick-link" routerLink="/infrastructurePortal/infrastructure-datasets">
+    <mat-card class="quick-card">
       <div class="quick-header">
         <mat-icon>movie</mat-icon>
         <h2>Datasets</h2>
       </div>
 
-      <p>
-        Manage uploaded video clips and test sequences used in experiments.
+      <p style="font-size: 20px;">
+        Video sequences and files available for experiments.
       </p>
 
-      <span class="coming-soon"> </span>
     </mat-card>
+    </a>
 
-    <mat-card class="quick-card disabled-card">
-      <div class="quick-header">
-        <mat-icon>play_circle</mat-icon>
-        <h2>Running Experiments</h2>
-      </div>
-
-      <p>
-        View currently processing experiments and monitor active jobs.
-      </p>
-
-      <span class="coming-soon"> </span>
-    </mat-card>
   </div>
 </div>

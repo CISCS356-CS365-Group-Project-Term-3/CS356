@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
-import {NgOptimizedImage} from '@angular/common';
 import {Router, RouterLink} from '@angular/router';
 import { ConfirmLogoutDialog} from '../confirm-logout-dialog/confirm-logout-dialog';
 import {MatDialog} from '@angular/material/dialog';
@@ -18,7 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   imports: [MatCardModule, MatButtonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: 'landing-page.html',
-  styleUrl: 'landing-page.scss',
+  styleUrls: ['landing-page.scss'],
   standalone: true
 })
 
