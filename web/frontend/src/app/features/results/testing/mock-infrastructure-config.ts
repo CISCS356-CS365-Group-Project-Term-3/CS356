@@ -1,7 +1,7 @@
 import { InfrastructureConfig } from '../../experiments/models/infrastructure-config.model';
 
 export const MOCK_INFRASTRUCTURE_CONFIG: InfrastructureConfig = {
-  projectTypes: [{ id: 1, name: 'Encoder Only' }],
+  projectTypes: [{ id: 1, name: 'Encoder Only', networkEnabled: 0 }],
   encoderTypes: [{ id: 1, name: 'Standard Encoder', activeCodecs: [1, 2, 3] }],
   codecs: [
     { id: 1, name: 'AVC (H.264)' },
