@@ -6,8 +6,6 @@ from storage.experiment_store import update_group_by_id
 from storage.experiment_store import get_group_by_id
 from utils.encoding import generate_sequence_code
 
-from experiment_management.storage.experiment_store import update_run_status
-
 
 def _build_queue_payload(group_id, run_id, date, sequence_code, user_id):
     return {
@@ -163,12 +161,3 @@ def update_experiment(group_id, data):
         "group": group,
         "runs": runs
     }
-# service functions for engine to use
-# difficult to check the state of the message queue from publisher so
-# going to check from consumer side and provide these service functions
-def mark_run_running(run_id):
-    update_run_status(run_id, "running")
-def mark_run_complete(run_id):
-    update_run_status(run_id, "complete")
-def mark_run_failed(run_id):
-    update_run_status(run_id, "failed")

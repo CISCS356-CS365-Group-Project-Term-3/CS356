@@ -54,8 +54,8 @@ export class Dashboard implements OnInit {
     },
     {
       headerName: 'Status',
-      field: 'status',
       flex: 1,
+      valueGetter: (p) => this.getGroupStatus(p.data),
       cellRenderer: (params: { value: string; data: Experiment | undefined }) =>
         this.statusCellRenderer(params),
     },
@@ -152,7 +152,7 @@ export class Dashboard implements OnInit {
     return experiments;
   }
 
-  private getGroupStatus(exp: Experiment): string {
+  getGroupStatus(exp: Experiment): string {
     const runs = exp.runs ?? [];
     if (runs.length === 0) return 'pending';
     const hasFailed = runs.some((r) => r.status === 'failed');
@@ -168,8 +168,7 @@ export class Dashboard implements OnInit {
 
   get filteredRuns(): ExperimentRun[] {
     if (!this.selectedExperiment) return [];
-    if (!this.activeStatusFilter) return this.selectedExperiment.runs;
-    return this.selectedExperiment.runs.filter((r) => r.status === this.activeStatusFilter);
+    return this.selectedExperiment.runs;
   }
 
   toggleDrafts(): void {
@@ -299,14 +298,25 @@ export class Dashboard implements OnInit {
   statusCellRenderer(params: { value: string | undefined; data: Experiment | undefined }) {
     if (!params.data) return '';
 
-    if (!params.value) {
+    const statusValue = params.value;
+
+    if (!statusValue) {
       if (params.data.status === 'draft') {
         return `<span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Draft</span>`;
       }
       return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Pending</span>`;
     }
 
-    return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">${params.value}</span>`;
+    const styles: Record<string, string> = {
+      complete: 'background:#e8f5e9;color:#388e3c',
+      running: 'background:#fff3e0;color:#f57c00',
+      failed: 'background:#ffebee;color:#d32f2f',
+      pending: 'background:#f5f5f5;color:#888',
+      draft: 'background:#e3f2fd;color:#1565c0',
+    };
+    const style = styles[statusValue] ?? 'background:#f5f5f5;color:#888';
+
+    return `<span style="${style};padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">${statusValue}</span>`;
   }
 
   runStatusCellRenderer(status: string | null | undefined) {
