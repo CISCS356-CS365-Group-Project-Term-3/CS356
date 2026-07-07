@@ -160,6 +160,7 @@ export class Dashboard implements OnInit {
 
   toggleDrafts(): void {
     this.showDraftsOnly = !this.showDraftsOnly;
+    this.activeStatusFilter = null;
     this.selectedExperiment = null;
   }
 
@@ -192,7 +193,7 @@ export class Dashboard implements OnInit {
   }
 
   setStatusFilter(status: string): void {
-    this.activeStatusFilter = status;
+    this.activeStatusFilter = this.activeStatusFilter === status ? null : status;
   }
 
   private getEncoderTypeName(id: number | null | undefined): string {

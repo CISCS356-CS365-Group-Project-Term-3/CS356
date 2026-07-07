@@ -11,43 +11,43 @@ import { Experiment } from '../models/experiment.model';
 
 const experiments: Experiment[] = [
   {
-    id: '1',
+    groupID: 1,
+    userId: 1,
     name: 'Exp A',
-    status: 'finalised',
-    engineStatus: 'Complete',
+    status: 'pending',
     date: '2026-01-01',
     projectTypeId: 1,
-    encoders: [],
-    sequences: [],
+    runs: [{ id: 1, groupId: 1, sequenceCode: 'A1', status: 'complete', date: '2026-01-01' }],
   },
   {
-    id: '2',
+    groupID: 2,
+    userId: 1,
     name: 'Exp B',
-    status: 'finalised',
-    engineStatus: 'Running',
+    status: 'pending',
     date: '2026-01-02',
     projectTypeId: 1,
-    encoders: [],
-    sequences: [],
+    runs: [
+      { id: 2, groupId: 2, sequenceCode: 'B1', status: 'running', date: '2026-01-02' },
+      { id: 5, groupId: 2, sequenceCode: 'B2', status: 'pending', date: '2026-01-02' },
+    ],
   },
   {
-    id: '3',
+    groupID: 3,
+    userId: 1,
     name: 'Expe C',
-    status: 'finalised',
-    engineStatus: 'Failed',
+    status: 'pending',
     date: '2026-01-03',
     projectTypeId: 1,
-    encoders: [],
-    sequences: [],
+    runs: [{ id: 3, groupId: 3, sequenceCode: 'C1', status: 'failed', date: '2026-01-03' }],
   },
   {
-    id: '4',
+    groupID: 4,
+    userId: 1,
     name: 'Draft',
     status: 'draft',
     date: '2026-01-04',
     projectTypeId: 1,
-    encoders: [],
-    sequences: [],
+    runs: [],
   },
 ];
 
@@ -73,6 +73,7 @@ describe('Dashboard', () => {
         {
           provide: InfrastructureService,
           useValue: {
+            refreshConfig: vi.fn(),
             getConfig: vi.fn().mockReturnValue(
               of({
                 projectTypes: [],
@@ -99,7 +100,7 @@ describe('Dashboard', () => {
     fixture.detectChanges();
   });
 
-  it('creates the compoent', () => {
+  it('creates the component', () => {
     expect(component).toBeTruthy();
   });
 
@@ -114,11 +115,11 @@ describe('Dashboard', () => {
     expect(component.isLoading).toBe(false);
   });
 
-  it('stat counts are correct', () => {
-    expect(component.totalCount).toBe(4);
-    expect(component.completedCount).toBe(1);
-    expect(component.runningCount).toBe(1);
-    expect(component.failedCount).toBe(1);
+  it('run stat counts are correct', () => {
+    expect(component.pendingRunsCount).toBe(1);
+    expect(component.runningRunsCount).toBe(1);
+    expect(component.completedRunsCount).toBe(1);
+    expect(component.failedRunsCount).toBe(1);
   });
 
   it('filteredExperiments respects showDraftsOnly and status filter', () => {
@@ -128,12 +129,12 @@ describe('Dashboard', () => {
     expect(component.filteredExperiments).toEqual([experiments[3]]);
 
     component.showDraftsOnly = false;
-    component.activeStatusFilter = 'Complete';
+    component.activeStatusFilter = 'complete';
     expect(component.filteredExperiments).toEqual([experiments[0]]);
   });
 
   it('toggleDrafts clears the status filter and selection', () => {
-    component.activeStatusFilter = 'Complete';
+    component.activeStatusFilter = 'complete';
     component.selectedExperiment = experiments[0];
     component.toggleDrafts();
     expect(component.showDraftsOnly).toBe(true);
@@ -142,9 +143,9 @@ describe('Dashboard', () => {
   });
 
   it('setStatusFilter toggles off when the same status is clicked twice', () => {
-    component.setStatusFilter('Running');
-    expect(component.activeStatusFilter).toBe('Running');
-    component.setStatusFilter('Running');
+    component.setStatusFilter('running');
+    expect(component.activeStatusFilter).toBe('running');
+    component.setStatusFilter('running');
     expect(component.activeStatusFilter).toBeNull();
   });
 
@@ -165,23 +166,23 @@ describe('Dashboard', () => {
     expect(
       component.statusCellRenderer({
         value: undefined,
-        data: { ...experiments[3], status: 'draft' },
+        data: experiments[3],
       }),
     ).toContain('Draft');
     expect(
       component.statusCellRenderer({
         value: undefined,
-        data: { ...experiments[0], status: 'finalised' },
+        data: experiments[0],
       }),
     ).toContain('Pending');
-    expect(component.statusCellRenderer({ value: 'Complete', data: experiments[0] })).toContain(
-      'Complete',
+    expect(component.statusCellRenderer({ value: 'complete', data: experiments[0] })).toContain(
+      'complete',
     );
-    expect(component.statusCellRenderer({ value: 'Running', data: experiments[1] })).toContain(
-      'Running',
+    expect(component.statusCellRenderer({ value: 'running', data: experiments[1] })).toContain(
+      'running',
     );
-    expect(component.statusCellRenderer({ value: 'Failed', data: experiments[2] })).toContain(
-      'Failed',
+    expect(component.statusCellRenderer({ value: 'failed', data: experiments[2] })).toContain(
+      'failed',
     );
   });
 });
