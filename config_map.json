@@ -9,10 +9,10 @@
         "006": "mobile_sif.y4m",
         "007": "waterfall_cif.y4m"
     },
-    "codec": {"000": "h261", "001": "h263", "002": "h264", "003": "h265", "004": "h266"},
+    "codec": {"001": "h261", "002": "h263", "003": "h264", "004": "h265", "005": "h266"},
     "encoder_type": {"000": "standard", "001": "scalable"},
     "encoder_mode": {"000": "dummy", "001": "dummy"},
-    "loss": "DECIMAL",
+    "loss": "PERCENT_TENTHS",
     "delay": "INTEGER",
     "jitter": "INTEGER"
 }

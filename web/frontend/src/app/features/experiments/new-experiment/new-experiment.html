@@ -43,9 +43,11 @@
         >
           <app-sequences />
         </mat-step>
-        <mat-step label="Network Emulation">
-          <app-network-emulation />
-        </mat-step>
+        @if (needsNetworkConfig()) {
+          <mat-step label="Network Emulation">
+            <app-network-emulation />
+          </mat-step>
+        }
 
         <mat-step label="Review">
           <app-review />
@@ -63,14 +65,14 @@
           <button mat-stroked-button (click)="onBack()">
             {{ isFirstStep ? 'Cancel' : 'Back' }}
           </button>
-          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting || !canSaveDraft()">
+          <button mat-stroked-button (click)="onSaveDraft()" [disabled]="isSubmitting || !canSaveDraft() || !userInfoLoaded">
             Save Draft
           </button>
           <button
             mat-raised-button
             color="primary"
             (click)="onNext()"
-            [disabled]="isSubmitting || (isLastStep && !isFormComplete())"
+            [disabled]="isSubmitting || (isLastStep && (!isFormComplete() || !userInfoLoaded))"
           >
             {{ isLastStep && isSubmitting ? 'Submitting…' : isLastStep ? 'Submit' : 'Next' }}
           </button>

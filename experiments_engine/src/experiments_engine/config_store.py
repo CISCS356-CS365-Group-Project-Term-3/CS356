@@ -9,7 +9,7 @@ class ConfigStore:
 
     _STATIC_CONFIG = {
         "encoder_type": {"000": "standard", "001": "scalable"},
-        "loss": "DECIMAL",
+        "loss": "PERCENT_TENTHS",
         "delay": "INTEGER",
         "jitter": "INTEGER"
     }

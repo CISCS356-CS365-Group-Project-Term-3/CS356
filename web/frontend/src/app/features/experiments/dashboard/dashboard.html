@@ -17,19 +17,28 @@
   </div>
 
   <div class="stats">
-    <mat-card (click)="setStatusFilter('pending')" [class.active]="activeStatusFilter === 'pending'">
+    <mat-card
+      (click)="setStatusFilter('pending')"
+      [class.active]="activeStatusFilter === 'pending'"
+    >
       <mat-card-content>
         <div class="stat-val blue">{{ pendingRunsCount }}</div>
         <div class="stat-lbl">Pending</div>
       </mat-card-content>
     </mat-card>
-    <mat-card (click)="setStatusFilter('running')" [class.active]="activeStatusFilter === 'running'">
+    <mat-card
+      (click)="setStatusFilter('running')"
+      [class.active]="activeStatusFilter === 'running'"
+    >
       <mat-card-content>
         <div class="stat-val warn">{{ runningRunsCount }}</div>
         <div class="stat-lbl">Running</div>
       </mat-card-content>
     </mat-card>
-    <mat-card (click)="setStatusFilter('complete')" [class.active]="activeStatusFilter === 'complete'">
+    <mat-card
+      (click)="setStatusFilter('complete')"
+      [class.active]="activeStatusFilter === 'complete'"
+    >
       <mat-card-content>
         <div class="stat-val green">{{ completedRunsCount }}</div>
         <div class="stat-lbl">Completed</div>
@@ -48,7 +57,6 @@
       {{ showDraftsOnly ? 'Show All' : 'Show Drafts' }}
     </button>
     @if (selectedExperiment) {
-      <span class="selected-label">Group {{ selectedExperiment.groupID }}: {{ selectedExperiment.name }}</span>
       @if (selectedExperiment.status === 'draft') {
         <button mat-stroked-button (click)="openDraft()">Edit Draft</button>
       }
@@ -64,6 +72,8 @@
     </p>
   } @else {
     <ag-grid-angular
+      class="ag-theme-quartz"
+      [theme]="'legacy'"
       [rowData]="filteredExperiments"
       [columnDefs]="colDefs"
       [rowSelection]="rowSelection"
@@ -77,10 +87,11 @@
       <div class="runs-section">
         <h3>Runs for Group {{ selectedExperiment.groupID }}</h3>
         <ag-grid-angular
+          class="ag-theme-quartz runs-grid"
+          [theme]="'legacy'"
           [rowData]="filteredRuns"
           [columnDefs]="detailColDefs"
           domLayout="autoHeight"
-          class="runs-grid"
         />
       </div>
     }

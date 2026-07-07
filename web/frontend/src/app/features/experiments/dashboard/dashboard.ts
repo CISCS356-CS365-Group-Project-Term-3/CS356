@@ -80,12 +80,12 @@ export class Dashboard implements OnInit {
     },
     {
       headerName: 'Encoder Type',
-      valueGetter: (p) => p.data?.encoderData?.encoderTypeId ?? 'N/A',
+      valueGetter: (p) => this.getEncoderTypeName(p.data?.encoderData?.encoderTypeId),
       flex: 0.8,
     },
     {
       headerName: 'Codec',
-      valueGetter: (p) => p.data?.encoderData?.codecId ?? 'N/A',
+      valueGetter: (p) => this.getCodecName(p.data?.encoderData?.codecId),
       flex: 0.7,
     },
     {
@@ -95,22 +95,22 @@ export class Dashboard implements OnInit {
     },
     {
       headerName: 'Video File',
-      valueGetter: (p) => p.data?.sequenceData?.videoFileId ?? 'N/A',
+      valueGetter: (p) => this.getVideoFileName(p.data?.sequenceData?.videoFileId),
       flex: 0.8,
     },
     {
-      headerName: 'Packet Loss',
-      valueGetter: (p) => p.data?.networkData?.packetLoss ?? 'N/A',
+      headerName: 'Packet Loss (%)',
+      valueGetter: (p) => this.formatPacketLoss(p.data?.networkData?.packetLoss),
       flex: 0.7,
     },
     {
-      headerName: 'Delay',
-      valueGetter: (p) => p.data?.networkData?.delay ?? 'N/A',
+      headerName: 'Delay (ms)',
+      valueGetter: (p) => this.formatMs(p.data?.networkData?.delay),
       flex: 0.6,
     },
     {
-      headerName: 'Jitter',
-      valueGetter: (p) => p.data?.networkData?.jitter ?? 'N/A',
+      headerName: 'Jitter (ms)',
+      valueGetter: (p) => this.formatMs(p.data?.networkData?.jitter),
       flex: 0.6,
     },
     {
@@ -174,6 +174,7 @@ export class Dashboard implements OnInit {
 
   toggleDrafts(): void {
     this.showDraftsOnly = !this.showDraftsOnly;
+    this.activeStatusFilter = null;
     this.selectedExperiment = null;
   }
 
@@ -194,7 +195,35 @@ export class Dashboard implements OnInit {
   }
 
   setStatusFilter(status: string): void {
-    this.activeStatusFilter = status;
+    this.activeStatusFilter = this.activeStatusFilter === status ? null : status;
+  }
+
+  private getEncoderTypeName(id: number | null | undefined): string {
+    if (id == null) return 'N/A';
+    return this.config?.encoderTypes.find((e) => e.id === id)?.name ?? 'N/A';
+  }
+
+  private getCodecName(id: number | null | undefined): string {
+    if (id == null) return 'N/A';
+    return this.config?.codecs.find((c) => c.id === id)?.name ?? 'N/A';
+  }
+
+  private getVideoFileName(id: number | null | undefined): string {
+    if (id == null) return 'N/A';
+    const videoFiles = this.config?.sequences.flatMap((s) => s.videoFiles) ?? [];
+    return videoFiles.find((v) => v.id === id)?.name ?? 'N/A';
+  }
+
+  private formatPacketLoss(raw: string | null | undefined): string {
+    if (raw == null) return 'N/A';
+    const n = Number(raw);
+    return isNaN(n) ? 'N/A' : (n / 10).toFixed(1);
+  }
+
+  private formatMs(raw: string | null | undefined): string {
+    if (raw == null) return 'N/A';
+    const n = Number(raw);
+    return isNaN(n) ? 'N/A' : String(n);
   }
 
   constructor(
@@ -202,25 +231,27 @@ export class Dashboard implements OnInit {
     private formService: NewExperimentFormService,
     private router: Router,
     private infrastructureService: InfrastructureService,
-    // private userService: UserManagementService,
+    private userService: UserManagementService,
   ) {}
 
   ngOnInit() {
+    this.infrastructureService.refreshConfig();
     this.infrastructureService.getConfig().subscribe({
       next: (config) => { this.config = config; },
       error: () => {},
     });
-    //try {
-    //  this.userService.getUserInfo().subscribe({
-    //    next: (user: any) => {
-    //      this.userId = user.user_id;
-    //      this.isAdmin = user.user_role === 'admin';
-    //      this.loadExperiments();
-    //    },
-    //    error: () => {},
-    //  });
-    //} catch {}
-    this.loadExperiments();
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.userId = user.user_id;
+          this.isAdmin = user.user_role === 'admin';
+          this.loadExperiments();
+        },
+        error: () => { this.loadExperiments(); },
+      });
+    } catch {
+      this.loadExperiments();
+    }
   }
 
   loadExperiments(): void {

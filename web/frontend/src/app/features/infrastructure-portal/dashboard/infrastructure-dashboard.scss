@@ -8,11 +8,13 @@
   background: #fff5d6;
   color: #7c5b00;
   border-radius: 16px;
+  font-size: 18px;
 }
 
 .heading-row {
   margin-bottom: 42px;
   padding-top: 12px;
+  font-size: 25px;
 }
 
 .heading-row h1 {
@@ -69,7 +71,7 @@
 }
 
 .quick-header mat-icon {
-  color: #0b3a6f;
+  color: #006CBB;
   font-size: 30px;
   width: 30px;
   height: 30px;
@@ -84,13 +86,6 @@
 
 .disabled-card {
   opacity: 0.82;
-}
-
-.coming-soon {
-  margin-top: 18px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #0b3a6f;
 }
 
 @media (max-width: 900px) {
