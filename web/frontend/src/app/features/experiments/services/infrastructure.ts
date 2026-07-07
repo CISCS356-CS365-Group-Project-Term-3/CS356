@@ -20,7 +20,6 @@ export class InfrastructureService {
     return this.http.get(`${API_BASE}/rest/get_active_ui_options`).pipe(
       map((data) => {
         const config = camelizeKeys(data) as InfrastructureConfig;
-        // activeCodecs not yet returned by backend — being added next sprint
         config.encoderTypes = config.encoderTypes?.map((et) => ({
           ...et,
           activeCodecs: et.activeCodecs ?? [],

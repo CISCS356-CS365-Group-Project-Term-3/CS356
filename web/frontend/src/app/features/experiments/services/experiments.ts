@@ -11,9 +11,9 @@ export class ExperimentsService {
   constructor(private http: HttpClient) {}
 
   getExperiments(userId?: number) {
-    const url = userId != null ? `${API_BASE}/experiments?userId=${userId}` : `${API_BASE}/experiments`;
+    const url =
+      userId != null ? `${API_BASE}/experiments?userId=${userId}` : `${API_BASE}/experiments`;
     return this.http.get<Experiment[]>(url);
-    // return of(this.mockExperiments);
   }
 
   getExperimentById(id: string) {
