@@ -1,6 +1,6 @@
 import subprocess
-from src.experiments_engine.network import setup_namespaces
-from src.experiments_engine.config import Settings as Config
+from experiments_engine.network import setup_namespaces
+from experiments_engine.config import Settings as Config
 
 # NOTE: The tests in this file are designed to be run in a Linux environment with the necessary permissions to manipulate network namespaces.
 # NOTE: These tests need to be run using sudo in order to be given root privileges

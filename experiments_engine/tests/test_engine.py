@@ -29,7 +29,7 @@ def config():
         "raw_file": {"000": "input.y4m"},
         "codec": {"000": "h264"},
         "encoder_type": {"000": "standard"},
-        "loss": "DECIMAL",
+        "loss": "PERCENT_TENTHS",
         "delay": "INTEGER",
         "jitter": "INTEGER",
     }
