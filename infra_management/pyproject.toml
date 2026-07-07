@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "infra-management"
+version = "0.1.0"
+dependencies = [
+    "annotated-types",
+    "Flask",
+    "flask-cors",
+    "psycopg2-binary",
+    "pydantic",
+    "pydantic_core",
+    "SQLAlchemy",
+    "typing-inspection",
+    "typing_extensions",
+    "Werkzeug"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["infra_management*"]

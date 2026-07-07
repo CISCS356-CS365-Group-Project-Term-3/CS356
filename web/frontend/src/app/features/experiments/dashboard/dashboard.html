@@ -1,0 +1,88 @@
+<div class="page-wrap">
+  <div class="dash-header">
+    <div class="page-header">
+      <h1>My Experiments</h1>
+      <p>Manage and track your encoding experiments</p>
+    </div>
+    <div class="header-actions">
+      @if (isAdmin) {
+        <mat-slide-toggle [checked]="showAllExperiments" (change)="onScopeToggle()">
+          Show all experiments
+        </mat-slide-toggle>
+      }
+      <button mat-raised-button color="primary" routerLink="/experiments/new">
+        + New Experiment
+      </button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <mat-card (click)="setStatusFilter('pending')" [class.active]="activeStatusFilter === 'pending'">
+      <mat-card-content>
+        <div class="stat-val blue">{{ pendingRunsCount }}</div>
+        <div class="stat-lbl">Pending</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('running')" [class.active]="activeStatusFilter === 'running'">
+      <mat-card-content>
+        <div class="stat-val warn">{{ runningRunsCount }}</div>
+        <div class="stat-lbl">Running</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('complete')" [class.active]="activeStatusFilter === 'complete'">
+      <mat-card-content>
+        <div class="stat-val green">{{ completedRunsCount }}</div>
+        <div class="stat-lbl">Completed</div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card (click)="setStatusFilter('failed')" [class.active]="activeStatusFilter === 'failed'">
+      <mat-card-content>
+        <div class="stat-val red">{{ failedRunsCount }}</div>
+        <div class="stat-lbl">Failed</div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="table-actions">
+    <button mat-stroked-button (click)="toggleDrafts()">
+      {{ showDraftsOnly ? 'Show All' : 'Show Drafts' }}
+    </button>
+    @if (selectedExperiment) {
+      <span class="selected-label">Group {{ selectedExperiment.groupID }}: {{ selectedExperiment.name }}</span>
+      @if (selectedExperiment.status === 'draft') {
+        <button mat-stroked-button (click)="openDraft()">Edit Draft</button>
+      }
+      <button mat-stroked-button (click)="createFromTemplate()">Create from Template</button>
+    }
+  </div>
+
+  @if (isLoading) {
+    <p class="state-msg">Loading experiments...</p>
+  } @else if (experiments.length === 0) {
+    <p class="state-msg">
+      No experiments yet. Click <strong>+ New Experiment</strong> to create one.
+    </p>
+  } @else {
+    <ag-grid-angular
+      [rowData]="filteredExperiments"
+      [columnDefs]="colDefs"
+      [rowSelection]="rowSelection"
+      [getRowId]="getRowId"
+      domLayout="autoHeight"
+      (selectionChanged)="onSelectionChanged($event)"
+      (rowClicked)="onRowClicked($event)"
+    />
+
+    @if (selectedExperiment && selectedExperiment.runs && selectedExperiment.runs.length > 0) {
+      <div class="runs-section">
+        <h3>Runs for Group {{ selectedExperiment.groupID }}</h3>
+        <ag-grid-angular
+          [rowData]="filteredRuns"
+          [columnDefs]="detailColDefs"
+          domLayout="autoHeight"
+          class="runs-grid"
+        />
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,54 @@
+export interface ProjectType {
+  id: number;
+  name: string;
+  networkEnabled: number;
+}
+
+export interface EncoderType {
+  id: number;
+  name: string;
+  activeCodecs: number[];
+}
+
+export interface Codec {
+  id: number;
+  name: string;
+}
+
+export interface VideoFile {
+  id: number;
+  name: string;
+  spacial: [number, number]; // [width, height] — Fraser's spelling, must match JSON key
+  temporal: number;
+  depth: number;
+  filepath?: string;
+}
+
+export interface Sequence {
+  id: number;
+  name: string;
+  description?: string;
+  videoFiles: VideoFile[];
+}
+
+export interface Topology {
+  id: number;
+  name: string;
+}
+
+export interface TransmissionCondition {
+  id: number;
+  name: string;
+  lowerBound: number;
+  upperBound: number;
+  unit?: string | null;
+}
+
+export interface InfrastructureConfig {
+  projectTypes: ProjectType[];
+  encoderTypes: EncoderType[];
+  codecs: Codec[];
+  sequences: Sequence[];
+  topologies: Topology[];
+  transmissionConditions: TransmissionCondition[];
+}
