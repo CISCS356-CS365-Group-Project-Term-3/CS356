@@ -8,3 +8,4 @@ hard-reset:
 	docker stop $$(docker ps -q -a)
 	docker rm $$(docker ps -q -a)
 	docker system prune --all --volumes --force
+	docker volume prune -a --force

@@ -1,6 +1,50 @@
 import pytest
 from unittest.mock import patch, Mock
 from experiments_engine.config_store import ConfigStore
+from experiments_engine.output_store import OutputStore
+
+
+#@pytest.fixture
+def config_store():
+    cs = ConfigStore()
+    #cs._db.config.delete_one({"_id": "system"})
+    yield cs
+    #cs._db.config.delete_one({"_id": "system"})
+
+#@pytest.fixture
+def output_store():
+    os_ = OutputStore()
+    for coll in ("results", "metrics", "configs"):
+        os_._db[coll].delete_many({"_id": {"$regex": "^test_"}})
+    os_._db.logs.delete_many({"experiment_id": {"$regex": "^test_"}})
+    yield os_
+    for coll in ("results", "metrics", "configs"):
+        os_._db[coll].delete_many({"_id": {"$regex": "^test_"}})
+    os_._db.logs.delete_many({"experiment_id": {"$regex": "^test_"}})
+
+
+# ---- ConfigStore ----
+
+def _test_get_config_raises_when_unset(config_store):
+    assert config_store.get_config() is None
+    
+def _test_get_config_includes_static_fields(mock_api):
+    cs = ConfigStore()
+    config = cs.get_config()
+    assert config["loss"] == "PERCENT_TENTHS"
+    assert config["delay"] == "INTEGER"
+    assert config["jitter"] == "INTEGER"
+    assert config["encoder_type"] == {"000": "standard", "001": "scalable"}
+
+
+def _test_save_and_get_config(config_store):
+    config_store.save_config({"version": "1.0", "default_codec": "HEVC"})
+    loaded = config_store.get_config()
+
+    assert loaded is not None
+    assert loaded["version"] == "1.0"
+    assert loaded["default_codec"] == "HEVC"
+
 
 
 MOCK_MAPPINGS = {
