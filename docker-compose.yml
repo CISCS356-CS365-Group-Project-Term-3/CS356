@@ -1,9 +1,25 @@
 services:
+  web:
+    build: ./web
+    ports:
+      - "8080:8080"
+    depends_on:
+      experiment-management:
+        condition: service_healthy
+      infra-management:
+        condition: service_healthy
+      user-management:
+        condition: service_healthy
+      results-management:
+        condition: service_healthy
+
   engine:
     privileged: true
     build: ./experiments_engine
     depends_on:
       queue: 
+        condition: service_healthy
+      infra-management:
         condition: service_healthy
     volumes:
       - ./config_map.json:/config_map.json:ro
@@ -17,6 +33,44 @@ services:
       INPUT_DIR: /resources/input
       TEMP_DIR: /tmp
       OUTPUT_DIR: /resources/output
+  
+  experiment-management:
+    build: ./experiment_management
+    depends_on:
+      queue:
+        condition: service_healthy
+      experiments_db:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      - QUEUE_NAME=experiment_queue
+      - QUEUE_CONTAINER=queue
+      - DB_HOST=experiments_db
+      - DB_NAME=experiments_management
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  results-management:
+    build: ./results_management
+    ports:
+      - "5003:5000"
+    environment:
+      - OUTPUT_MONGO_URI=mongodb://admin:admin@mongo:27017/
+      - OUTPUT_MONGO_DB_NAME=experiment_storage
+      - EXPERIMENT_MANAGEMENT_ADDRESS=http://experiment-management:5000
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   queue:
     image: rabbitmq:4.3-management-alpine
@@ -62,5 +116,101 @@ services:
       - mongo
     restart: unless-stopped
 
+  experiments_db:
+    image: postgres:16
+    container_name: experiments-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: experiments_management
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  infra-management:
+    build: ./infra_management
+    depends_on:
+      infra_db:
+        condition: service_healthy
+    ports:
+      - "5002:5001"
+    environment:
+      - DB_PASSWORD=hello
+      - DB_USER=postgres
+      - DB_HOST=infra_db
+      - DB_DB=postgres
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  infra_db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hello
+      POSTGRES_DB: postgres
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - infra_data:/var/lib/postgresql/data
+
+  user-management:
+    build: ./user_management
+    depends_on:
+      user_management_db:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@user_management_db:5432/user_management
+      - GMAIL_SENDER=groupprojectcs356@gmail.com
+      - GMAIL_APP_PASSWORD=pcza jxio jlsn gmdn
+      - FRONTEND_BASE_URL=http://web:8080
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./ssh:/app/ssh:ro
+
+  user_management_db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: user_management
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./user_management/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - user_management_data:/var/lib/postgresql/data
+
 volumes:
   mongo_data:
+  postgres_data:
+  infra_data:
+  user_management_data:

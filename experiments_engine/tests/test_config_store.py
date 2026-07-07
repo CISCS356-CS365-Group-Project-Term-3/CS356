@@ -1,7 +1,5 @@
-#temporarily commented pytest as this classes implementation has changed (loading local config for now)
-
-#Tests for Store and OutputStore against MongoDB.
-#import pytest
+import pytest
+from unittest.mock import patch, Mock
 from experiments_engine.config_store import ConfigStore
 from experiments_engine.output_store import OutputStore
 
@@ -48,71 +46,47 @@ def _test_save_and_get_config(config_store):
     assert loaded["default_codec"] == "HEVC"
 
 
-def _test_save_config_overwrites_existing(config_store):
-    config_store.save_config({"version": "1.0"})
-    config_store.save_config({"version": "2.0"})
 
-    assert config_store.get_config()["version"] == "2.0"
-
-
-def _test_save_config_preserves_extra_fields(config_store):
-    config_store.save_config({
-        "version": "1.0",
-        "default_codec": "HEVC",
-        "max_layers": 4,
-    })
-    loaded = config_store.get_config()
-
-    assert loaded["version"] == "1.0"
-    assert loaded["default_codec"] == "HEVC"
-    assert loaded["max_layers"] == 4
-
-# ---- OutputStore ----
-
-def _test_save_status_string(output_store):
-    output_store.save_status("test_exp_005", "RUNNING")
-    loaded = output_store.get_result("test_exp_005")
-
-    assert loaded["status"] == "RUNNING"
+MOCK_MAPPINGS = {
+    "raw_file": {"001": "blue_sky_1080p25.y4m", "002": "bus_cif.y4m"},
+    "codec": {"001": "h264", "002": "h265"}
+}
 
 
-def _test_save_status_progresses(output_store):
-    output_store.save_status("test_exp_006", "PENDING")
-    output_store.save_status("test_exp_006", "RUNNING")
-    output_store.save_status("test_exp_006", "COMPLETED")
-    loaded = output_store.get_result("test_exp_006")
-
-    assert loaded["status"] == "COMPLETED"
-
-
-def _test_save_status_dict_preserves_extra_fields(output_store):
-    output_store.save_status("test_exp_007", {
-        "status": "COMPLETED",
-        "duration_seconds": 42,
-    })
-    loaded = output_store.get_result("test_exp_007")
-
-    assert loaded["status"] == "COMPLETED"
-    assert loaded["duration_seconds"] == 42
+@pytest.fixture
+def mock_api():
+    mock_response = Mock()
+    mock_response.json.return_value = MOCK_MAPPINGS
+    mock_response.raise_for_status.return_value = None
+    with patch("experiments_engine.config_store.requests.get", return_value=mock_response) as mock_get:
+        yield mock_get
 
 
-def _test_save_and_get_metrics(output_store):
-    output_store.save_metrics("test_exp_008", {
-        "psnr": 38.5,
-        "ssim": 0.92,
-        "bitrate_kbps": 1234,
-    })
-    loaded = output_store.get_metrics("test_exp_008")
-
-    assert loaded["psnr"] == 38.5
-    assert loaded["bitrate_kbps"] == 1234
+def test_get_config_returns_api_mappings(mock_api):
+    cs = ConfigStore()
+    config = cs.get_config()
+    assert config["raw_file"] == MOCK_MAPPINGS["raw_file"]
+    assert config["codec"] == MOCK_MAPPINGS["codec"]
 
 
-def _test_save_log_creates_entry(output_store):
-    output_store.save_log("test_exp_009", "Beauty", "encode started")
-    output_store.save_log("test_exp_009", "Beauty", "encode finished")
-    logs = output_store.get_logs("test_exp_009")
+def test_get_config_includes_static_fields(mock_api):
+    cs = ConfigStore()
+    config = cs.get_config()
+    assert config["loss"] == "DECIMAL"
+    assert config["delay"] == "INTEGER"
+    assert config["jitter"] == "INTEGER"
+    assert config["encoder_type"] == {"000": "standard", "001": "scalable"}
 
-    assert len(logs) == 2
-    assert all(log["experiment_id"] == "test_exp_009" for log in logs)
 
+def test_calls_correct_endpoint(mock_api):
+    ConfigStore()
+    called_url = mock_api.call_args[0][0]
+    assert called_url.endswith("/rest/mappings")
+
+
+def test_raises_on_api_error():
+    mock_response = Mock()
+    mock_response.raise_for_status.side_effect = Exception("API unavailable")
+    with patch("experiments_engine.config_store.requests.get", return_value=mock_response):
+        with pytest.raises(Exception):
+            ConfigStore()

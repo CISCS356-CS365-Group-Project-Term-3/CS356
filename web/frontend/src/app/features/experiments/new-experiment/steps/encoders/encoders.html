@@ -1,0 +1,41 @@
+<div class="step-content">
+  @for (encoder of formService.form.encoders; track $index; let i = $index) {
+    <mat-card class="encoder-card">
+      <mat-card-content>
+        <div class="encoder-header">
+          <p class="section-label">Encoder {{ i + 1 }}</p>
+          @if (formService.form.encoders.length > 1) {
+            <button mat-icon-button (click)="removeEncoder(i)" aria-label="Remove encoder">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Encoder type</mat-label>
+          <mat-select [(ngModel)]="encoder.encoderTypeId" (ngModelChange)="onEncoderTypeChange(encoder)">
+            @for (encoderType of encoderTypes; track encoderType.id) {
+              <mat-option [value]="encoderType.id">{{ encoderType.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (encoder.encoderTypeId !== null) {
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Codec</mat-label>
+            <mat-select [(ngModel)]="encoder.codecId">
+              @for (codec of availableCodecs(encoder, i); track codec.id) {
+                <mat-option [value]="codec.id">{{ codec.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <button mat-stroked-button (click)="addEncoder()">
+    <mat-icon>add</mat-icon> Add Encoder
+  </button>
+</div>
