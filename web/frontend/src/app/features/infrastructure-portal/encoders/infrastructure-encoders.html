@@ -20,7 +20,8 @@
       <button
         mat-flat-button
         color="primary"
-        (click)="addEncoder()">
+        (click)="addEncoder()"
+        [disabled]="!isAdmin">
 
         <mat-icon>add</mat-icon>
         Add Encoder Type
@@ -30,7 +31,7 @@
       <button
         mat-stroked-button
         color="primary"
-        [disabled]="!selectedEncoder || selectedEncoder.active === 1"
+        [disabled]="!isAdmin || !selectedEncoder || selectedEncoder.active === 1"
         (click)="enableSelected()">
 
         <mat-icon>check_circle</mat-icon>
@@ -41,7 +42,7 @@
       <button
         mat-stroked-button
         color="warn"
-        [disabled]=" !selectedEncoder || selectedEncoder.active === 0"
+        [disabled]="!isAdmin || !selectedEncoder || selectedEncoder.active === 0"
         (click)="disableSelected()">
 
         <mat-icon>block</mat-icon>

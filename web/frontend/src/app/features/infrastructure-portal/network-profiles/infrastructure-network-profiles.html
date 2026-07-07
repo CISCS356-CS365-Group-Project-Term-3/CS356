@@ -18,7 +18,8 @@
       <button
         mat-flat-button
         color="primary"
-        (click)="addNetworkProfile()">
+        (click)="addNetworkProfile()"
+        [disabled]="!isAdmin">
 
         <mat-icon>add</mat-icon>
 
@@ -29,7 +30,7 @@
       <button
         mat-stroked-button
         color="primary"
-        [disabled]="!selectedProfile || selectedProfile.active === 1"
+        [disabled]="!isAdmin || !selectedProfile || selectedProfile.active === 1"
         (click)="enableSelected()">
 
         <mat-icon>check_circle</mat-icon>
@@ -41,7 +42,7 @@
       <button
         mat-stroked-button
         color="warn"
-        [disabled]="!selectedProfile || selectedProfile.active === 0"
+        [disabled]="!isAdmin || !selectedProfile || selectedProfile.active === 0"
         (click)="disableSelected()">
 
         <mat-icon>block</mat-icon>
@@ -106,7 +107,7 @@
         </div>
 
         <div>
-          <button mat-flat-button color="primary" (click)="saveChanges()" [disabled]="!hasEdits()">Save</button>
+          <button mat-flat-button color="primary" (click)="saveChanges()" [disabled]="!isAdmin || !hasEdits()">Save</button>
         </div>
       </div>
 
