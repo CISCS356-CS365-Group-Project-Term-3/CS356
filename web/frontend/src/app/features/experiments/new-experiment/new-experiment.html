@@ -44,7 +44,12 @@
           <app-sequences />
         </mat-step>
         @if (needsNetworkConfig()) {
-          <mat-step label="Network Emulation">
+          <mat-step
+            label="Network Emulation"
+            [completed]="isNetworkConfigComplete()"
+            [hasError]="isStepError(3)"
+            errorMessage=""
+          >
             <app-network-emulation />
           </mat-step>
         }

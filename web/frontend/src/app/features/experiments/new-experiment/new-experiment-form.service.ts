@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Experiment } from '../models/experiment.model';
+import { Experiment, ExperimentRun } from '../models/experiment.model';
 
 export interface SequenceConfig {
   videoFileId: number;
@@ -56,7 +56,7 @@ export class NewExperimentFormService {
       this.pendingDraft = null;
     } else if (this.pendingTemplate) {
       const template = this.pendingTemplate;
-      const draftData = template.draftData ?? { encoders: [], sequences: [], networkEmulation: { packetLoss: [], delay: [], jitter: [] } };
+      const draftData = template.draftData ?? this.deriveFromRuns(template.runs ?? []);
       this.editingId = null;
       this.form = {
         name: template.name + ' (copy)',
@@ -72,6 +72,52 @@ export class NewExperimentFormService {
       this.editingId = null;
       this.form = this.blankForm();
     }
+  }
+
+  private deriveFromRuns(runs: ExperimentRun[]): {
+    encoders: EncoderConfig[];
+    sequences: SequenceConfig[];
+    networkEmulation: NetworkEmulationConfig;
+  } {
+    const encoders: EncoderConfig[] = [];
+    const seenEncoders = new Set<string>();
+    const sequences: SequenceConfig[] = [];
+    const seenSequences = new Set<number>();
+    const packetLoss = new Set<number>();
+    const delay = new Set<number>();
+    const jitter = new Set<number>();
+
+    for (const run of runs) {
+      const e = run.encoderData;
+      if (e?.encoderTypeId != null && e?.codecId != null) {
+        const key = `${e.encoderTypeId}-${e.codecId}`;
+        if (!seenEncoders.has(key)) {
+          seenEncoders.add(key);
+          encoders.push({ encoderTypeId: e.encoderTypeId, codecId: e.codecId });
+        }
+      }
+
+      const videoFileId = run.sequenceData?.videoFileId;
+      if (videoFileId != null && !seenSequences.has(videoFileId)) {
+        seenSequences.add(videoFileId);
+        sequences.push({ videoFileId });
+      }
+
+      const n = run.networkData;
+      if (n?.packetLoss != null) packetLoss.add(Number(n.packetLoss) / 10);
+      if (n?.delay != null) delay.add(Number(n.delay));
+      if (n?.jitter != null) jitter.add(Number(n.jitter));
+    }
+
+    return {
+      encoders,
+      sequences,
+      networkEmulation: {
+        packetLoss: [...packetLoss],
+        delay: [...delay],
+        jitter: [...jitter],
+      },
+    };
   }
 
   private blankForm(): NewExperimentForm {
