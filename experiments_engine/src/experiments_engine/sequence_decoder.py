@@ -114,6 +114,8 @@ class SequenceDecoder:
         match field_config:
             case 'DECIMAL':
                 return float(segment) / 1000.0
+            case 'PERCENT_TENTHS':
+                return float(segment) / 10.0
             case 'INTEGER':
                 return int(segment)
             case _:
