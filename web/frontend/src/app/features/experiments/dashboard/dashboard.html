@@ -85,7 +85,7 @@
 
     @if (selectedExperiment && selectedExperiment.runs && selectedExperiment.runs.length > 0) {
       <div class="runs-section">
-        <h3>Runs for Group {{ selectedExperiment.groupID }}</h3>
+        <h3>Runs for Experiment {{ selectedExperiment.groupID }}</h3>
         <ag-grid-angular
           class="ag-theme-quartz runs-grid"
           [theme]="'legacy'"

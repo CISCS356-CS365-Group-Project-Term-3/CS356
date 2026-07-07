@@ -48,7 +48,7 @@ export class Dashboard implements OnInit {
 
   colDefs: ColDef[] = [
     {
-      headerName: 'Group Name',
+      headerName: 'Experiment Name',
       valueGetter: (p) => p.data.groupID + ' - ' + p.data.name,
       flex: 2,
     },
@@ -152,19 +152,19 @@ export class Dashboard implements OnInit {
     return experiments;
   }
 
-  getGroupStatus(exp: Experiment): string {
-    const runs = exp.runs ?? [];
-    if (runs.length === 0) return 'pending';
-    const hasFailed = runs.some((r) => r.status === 'failed');
-    const hasRunning = runs.some((r) => r.status === 'running');
-    const allComplete = runs.every((r) => r.status === 'complete');
+getGroupStatus(exp: Experiment): string {
+  if (exp.status === 'draft') return 'draft';
+  const runs = exp.runs ?? [];
+  const hasFailed = runs.some((r) => r.status === 'failed');
+  const hasRunning = runs.some((r) => r.status === 'running');
+  const allComplete = runs.every((r) => r.status === 'complete');
 
-    if (hasFailed) return 'failed';
-    if (hasRunning) return 'running';
-    if (allComplete) return 'complete';
+  if (hasFailed) return 'failed';
+  if (hasRunning) return 'running';
+  if (allComplete) return 'complete';
 
-    return 'pending';
-  }
+  return 'pending';
+}
 
   get filteredRuns(): ExperimentRun[] {
     if (!this.selectedExperiment) return [];
