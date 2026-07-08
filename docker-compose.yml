@@ -33,6 +33,7 @@ services:
       INPUT_DIR: /resources/input
       TEMP_DIR: /tmp
       OUTPUT_DIR: /resources/output
+      EXPERIMENT_MANAGEMENT: http://experiment-management:5000
   
   experiment-management:
     build: ./experiment_management

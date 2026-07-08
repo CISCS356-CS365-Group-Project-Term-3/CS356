@@ -39,7 +39,7 @@ def create_experiment(data):
             "encoders": encoders,
             "sequences": sequences,
             "networkEmulation": networkEmulation
-        } if status == "draft" else None
+        }
     })
     if status == "draft":
         return {
@@ -80,6 +80,7 @@ def create_experiment(data):
                 ))
     return {
         "group": group,
+        "draftData": group.get("draftData"),
         "runs": runs
     }
 
@@ -129,7 +130,11 @@ def update_experiment(group_id, data):
         "status": "pending",
         "projectTypeId": updated["projectTypeId"],
         "date": updated["date"],
-        "draftData": None
+        "draftData": {
+            "encoders": updated["encoders"],
+            "sequences": updated["sequences"],
+            "networkEmulation": updated["networkEmulation"]
+        }
     })
     for encoder in updated["encoders"]:
         for seq in updated["sequences"]:

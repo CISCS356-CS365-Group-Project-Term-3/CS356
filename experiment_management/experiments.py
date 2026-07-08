@@ -50,5 +50,22 @@ def update_experiment(group_id):
 def health():
     return {"status": "ok"}, 200
 
+@app.route("/experiments/runs/<int:run_id>/running", methods=["POST"])
+def mark_run_running(run_id):
+    """mark run as running."""
+    experiment_store.update_run_status(run_id, "running")
+    return {"message": "Run marked as running"}, 200
+
+@app.route("/experiments/runs/<int:run_id>/complete", methods=["POST"])
+def mark_run_complete(run_id):
+    """mark run as complete."""
+    experiment_store.update_run_status(run_id, "complete")
+    return {"message": "Run marked as complete"}, 200
+
+@app.route("/experiments/runs/<int:run_id>/failed", methods=["POST"])
+def mark_run_failed(run_id):
+    """mark run as failed."""
+    experiment_store.update_run_status(run_id, "failed")
+    return {"message": "Run marked as failed"}, 200
 if __name__ == "__main__":
     app.run(debug=True)

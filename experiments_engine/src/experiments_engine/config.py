@@ -11,6 +11,8 @@ class Settings:
     experiment_queue:str = os.getenv('QUEUE_NAME', 'experiment_queue')
     queue_address:str = os.getenv('QUEUE_CONTAINER', 'localhost')
 
+    experiment_management_url = os.getenv('EXPERIMENT_MANAGEMENT', 'http://experiment_management:5000')
+
     output_mongo_uri:str = os.getenv('OUTPUT_MONGO_URI','mongodb://admin:admin@localhost:27017/')
     output_mongo_db_name = os.getenv("OUTPUT_MONGO_DB_NAME", "experiment_storage")
 

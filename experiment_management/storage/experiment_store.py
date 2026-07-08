@@ -72,14 +72,12 @@ def get_groups_by_userID(user_id):
             "name": group.name,
             "status": group.status,
             "projectTypeId": group.projectTypeId,
-            "date": group.createdAt.isoformat()
+            "date": group.createdAt.isoformat(),
+            "draftData": group.draftData,
         }
-        if group.status == "draft":
-            group_dict["draftData"] = group.draftData
         group_dict["runs"] = runs
         result.append(group_dict)
     session.close()
-
     return result
 
 def get_all_groups():
@@ -94,10 +92,9 @@ def get_all_groups():
             "name": group.name,
             "status": group.status,
             "projectTypeId": group.projectTypeId,
-            "date": group.createdAt.isoformat()
+            "date": group.createdAt.isoformat(),
+            "draftData": group.draftData,
         }
-        if group.status == "draft":
-            group_dict["draftData"] = group.draftData
         group_dict["runs"] = runs
         result.append(group_dict)
     session.close()
@@ -118,10 +115,9 @@ def get_group_by_id(group_id):
         "name": group.name,
         "status": group.status,
         "projectTypeId": group.projectTypeId,
-        "date": group.createdAt.isoformat()
+        "date": group.createdAt.isoformat(),
+        "draftData": group.draftData,
     }
-    if group.status == "draft":
-        group_dict["draftData"] = group.draftData
     group_dict["runs"] = runs
     return group_dict
 
@@ -151,12 +147,27 @@ def update_group_by_id(group_id, group_data):
         "name": group.name,
         "status": group.status,
         "projectTypeId": group.projectTypeId,
-        "date": group.createdAt.isoformat()
+        "date": group.createdAt.isoformat(),
+        "draftData": group.draftData,
     }
-    if group.status == "draft":
-        group_dict["draftData"] = group.draftData
     group_dict["runs"] = runs
 
     session.close()
-
     return group_dict
+
+def update_run_status(run_id, status):
+    session = SessionLocal()
+    run = (
+        session.query(ExperimentRun)
+        .filter(ExperimentRun.id == run_id)
+        .first()
+    )
+    if not run:
+        session.close()
+        return None
+
+    run.status = status
+    session.commit()
+    session.refresh(run)
+    session.close()
+    return run
