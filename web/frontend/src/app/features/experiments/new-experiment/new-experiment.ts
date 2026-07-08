@@ -124,7 +124,7 @@ export class NewExperiment implements OnInit {
 
   hasNetworkConfig(): boolean {
     const net = this.formService.form.networkEmulation;
-    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
+    return net.packetLoss != null || net.delay != null || net.jitter != null;
   }
 
   isNetworkConfigComplete(): boolean {
@@ -153,11 +153,15 @@ export class NewExperiment implements OnInit {
     const encodePacketLoss = (v: number) => String(Math.round(v * 10)).padStart(3, '0');
     const encodeMs = (v: number) => String(Math.round(v)).padStart(3, '0');
     const networkEmulation = status === 'draft'
-      ? net
+      ? {
+          packetLoss: net.packetLoss != null ? [net.packetLoss] : [],
+          delay: net.delay != null ? [net.delay] : [],
+          jitter: net.jitter != null ? [net.jitter] : [],
+        }
       : {
-          packetLoss: net.packetLoss.length > 0 ? net.packetLoss.map(encodePacketLoss) : ['000'],
-          delay: net.delay.length > 0 ? net.delay.map(encodeMs) : ['000'],
-          jitter: net.jitter.length > 0 ? net.jitter.map(encodeMs) : ['000'],
+          packetLoss: net.packetLoss != null ? [encodePacketLoss(net.packetLoss)] : ['000'],
+          delay: net.delay != null ? [encodeMs(net.delay)] : ['000'],
+          jitter: net.jitter != null ? [encodeMs(net.jitter)] : ['000'],
         };
 
     const basePayload = {

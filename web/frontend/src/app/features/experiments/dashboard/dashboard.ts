@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -20,6 +20,9 @@ import { InfrastructureService } from '../services/infrastructure';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
 import { UserManagementService } from '../../user_management/user-management-service';
 import { CommonModule } from '@angular/common';
+import { interval, Subscription, switchMap } from 'rxjs';
+
+const POLL_INTERVAL_MS = 5000;
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -37,7 +40,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   experiments: Experiment[] = [];
   selectedExperiment: Experiment | null = null;
   activeStatusFilter: string | null = null;
@@ -47,6 +50,7 @@ export class Dashboard implements OnInit {
   isAdmin: boolean = false;
   private userId: number | null = null;
   private config: InfrastructureConfig | null = null;
+  private pollSub?: Subscription;
 
   constructor(
     private experimentsService: ExperimentsService,
@@ -81,16 +85,56 @@ export class Dashboard implements OnInit {
   }
 
   loadExperiments(): void {
-    const userId = this.isAdmin && this.showAllExperiments ? undefined : this.userId;
-    this.experimentsService.getExperiments(userId ?? undefined).subscribe({
+    this.experimentsService.getExperiments(this.scopedUserId()).subscribe({
       next: (data) => {
         this.experiments = data;
         this.isLoading = false;
+        this.updatePolling();
       },
       error: () => {
         this.isLoading = false;
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
+  private scopedUserId(): number | undefined {
+    return this.isAdmin && this.showAllExperiments ? undefined : (this.userId ?? undefined);
+  }
+
+  private hasActiveRuns(): boolean {
+    return this.experiments.some((exp) => {
+      const status = this.getGroupStatus(exp);
+      return status === 'pending' || status === 'running';
+    });
+  }
+
+  private updatePolling(): void {
+    if (this.hasActiveRuns()) {
+      this.startPolling();
+    } else {
+      this.stopPolling();
+    }
+  }
+
+  private startPolling(): void {
+    if (this.pollSub) return;
+    this.pollSub = interval(POLL_INTERVAL_MS)
+      .pipe(switchMap(() => this.experimentsService.getExperiments(this.scopedUserId())))
+      .subscribe({
+        next: (data) => {
+          this.experiments = data;
+          this.updatePolling();
+        },
+      });
+  }
+
+  private stopPolling(): void {
+    this.pollSub?.unsubscribe();
+    this.pollSub = undefined;
   }
 
   onScopeToggle(): void {
