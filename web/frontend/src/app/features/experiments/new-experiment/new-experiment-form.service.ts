@@ -8,7 +8,12 @@ export interface SequenceConfig {
 export interface EncoderConfig {
   encoderTypeId: number | null;
   codecId: number | null;
-  encoderModeId: number | null;
+}
+
+export interface NetworkEmulationConfig {
+  packetLoss: number[];
+  delay: number[];
+  jitter: number[];
 }
 
 export interface NewExperimentForm {
@@ -16,6 +21,7 @@ export interface NewExperimentForm {
   projectTypeId: number | null;
   encoders: EncoderConfig[];
   sequences: SequenceConfig[];
+  networkEmulation: NetworkEmulationConfig;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -36,22 +42,30 @@ export class NewExperimentFormService {
   applyPendingTemplate(): void {
     if (this.pendingDraft) {
       const draft = this.pendingDraft;
-      this.editingId = draft.id;
+      const draftData = draft.draftData ?? { encoders: [], sequences: [], networkEmulation: { packetLoss: [], delay: [], jitter: [] } };
+      this.editingId = String(draft.groupID);
       this.form = {
         name: draft.name,
         projectTypeId: draft.projectTypeId,
-        encoders: draft.encoders.map((e) => ({ ...e })),
-        sequences: draft.sequences.map((s) => ({ ...s })),
+        encoders: draftData.encoders.map((e) => ({ ...e })),
+        sequences: draftData.sequences.map((s) => ({ ...s })),
+        networkEmulation: draftData.networkEmulation
+          ? { packetLoss: [...draftData.networkEmulation.packetLoss], delay: [...draftData.networkEmulation.delay], jitter: [...draftData.networkEmulation.jitter] }
+          : { packetLoss: [], delay: [], jitter: [] },
       };
       this.pendingDraft = null;
     } else if (this.pendingTemplate) {
       const template = this.pendingTemplate;
+      const draftData = template.draftData ?? { encoders: [], sequences: [], networkEmulation: { packetLoss: [], delay: [], jitter: [] } };
       this.editingId = null;
       this.form = {
         name: template.name + ' (copy)',
         projectTypeId: template.projectTypeId,
-        encoders: template.encoders.map((e) => ({ ...e })),
-        sequences: template.sequences.map((s) => ({ ...s })),
+        encoders: draftData.encoders.map((e) => ({ ...e })),
+        sequences: draftData.sequences.map((s) => ({ ...s })),
+        networkEmulation: draftData.networkEmulation
+          ? { packetLoss: [...draftData.networkEmulation.packetLoss], delay: [...draftData.networkEmulation.delay], jitter: [...draftData.networkEmulation.jitter] }
+          : { packetLoss: [], delay: [], jitter: [] },
       };
       this.pendingTemplate = null;
     } else {
@@ -64,8 +78,9 @@ export class NewExperimentFormService {
     return {
       name: '',
       projectTypeId: null,
-      encoders: [{ encoderTypeId: null, codecId: null, encoderModeId: null }],
+      encoders: [{ encoderTypeId: null, codecId: null }],
       sequences: [],
+      networkEmulation: { packetLoss: [], delay: [], jitter: [] },
     };
   }
 }

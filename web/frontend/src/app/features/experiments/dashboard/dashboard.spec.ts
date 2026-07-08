@@ -1,0 +1,188 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of, throwError } from 'rxjs';
+import { describe, it, beforeEach, expect, vi } from 'vitest';
+import { Dashboard } from './dashboard';
+import { ExperimentsService } from '../services/experiments';
+import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
+import { InfrastructureService } from '../services/infrastructure';
+import { UserManagementService } from '../../user_management/user-management-service';
+import { Experiment } from '../models/experiment.model';
+
+const experiments: Experiment[] = [
+  {
+    groupID: 1,
+    userId: 1,
+    name: 'Exp A',
+    status: 'pending',
+    date: '2026-01-01',
+    projectTypeId: 1,
+    runs: [{ id: 1, groupId: 1, sequenceCode: 'A1', status: 'complete', date: '2026-01-01' }],
+  },
+  {
+    groupID: 2,
+    userId: 1,
+    name: 'Exp B',
+    status: 'pending',
+    date: '2026-01-02',
+    projectTypeId: 1,
+    runs: [
+      { id: 2, groupId: 2, sequenceCode: 'B1', status: 'running', date: '2026-01-02' },
+      { id: 5, groupId: 2, sequenceCode: 'B2', status: 'pending', date: '2026-01-02' },
+    ],
+  },
+  {
+    groupID: 3,
+    userId: 1,
+    name: 'Expe C',
+    status: 'pending',
+    date: '2026-01-03',
+    projectTypeId: 1,
+    runs: [{ id: 3, groupId: 3, sequenceCode: 'C1', status: 'failed', date: '2026-01-03' }],
+  },
+  {
+    groupID: 4,
+    userId: 1,
+    name: 'Draft',
+    status: 'draft',
+    date: '2026-01-04',
+    projectTypeId: 1,
+    runs: [],
+  },
+];
+
+describe('Dashboard', () => {
+  let component: Dashboard;
+  let fixture: ComponentFixture<Dashboard>;
+  let experimentsService: any;
+  let formService: any;
+
+  beforeEach(async () => {
+    experimentsService = {
+      getExperiments: vi.fn().mockReturnValue(of(experiments)),
+      getExperimentById: vi.fn().mockReturnValue(of(experiments[0])),
+    };
+    formService = { setTemplate: vi.fn(), setDraft: vi.fn() };
+
+    await TestBed.configureTestingModule({
+      imports: [Dashboard],
+      providers: [
+        provideRouter([]),
+        { provide: ExperimentsService, useValue: experimentsService },
+        { provide: NewExperimentFormService, useValue: formService },
+        {
+          provide: InfrastructureService,
+          useValue: {
+            refreshConfig: vi.fn(),
+            getConfig: vi.fn().mockReturnValue(
+              of({
+                projectTypes: [],
+                encoderTypes: [],
+                codecs: [],
+                sequences: [],
+                topologies: [],
+                transmissionConditions: [],
+              }),
+            ),
+          },
+        },
+        {
+          provide: UserManagementService,
+          useValue: {
+            getUserInfo: vi.fn().mockReturnValue(of({ user_id: 1, user_role: 'user' })),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(Dashboard);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('creates the component', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('loads experiments on init', () => {
+    expect(component.experiments).toEqual(experiments);
+    expect(component.isLoading).toBe(false);
+  });
+
+  it('clears isLoading if the request fails', () => {
+    experimentsService.getExperiments.mockReturnValue(throwError(() => new Error()));
+    component.loadExperiments();
+    expect(component.isLoading).toBe(false);
+  });
+
+  it('run stat counts are correct', () => {
+    expect(component.pendingRunsCount).toBe(0);
+    expect(component.runningRunsCount).toBe(1);
+    expect(component.completedRunsCount).toBe(1);
+    expect(component.failedRunsCount).toBe(1);
+  });
+
+  it('filteredExperiments respects showDraftsOnly and status filter', () => {
+    expect(component.filteredExperiments).toEqual(experiments);
+
+    component.showDraftsOnly = true;
+    expect(component.filteredExperiments).toEqual([experiments[3]]);
+
+    component.showDraftsOnly = false;
+    component.activeStatusFilter = 'complete';
+    expect(component.filteredExperiments).toEqual([experiments[0]]);
+  });
+
+  it('toggleDrafts clears the status filter and selection', () => {
+    component.activeStatusFilter = 'complete';
+    component.selectedExperiment = experiments[0];
+    component.toggleDrafts();
+    expect(component.showDraftsOnly).toBe(true);
+    expect(component.activeStatusFilter).toBeNull();
+    expect(component.selectedExperiment).toBeNull();
+  });
+
+  it('setStatusFilter toggles off when the same status is clicked twice', () => {
+    component.setStatusFilter('running');
+    expect(component.activeStatusFilter).toBe('running');
+    component.setStatusFilter('running');
+    expect(component.activeStatusFilter).toBeNull();
+  });
+
+  it('clicking a selected row deselects it', () => {
+    component.selectedExperiment = experiments[0];
+    const setSelected = vi.fn();
+    component.onRowClicked({ data: experiments[0], node: { setSelected } } as any);
+    expect(setSelected).toHaveBeenCalledWith(false);
+  });
+
+  it('createFromTemplate does nothing if nothing is selected', () => {
+    component.selectedExperiment = null;
+    component.createFromTemplate();
+    expect(experimentsService.getExperimentById).not.toHaveBeenCalled();
+  });
+
+  it('renderExperimentStatusCell returns the right badge for each state', () => {
+    expect(
+      component.renderExperimentStatusCell({
+        value: undefined,
+        data: experiments[3],
+      }),
+    ).toContain('Draft');
+    expect(
+      component.renderExperimentStatusCell({
+        value: undefined,
+        data: experiments[0],
+      }),
+    ).toContain('Pending');
+    expect(component.renderExperimentStatusCell({ value: 'complete', data: experiments[0] })).toContain(
+      'Complete',
+    );
+    expect(component.renderExperimentStatusCell({ value: 'running', data: experiments[1] })).toContain(
+      'Running',
+    );
+    expect(component.renderExperimentStatusCell({ value: 'failed', data: experiments[2] })).toContain(
+      'Failed',
+    );
+  });
+});

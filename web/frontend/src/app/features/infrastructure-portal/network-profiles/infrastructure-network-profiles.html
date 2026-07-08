@@ -1,0 +1,118 @@
+<div class="page">
+
+  <div class="header-row">
+
+    <div>
+
+      <h1>Transmission Conditions</h1>
+      <p style="font-size: 18px;">
+        Manage transmission conditions available within the platform.
+        Only active supported transmission conditions can be used when creating
+        experiments.
+      </p>
+
+    </div>
+
+    <div class="actions">
+
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addNetworkProfile()"
+        [disabled]="!isAdmin">
+
+        <mat-icon>add</mat-icon>
+
+        Add Network Profile
+
+      </button>
+
+      <button
+        mat-stroked-button
+        color="primary"
+        [disabled]="!isAdmin || !selectedProfile || selectedProfile.active === 1"
+        (click)="enableSelected()">
+
+        <mat-icon>check_circle</mat-icon>
+
+        Enable
+
+      </button>
+
+      <button
+        mat-stroked-button
+        color="warn"
+        [disabled]="!isAdmin || !selectedProfile || selectedProfile.active === 0"
+        (click)="disableSelected()">
+
+        <mat-icon>block</mat-icon>
+
+        Disable
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <mat-card class="info-card">
+
+    <mat-icon color="primary">
+
+      info
+
+    </mat-icon>
+
+<div style="font-size: 18px; color: #3c4554;">
+  <strong>Network Profiles</strong>
+
+  -Network profiles represent transmission conditions that are used during experiment execution.<br>
+  -Only network profiles marked as supported and active can be selected by researchers.<br>
+  -Supported network profiles are shown in green when active and in amber when disabled.
+</div>
+
+  </mat-card>
+
+  <mat-card class="panel">
+
+    <div class="panel-top">
+
+    </div>
+
+    <div
+      class="ag-theme-quartz grid-wrap">
+      <ag-grid-angular
+        style="width:100%;height:100%;"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [rowClassRules]="rowClassRules"
+        [animateRows]="true"
+        [pagination]="true"
+        [paginationPageSize]="10"
+        rowSelection="single"
+        (gridReady)="onGridReady($event)"
+        (selectionChanged)="onSelectionChanged($event)"
+        (cellEditingStarted)="onCellEditingStarted($event)"
+        (cellEditingStopped)="onCellEditingStopped($event)"
+        (cellValueChanged)="onCellValueChanged($event)">
+
+      </ag-grid-angular>
+
+      <div class="panel-footer" style="display:flex;align-items:center;justify-content:space-between;margin-top:20px;">
+        <div style="color:#374151;font-size:18px;">
+          Only supported and active transmission conditions may be edited. Modify the Lower and Upper bound values, then click
+          <strong style="margin-left:6px;">Save</strong>
+          to apply your changes.
+        </div>
+
+        <div>
+          <button mat-flat-button color="primary" (click)="saveChanges()" [disabled]="!isAdmin || !hasEdits()">Save</button>
+        </div>
+      </div>
+
+    </div>
+
+  </mat-card>
+
+</div>

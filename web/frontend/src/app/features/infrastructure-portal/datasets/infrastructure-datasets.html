@@ -1,0 +1,206 @@
+<div class="page">
+  
+  <div class="header-row">
+
+    <div>
+
+      <h1>Datasets</h1>
+
+      <p style="font-size: 18px;">
+        Manage the datasets available within the Infrastructure Portal.
+        Only supported and active datasets are available for researchers
+        when creating experiments.
+
+      </p>
+
+    </div>
+
+    <div class="actions">
+
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="addDataset()"
+        [disabled]="!isAdmin">
+
+        <mat-icon>add</mat-icon>
+        Add Dataset
+
+      </button>
+
+      <button
+        mat-stroked-button
+        color="primary"
+        [disabled]="!isAdmin || !selectedDataset || selectedDataset.active === 1"
+        (click)="enableSelected()">
+
+        <mat-icon>check_circle</mat-icon>
+        Enable
+
+      </button>
+
+      <button
+        mat-stroked-button
+        color="warn"
+        [disabled]="!isAdmin || !selectedDataset || selectedDataset.active === 0"
+        (click)="disableSelected()">
+
+        <mat-icon>block</mat-icon>
+        Disable
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <mat-card class="info-card">
+
+    <mat-icon color="primary">
+
+      info
+
+    </mat-icon>
+
+    <div style="font-size: 18px;">
+
+      <strong>Datasets</strong>
+
+      <p>
+        -Select a dataset card, then use Enable or Disable to manage the dataset
+        infrastructure. <br>
+        -Only datasets shown in <strong>green</strong> as
+        <strong>active</strong> are available to researchers in the Experiments
+        Engine. <br>
+      
+        -Disabled datasets appear in amber. Newly added datasets may initially be
+        shown in red as unsupported until they are enabled and supported by the
+        engine.
+      </p>
+
+    </div>
+
+  </mat-card>
+
+  <div class="search-row">
+
+    <mat-form-field
+      appearance="outline"
+      class="search-box">
+
+      <mat-label>
+
+        Search datasets
+
+      </mat-label>
+
+      <input
+        matInput
+        [(ngModel)]="searchText"
+        (input)="filterDatasets()">
+
+      <mat-icon matSuffix>
+
+        search
+
+      </mat-icon>
+
+    </mat-form-field>
+
+  </div>
+
+  <div class="dataset-grid">
+
+    <mat-card
+
+      *ngFor="let dataset of filteredDatasets; trackBy: trackByDataset"
+      class="dataset-card"
+      (click)="selectDataset(dataset)"
+      [class.selected]="selectedDataset?.id === dataset.id"
+      [class.active-card]="dataset.supported === 1 && dataset.active === 1"
+      [class.disabled-card]="dataset.supported === 1 && dataset.active === 0"
+      [class.unsupported-card]="dataset.supported === 0">
+
+      <img
+
+        class="thumbnail"
+        [src]="'assets/dataset-images/' + dataset.name + '.png'"
+        (error)="onImageError($event)"
+        [alt]="dataset.name">
+
+      <div class="content">
+
+        <h2>
+          {{ dataset.name }}
+        </h2>
+
+        <p class="description">
+          {{ dataset.description }}
+        </p>
+        <div class="details">
+
+          <div>
+            <strong>Video</strong>
+            <span>{{ dataset.videoName }}</span>
+          </div>
+
+          <div>
+
+            <strong>Resolution</strong>
+            <span>{{ dataset.width }} × {{ dataset.height }}</span>
+
+          </div>
+
+          <div>
+            <strong>Frame Rate</strong>
+            <span>{{ dataset.fps }} fps</span>
+
+          </div>
+          <div>
+
+            <strong>Bit Depth</strong>
+            <span>{{ dataset.bitDepth }} bit</span>
+
+          </div>
+          <div>
+
+            <strong>Colour Gamut</strong>
+            <span>{{ dataset.gamut }}</span>
+
+          </div>
+          <div>
+
+            <strong>File</strong>
+            <span class="filepath">
+              {{ dataset.filepath }}
+            </span>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer">
+
+        <span
+          class="status-badge active"
+          *ngIf="dataset.supported === 1 && dataset.active === 1">
+          Active
+
+        </span>
+        <span
+          class="status-badge disabled"
+          *ngIf="dataset.supported === 1 && dataset.active === 0">
+          Disabled
+        </span>
+
+        <span
+          class="status-badge unsupported"
+          *ngIf="dataset.supported === 0">
+          Unsupported
+        </span>
+
+      </div>
+    </mat-card> 
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="page">
+  <div class="notice-card">
+    <div *ngIf="isAdmin; else generalNotice">
+      <strong>Admin area only.</strong>
+      Manage encoder types, network profiles, datasets and infrastructure resources that feed the
+      experiment system.
+    </div>
+    <ng-template #generalNotice>
+      <div>
+        <strong>General User:</strong>
+         View only access is enabled! You are not authorised to create, modify or delete Infrastructure Portal resources.
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="heading-row">
+    <div>
+      <h2>Infrastructure Dashboard</h2>
+      <p>Overview of available infrastructure resources.</p>
+    </div>
+  </div>
+
+  <div class="quick-grid">
+    <a class="quick-link" routerLink="/infrastructurePortal/encoders">
+      <mat-card class="quick-card">
+        <div class="quick-header">
+          <mat-icon>memory</mat-icon>
+          <h2>Encoder Types</h2>
+        </div>
+
+        <p style="font-size: 20px;">
+          View and manage encoder types and their available codec options.
+        </p>
+      </mat-card>
+    </a>
+
+    <a class="quick-link" routerLink="/infrastructurePortal/codecs">
+      <mat-card class="quick-card">
+        <div class="quick-header">
+          <mat-icon>tune</mat-icon>
+          <h2>Codecs</h2>
+        </div>
+
+        <p style="font-size: 20px;">
+          Manage codec configurations available to researchers for experiment encoding.
+        </p>
+      </mat-card>
+    </a>
+
+    <a class="quick-link" routerLink="/infrastructurePortal/network-profiles">
+      <mat-card class="quick-card">
+        <div class="quick-header">
+          <mat-icon>dns</mat-icon>
+          <h2>Transmission Conditions</h2>
+        </div>
+
+        <p style="font-size: 20px;">
+          Configure packet loss, delay, jitter upper/ lower bound conditions.
+        </p>
+      </mat-card>
+    </a>
+
+    <a class="quick-link" routerLink="/infrastructurePortal/infrastructure-datasets">
+    <mat-card class="quick-card">
+      <div class="quick-header">
+        <mat-icon>movie</mat-icon>
+        <h2>Datasets</h2>
+      </div>
+
+      <p style="font-size: 20px;">
+        Video sequences and files available for experiments.
+      </p>
+
+    </mat-card>
+    </a>
+
+  </div>
+</div>

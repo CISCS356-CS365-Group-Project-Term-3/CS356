@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   AllCommunityModule,
@@ -9,124 +10,79 @@ import {
   ModuleRegistry,
   RowClickedEvent,
   SelectionChangedEvent,
+  RowSelectionOptions,
 } from 'ag-grid-community';
 import { ExperimentsService } from '../services/experiments';
-import { Experiment, ExperimentStatus } from '../models/experiment.model';
+import { Experiment, ExperimentRun, ExperimentStatus } from '../models/experiment.model';
 import { Router, RouterLink } from '@angular/router';
 import { NewExperimentFormService } from '../new-experiment/new-experiment-form.service';
 import { InfrastructureService } from '../services/infrastructure';
 import { InfrastructureConfig } from '../models/infrastructure-config.model';
+import { UserManagementService } from '../../user_management/user-management-service';
+import { CommonModule } from '@angular/common';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
   selector: 'app-dashboard',
-  imports: [MatButtonModule, MatCardModule, MatSlideToggleModule, AgGridAngular, RouterLink],
+  imports: [
+    MatButtonModule,
+    MatCardModule,
+    MatSlideToggleModule,
+    MatProgressSpinnerModule,
+    AgGridAngular,
+    RouterLink,
+    CommonModule,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnInit {
   experiments: Experiment[] = [];
   selectedExperiment: Experiment | null = null;
-  activeStatusFilter: ExperimentStatus | null = null;
+  activeStatusFilter: string | null = null;
   showAllExperiments = false;
   showDraftsOnly = false;
   isLoading = true;
-  isAdmin: boolean = false; // TODO: replace with real auth check once JWT structure is known
+  isAdmin: boolean = false;
+  private userId: number | null = null;
   private config: InfrastructureConfig | null = null;
-
-  colDefs: ColDef[] = [
-    {
-      headerName: 'Name',
-      valueGetter: (p) => p.data.id + ' ' + p.data.name,
-      flex: 1.5,
-    },
-    {
-      headerName: 'Codec',
-      valueGetter: (p) =>
-        this.config?.codecs.find((c) => c.id === p.data.encoders[0]?.codecId)?.name ?? '—',
-      flex: 1,
-    },
-    {
-      headerName: 'Sequences',
-      valueGetter: (p) => {
-        if (!p.data.sequences.length) return '—';
-        return (p.data.sequences as Experiment['sequences'])
-          .map((s) => this.config?.sequences.flatMap((seq) => seq.videoFiles).find((f) => f.id === s.videoFileId)?.name ?? '—')
-          .join(', ');
-      },
-      cellRenderer: (params: { value: string }) =>
-        params.value === '—'
-          ? '—'
-          : params.value.split(', ').map((n) => `<div>${n}</div>`).join(''),
-      autoHeight: true,
-      flex: 3,
-    },
-    {
-      field: 'date',
-      flex: 1,
-      sort: 'desc',
-      valueFormatter: (p) => {
-        const d = new Date(p.value);
-        return isNaN(d.getTime()) ? p.value : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
-      },
-    },
-    {
-      headerName: 'Status',
-      field: 'engineStatus',
-      flex: 1,
-      cellRenderer: (params: { value: ExperimentStatus | undefined; data: Experiment }) => this.statusCellRenderer(params),
-    },
-  ];
-
-  getRowId = (params: { data: Experiment }) => String(params.data.id);
-
-  get filteredExperiments(): Experiment[] {
-    let list = this.showDraftsOnly
-      ? this.experiments.filter((e) => e.status === 'draft')
-      : this.experiments;
-    if (this.activeStatusFilter) list = list.filter((e) => e.engineStatus === this.activeStatusFilter);
-    return list;
-  }
-
-  toggleDrafts(): void {
-    this.showDraftsOnly = !this.showDraftsOnly;
-    this.activeStatusFilter = null;
-    this.selectedExperiment = null;
-  }
-
-  get totalCount() {
-    return this.experiments.length;
-  }
-  get completedCount() {
-    return this.experiments.filter((e) => e.engineStatus === 'Complete').length;
-  }
-  get runningCount() {
-    return this.experiments.filter((e) => e.engineStatus === 'Running').length;
-  }
-  get failedCount() {
-    return this.experiments.filter((e) => e.engineStatus === 'Failed').length;
-  }
 
   constructor(
     private experimentsService: ExperimentsService,
     private formService: NewExperimentFormService,
     private router: Router,
     private infrastructureService: InfrastructureService,
+    private userService: UserManagementService,
   ) {}
 
   ngOnInit() {
-    // this.isAdmin = this.authService.isAdmin();
-    this.infrastructureService.getConfig().subscribe((config) => {
-      this.config = config;
-      this.loadExperiments();
+    this.infrastructureService.refreshConfig();
+    this.infrastructureService.getConfig().subscribe({
+      next: (config) => {
+        this.config = config;
+      },
+      error: () => {},
     });
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.userId = user.user_id;
+          this.isAdmin = user.user_role === 'admin';
+          this.loadExperiments();
+        },
+        error: () => {
+          this.loadExperiments();
+        },
+      });
+    } catch {
+      this.loadExperiments();
+    }
   }
 
   loadExperiments(): void {
-    // const scope = this.isAdmin && this.showAllExperiments ? 'all' : 'mine';
-    // this.experimentsService.getExperiments(scope).subscribe(data => { this.experiments = data; });
-    this.experimentsService.getExperiments().subscribe({
+    const userId = this.isAdmin && this.showAllExperiments ? undefined : this.userId;
+    this.experimentsService.getExperiments(userId ?? undefined).subscribe({
       next: (data) => {
         this.experiments = data;
         this.isLoading = false;
@@ -139,12 +95,7 @@ export class Dashboard implements OnInit {
 
   onScopeToggle(): void {
     this.showAllExperiments = !this.showAllExperiments;
-    this.activeStatusFilter = null;
     this.loadExperiments();
-  }
-
-  setStatusFilter(status: ExperimentStatus | null): void {
-    this.activeStatusFilter = this.activeStatusFilter === status ? null : status;
   }
 
   onSelectionChanged(event: SelectionChangedEvent): void {
@@ -153,40 +104,229 @@ export class Dashboard implements OnInit {
   }
 
   onRowClicked(event: RowClickedEvent): void {
-    if (this.selectedExperiment?.id === event.data.id) {
+    if (this.selectedExperiment?.groupID === event.data.groupID) {
       event.node.setSelected(false);
+      this.selectedExperiment = null;
     }
+  }
+
+  colDefs: ColDef[] = [
+    {
+      headerName: 'Experiment Name',
+      valueGetter: (p) => p.data.groupID + ' - ' + p.data.name,
+      flex: 2,
+    },
+    {
+      headerName: 'Status',
+      flex: 1,
+      valueGetter: (p) => this.getGroupStatus(p.data),
+      cellRenderer: (params: { value: string; data: Experiment | undefined }) =>
+        this.renderExperimentStatusCell(params),
+    },
+    {
+      field: 'date',
+      flex: 1.2,
+      sort: 'desc',
+      valueFormatter: (p) => {
+        const d = new Date(p.value);
+        return isNaN(d.getTime())
+          ? p.value
+          : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+      },
+    },
+  ];
+
+  detailColDefs: ColDef[] = [
+    {
+      headerName: 'Run ID',
+      field: 'id',
+      flex: 0.6,
+    },
+    {
+      headerName: 'Encoder Type',
+      valueGetter: (p) => this.getEncoderTypeName(p.data?.encoderData?.encoderTypeId),
+      flex: 0.8,
+    },
+    {
+      headerName: 'Codec',
+      valueGetter: (p) => this.getCodecName(p.data?.encoderData?.codecId),
+      flex: 0.7,
+    },
+    {
+      headerName: 'Video File',
+      valueGetter: (p) => this.getVideoFileName(p.data?.sequenceData?.videoFileId),
+      flex: 0.8,
+    },
+    {
+      headerName: 'Packet Loss (%)',
+      valueGetter: (p) => this.formatPacketLoss(p.data?.networkData?.packetLoss),
+      flex: 0.7,
+    },
+    {
+      headerName: 'Delay (ms)',
+      valueGetter: (p) => this.formatMs(p.data?.networkData?.delay),
+      flex: 0.6,
+    },
+    {
+      headerName: 'Jitter (ms)',
+      valueGetter: (p) => this.formatMs(p.data?.networkData?.jitter),
+      flex: 0.6,
+    },
+    {
+      headerName: 'Status',
+      field: 'status',
+      flex: 0.8,
+      cellRenderer: (params: { value: string }) => this.renderRunStatusCell(params.value),
+    },
+    {
+      headerName: 'Date',
+      field: 'date',
+      flex: 1,
+      sort: 'desc',
+      valueFormatter: (p) => {
+        const d = new Date(p.value);
+        return isNaN(d.getTime())
+          ? p.value
+          : d.toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+      },
+    },
+  ];
+
+  getRowId = (params: { data: Experiment }) => String(params.data.groupID);
+
+  rowSelection: RowSelectionOptions = {
+    mode: 'singleRow',
+  };
+
+  get filteredExperiments(): Experiment[] {
+    let experiments = this.showDraftsOnly
+      ? this.experiments.filter((e) => e.status === 'draft')
+      : this.experiments;
+    if (this.activeStatusFilter) {
+      experiments = experiments.filter(
+        (exp) => this.getGroupStatus(exp) === this.activeStatusFilter,
+      );
+    }
+
+    return experiments;
+  }
+
+  getGroupStatus(exp: Experiment): string {
+    if (exp.status === 'draft') return 'draft';
+    const runs = exp.runs ?? [];
+    const hasFailed = runs.some((r) => r.status === 'failed');
+    const hasRunning = runs.some((r) => r.status === 'running');
+    const allComplete = runs.every((r) => r.status === 'complete');
+
+    if (hasFailed) return 'failed';
+    if (hasRunning) return 'running';
+    if (allComplete) return 'complete';
+
+    return 'pending';
+  }
+
+  get filteredRuns(): ExperimentRun[] {
+    if (!this.selectedExperiment) return [];
+    return this.selectedExperiment.runs;
+  }
+
+  toggleDrafts(): void {
+    this.showDraftsOnly = !this.showDraftsOnly;
+    this.activeStatusFilter = null;
+    this.selectedExperiment = null;
+  }
+
+  get pendingRunsCount() {
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'pending').length;
+  }
+
+  get runningRunsCount() {
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'running').length;
+  }
+
+  get completedRunsCount() {
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'complete').length;
+  }
+
+  get failedRunsCount() {
+    return this.experiments.filter((e) => this.getGroupStatus(e) === 'failed').length;
+  }
+
+  setStatusFilter(status: string): void {
+    this.activeStatusFilter = this.activeStatusFilter === status ? null : status;
   }
 
   createFromTemplate(): void {
     if (!this.selectedExperiment) return;
-    this.experimentsService.getExperimentById(this.selectedExperiment.id).subscribe((detail) => {
-      this.formService.setTemplate(detail);
-      this.router.navigate(['/experiments/new']);
-    });
+    this.formService.setTemplate(this.selectedExperiment);
+    this.router.navigate(['/experiments/new']);
   }
 
   openDraft(): void {
     if (!this.selectedExperiment) return;
-    this.experimentsService.getExperimentById(this.selectedExperiment.id).subscribe((detail) => {
-      this.formService.setDraft(detail);
-      this.router.navigate(['/experiments/new']);
-    });
+    this.formService.setDraft(this.selectedExperiment);
+    this.router.navigate(['/experiments/new']);
   }
 
-  statusCellRenderer(params: { value: ExperimentStatus | undefined; data: Experiment }) {
-    if (!params.value) {
-      if (params.data.status === 'draft') {
-        return `<span style="background:#e3f2fd;color:#1565c0;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Draft</span>`;
-      }
-      return `<span style="background:#f5f5f5;color:#888;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">Pending</span>`;
-    }
-    const styles: Record<ExperimentStatus, string> = {
-      Complete: 'background:#e8f5e9;color:#388e3c',
-      Running: 'background:#fff3e0;color:#f57c00',
-      Failed: 'background:#ffebee;color:#d32f2f',
-    };
-    const style = styles[params.value] ?? 'background:#f5f5f5;color:#888';
-    return `<span style="${style};padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">${params.value}</span>`;
+  private getEncoderTypeName(id: number | null | undefined): string {
+    if (id == null) return 'N/A';
+    return this.config?.encoderTypes.find((e) => e.id === id)?.name ?? 'N/A';
+  }
+
+  private getCodecName(id: number | null | undefined): string {
+    if (id == null) return 'N/A';
+    return this.config?.codecs.find((c) => c.id === id)?.name ?? 'N/A';
+  }
+
+  private getVideoFileName(id: number | null | undefined): string {
+    if (id == null) return 'N/A';
+    const videoFiles = this.config?.sequences.flatMap((s) => s.videoFiles) ?? [];
+    return videoFiles.find((v) => v.id === id)?.name ?? 'N/A';
+  }
+
+  private formatPacketLoss(raw: string | null | undefined): string {
+    if (raw == null) return 'N/A';
+    const n = Number(raw);
+    return isNaN(n) ? 'N/A' : (n / 10).toFixed(1); // 200 -> 20.0
+  }
+
+  private formatMs(raw: string | null | undefined): string {
+    if (raw == null) return 'N/A';
+    const n = Number(raw); // strips 0 padding, 005 -> 5
+    return isNaN(n) ? 'N/A' : String(n);
+  }
+
+  private static readonly STATUS_STYLES: Record<string, string> = {
+    complete: 'background:#e8f5e9;color:#388e3c',
+    running: 'background:#fff3e0;color:#f57c00',
+    failed: 'background:#ffebee;color:#d32f2f',
+    pending: 'background:#f5f5f5;color:#888',
+    draft: 'background:#e3f2fd;color:#1565c0',
+  };
+
+  private static readonly STATUS_LABELS: Record<string, string> = {
+    complete: 'Complete',
+    running: 'Running',
+    failed: 'Failed',
+    pending: 'Pending',
+    draft: 'Draft',
+  };
+
+  renderExperimentStatusCell(params: { value: string | undefined; data: Experiment | undefined }) {
+    if (!params.data) return '';
+
+    const statusValue = params.value ?? (params.data.status === 'draft' ? 'draft' : 'pending');
+    return this.renderStatusBadge(statusValue);
+  }
+
+  renderRunStatusCell(status: string | null | undefined) {
+    if (!status) return '';
+    return this.renderStatusBadge(status);
+  }
+
+  private renderStatusBadge(value: string): string {
+    const style = Dashboard.STATUS_STYLES[value] ?? 'background:#f5f5f5;color:#888';
+    const label = Dashboard.STATUS_LABELS[value] ?? value;
+    return `<span style="${style};padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;">${label}</span>`;
   }
 }

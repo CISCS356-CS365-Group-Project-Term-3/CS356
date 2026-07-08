@@ -1,17 +1,17 @@
 <div class="page-wrap">
   <div class="user-actions">
-    <img routerLink="/profile" src="assets/profile-icon.png" alt="profile icon">
-  <button class="log-out-button" matButton="filled" (click)="openConfirm()"> Log out</button>
+    <button routerLink="/profile" matButton="filled">View profile</button>
+    <button class="log-out-button" matButton="filled" (click)="openConfirm()"> Log out</button>
   </div>
 
   <div class="page-header">
-    <h1>Welcome, User</h1>
+    <h1>Welcome, {{ username }}</h1>
   </div>
 
   <div class="portal-cards">
     <div>
       <h2> Infrastructure </h2>
-  <mat-card appearance="outlined" class="clickable-card" routerLink="/infrastructure">
+  <mat-card appearance="outlined" class="clickable-card" routerLink="/infrastructurePortal">
     <img mat-card-image  src="/assets/card-images/infrastructure-card-image.png" alt="Infrastructure image" >
     <mat-card-content>
       <p>

@@ -4,12 +4,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { NewExperimentFormService } from './new-experiment-form.service';
 import { ExperimentsService } from '../services/experiments';
+import { InfrastructureService } from '../services/infrastructure';
 import { ProjectSetup } from './steps/project-setup/project-setup';
 import { EncodersStep } from './steps/encoders/encoders';
 import { SequencesStep } from './steps/sequences/sequences';
 import { ReviewStep } from './steps/review/review';
+import { NetworkEmulationStep } from './steps/network-emulation/network-emulation';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { UserManagementService } from '../../user_management/user-management-service';
+import { InfrastructureConfig } from '../models/infrastructure-config.model';
 
 @Component({
   selector: 'app-new-experiment',
@@ -19,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
     ProjectSetup,
     EncodersStep,
     SequencesStep,
+    NetworkEmulationStep,
     ReviewStep,
     MatCardModule,
     MatIconModule,
@@ -29,18 +34,42 @@ import { MatIconModule } from '@angular/material/icon';
 export class NewExperiment implements OnInit {
   @ViewChild('stepper') stepper!: MatStepper;
   submitError: string | null = null;
-  showDraftModal = false;
   isSubmitting = false;
+  userInfoLoaded = false;
   visitedSteps = new Set<number>();
+  private userId: number | null = null;
+  private config: InfrastructureConfig | null = null;
 
   constructor(
     public formService: NewExperimentFormService,
     public router: Router,
     private experimentsService: ExperimentsService,
+    private userService: UserManagementService,
+    private infrastructureService: InfrastructureService,
   ) {}
 
   ngOnInit(): void {
     this.formService.applyPendingTemplate();
+    try {
+      this.userService.getUserInfo().subscribe({
+        next: (user: any) => {
+          this.userId = user.user_id;
+          this.userInfoLoaded = true;
+        },
+        error: () => { this.userInfoLoaded = true; },
+      });
+    } catch {
+      this.userInfoLoaded = true;
+    }
+    this.infrastructureService.getConfig().subscribe({
+      next: (config) => { this.config = config; },
+      error: () => {},
+    });
+  }
+
+  needsNetworkConfig(): boolean {
+    const projectTypeId = this.formService.form.projectTypeId;
+    return !!this.config?.projectTypes.find((pt) => pt.id === projectTypeId)?.networkEnabled;
   }
 
   get isFirstStep(): boolean {
@@ -61,19 +90,18 @@ export class NewExperiment implements OnInit {
 
   onNext(): void {
     if (this.isLastStep) {
-      if (this.isFormComplete()) {
-        this.doSubmit('finalised');
-      } else {
-        this.showDraftModal = true;
-      }
+      this.doSubmit('finalised');
     } else {
       this.visitedSteps.add(this.stepper.selectedIndex);
       this.stepper.next();
     }
   }
 
-  confirmDraft(): void {
-    this.showDraftModal = false;
+  canSaveDraft(): boolean {
+    return this.isProjectSetupComplete();
+  }
+
+  onSaveDraft(): void {
     this.doSubmit('draft');
   }
 
@@ -86,7 +114,7 @@ export class NewExperiment implements OnInit {
     const encoders = this.formService.form.encoders;
     return (
       encoders.length > 0 &&
-      encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null && e.encoderModeId !== null)
+      encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null)
     );
   }
 
@@ -94,19 +122,44 @@ export class NewExperiment implements OnInit {
     return this.formService.form.sequences.length > 0;
   }
 
+  hasNetworkConfig(): boolean {
+    const net = this.formService.form.networkEmulation;
+    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
+  }
+
+  isNetworkConfigComplete(): boolean {
+    return !this.needsNetworkConfig() || this.hasNetworkConfig();
+  }
+
   isFormComplete(): boolean {
-    return this.isProjectSetupComplete() && this.isEncodersComplete() && this.isSequencesComplete();
+    return (
+      this.isProjectSetupComplete() &&
+      this.isEncodersComplete() &&
+      this.isSequencesComplete() &&
+      this.isNetworkConfigComplete()
+    );
   }
 
   isStepError(stepIndex: number): boolean {
     return this.visitedSteps.has(stepIndex) && !this.canProceed(stepIndex);
   }
 
-  private doSubmit(status: string): void {
+  doSubmit(status: string): void {
     if (this.isSubmitting) return;
     this.isSubmitting = true;
     const form = this.formService.form;
     const editingId = this.formService.editingId;
+    const net = form.networkEmulation;
+    const encodePacketLoss = (v: number) => String(Math.round(v * 10)).padStart(3, '0');
+    const encodeMs = (v: number) => String(Math.round(v)).padStart(3, '0');
+    const networkEmulation = status === 'draft'
+      ? net
+      : {
+          packetLoss: net.packetLoss.length > 0 ? net.packetLoss.map(encodePacketLoss) : ['000'],
+          delay: net.delay.length > 0 ? net.delay.map(encodeMs) : ['000'],
+          jitter: net.jitter.length > 0 ? net.jitter.map(encodeMs) : ['000'],
+        };
+
     const basePayload = {
       name: form.name,
       status,
@@ -114,14 +167,14 @@ export class NewExperiment implements OnInit {
       encoders: form.encoders.map((e) => ({
         encoderTypeId: e.encoderTypeId,
         codecId: e.codecId,
-        encoderModeId: e.encoderModeId,
       })),
       sequences: form.sequences.map((s) => ({ videoFileId: s.videoFileId })),
+      networkEmulation,
     };
     this.submitError = null;
     const request$ = editingId
       ? this.experimentsService.patchExperiment(editingId, basePayload)
-      : this.experimentsService.createExperiment({ userId: 1, ...basePayload }); // TODO: replace userId with JWT
+      : this.experimentsService.createExperiment({ userId: this.userId, ...basePayload });
     request$.subscribe({
       next: () => this.router.navigate(['/experiments']),
       error: () => {
@@ -139,6 +192,8 @@ export class NewExperiment implements OnInit {
         return this.isEncodersComplete();
       case 2:
         return this.isSequencesComplete();
+      case 3:
+        return this.isNetworkConfigComplete();
       default:
         return true;
     }
