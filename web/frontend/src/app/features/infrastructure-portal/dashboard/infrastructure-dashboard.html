@@ -2,7 +2,7 @@
   <div class="notice-card">
     <div *ngIf="isAdmin; else generalNotice">
       <strong>Admin area only.</strong>
-      Manage encoders, network profiles, datasets and infrastructure resources that feed the
+      Manage encoder types, network profiles, datasets and infrastructure resources that feed the
       experiment system.
     </div>
     <ng-template #generalNotice>
@@ -25,7 +25,7 @@
       <mat-card class="quick-card">
         <div class="quick-header">
           <mat-icon>memory</mat-icon>
-          <h2>Encoders</h2>
+          <h2>Encoder Types</h2>
         </div>
 
         <p style="font-size: 20px;">
