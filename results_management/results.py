@@ -1,11 +1,36 @@
 import logging
+import math
 import os
 import sys
 
 from flask import Flask, jsonify, request
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from services import results_portal
 from storage import results_store
+
+
+# JSON cannot represent Infinity/NaN
+PERFECT_PSNR_DB = 0
+
+
+def _json_safe(value):
+    if isinstance(value, float):
+        if math.isnan(value):
+            return None
+        if math.isinf(value):
+            return PERFECT_PSNR_DB if value > 0 else None
+        return value
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return value
+
+
+class SafeJSONProvider(DefaultJSONProvider):
+    def dumps(self, obj, **kwargs):
+        return super().dumps(_json_safe(obj), **kwargs)
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -14,6 +39,7 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
+app.json = SafeJSONProvider(app)
 CORS(app)
 
 @app.route("/experiments-results", methods=["GET"])
