@@ -6,7 +6,13 @@ class Decoder(Transcoder):
     def build_command(cls, sequence) -> list[str]:
         (_, endpoint, output_file) = cls._get_codec(sequence=sequence)
 
-        command = ['ffmpeg', 
+        command = ['ffmpeg',
+                   # keep decoding lossy streams instead of aborting
+                   # skip corrupted packets and don't bail out on decode errors
+                   '-fflags',
+                   '+discardcorrupt',
+                   '-err_detect',
+                   'ignore_err',
                    # select input
                    '-i', 
                    endpoint, 

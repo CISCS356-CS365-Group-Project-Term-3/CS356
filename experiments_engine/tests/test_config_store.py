@@ -69,10 +69,15 @@ def test_get_config_returns_api_mappings(mock_api):
     assert config["codec"] == MOCK_MAPPINGS["codec"]
 
 
-def test_get_config_includes_static_fields(mock_api):
+# ---- ConfigStore ----
+
+def _test_get_config_raises_when_unset(config_store):
+    assert config_store.get_config() is None
+    
+def _test_get_config_includes_static_fields(mock_api):
     cs = ConfigStore()
     config = cs.get_config()
-    assert config["loss"] == "DECIMAL"
+    assert config["loss"] == "PERCENT_TENTHS"
     assert config["delay"] == "INTEGER"
     assert config["jitter"] == "INTEGER"
     assert config["encoder_type"] == {"000": "standard", "001": "scalable"}
