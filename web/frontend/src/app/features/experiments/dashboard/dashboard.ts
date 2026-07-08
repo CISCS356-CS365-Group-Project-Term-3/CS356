@@ -89,6 +89,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.experimentsService.getExperiments(this.scopedUserId()).subscribe({
       next: (data) => {
         this.experiments = data;
+        this.resyncSelectedExperiment();
         this.isLoading = false;
         this.updatePolling();
       },
@@ -96,6 +97,15 @@ export class Dashboard implements OnInit, OnDestroy {
         this.isLoading = false;
       },
     });
+  }
+
+  // prevents the runs table from showing stale data as an experiment is running
+  // as polling swaps out this.experiments for a fresh array every time, but
+  // selectedExperiment doesnt follow along by itself
+  private resyncSelectedExperiment(): void {
+    if (!this.selectedExperiment) return;
+    this.selectedExperiment =
+      this.experiments.find((e) => e.groupID === this.selectedExperiment!.groupID) ?? null;
   }
 
   ngOnDestroy(): void {
@@ -107,11 +117,13 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.isAdmin && this.showAllExperiments ? undefined : (this.userId ?? undefined);
   }
 
+  // deliberately checks the raw run statuses rather than getGroupStatus(), since that
+  // changes to failed as soon as any one run fails and other runs
+  // in the same experiment would still be pending/running, stopping polling too early
   private hasActiveRuns(): boolean {
-    return this.experiments.some((exp) => {
-      const status = this.getGroupStatus(exp);
-      return status === 'pending' || status === 'running';
-    });
+    return this.experiments.some((exp) =>
+      (exp.runs ?? []).some((r) => r.status === 'pending' || r.status === 'running'),
+    );
   }
 
   // called after every load and every poll tick, decides if we should keep polling
@@ -130,7 +142,8 @@ export class Dashboard implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.experiments = data;
-          this.updatePolling(); // stops itself once nothing's pending/running anymore
+          this.resyncSelectedExperiment();
+          this.updatePolling(); // stops itself once nothings pending/running anymore
         },
       });
   }
