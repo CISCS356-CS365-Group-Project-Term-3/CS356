@@ -208,7 +208,7 @@ export class NewExperiment implements OnInit {
   }
 
   // indices line up with the steps in new-experiment.html, review step has
-  // nothing of its own to validate so it just falls through to true
+  // nothing of its own to validate so it just defaultsto true
   canProceed(stepIndex: number): boolean {
     switch (stepIndex) {
       case 0:
