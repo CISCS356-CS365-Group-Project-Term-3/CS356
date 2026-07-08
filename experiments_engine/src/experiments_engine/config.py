@@ -28,6 +28,8 @@ class Settings:
 
     log_level = os.getenv("LOG_LEVEL", "INFO")
 
+    environment = os.getenv('ENVIRONMENT', 'dev')
+
     class NetworkSimSettings:
         namespace_1 =  os.getenv("NAMESPACE_1", "namespace_1")
         namespace_2 =  os.getenv("NAMESPACE_2", "namespace_2")
