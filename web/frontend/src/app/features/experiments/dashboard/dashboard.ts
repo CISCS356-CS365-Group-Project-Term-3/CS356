@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   AllCommunityModule,
@@ -28,6 +29,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     MatButtonModule,
     MatCardModule,
     MatSlideToggleModule,
+    MatProgressSpinnerModule,
     AgGridAngular,
     RouterLink,
     CommonModule,
@@ -216,12 +218,12 @@ getGroupStatus(exp: Experiment): string {
   private formatPacketLoss(raw: string | null | undefined): string {
     if (raw == null) return 'N/A';
     const n = Number(raw);
-    return isNaN(n) ? 'N/A' : (n / 10).toFixed(1);
+    return isNaN(n) ? 'N/A' : (n / 10).toFixed(1); // 200 -> 20.0
   }
 
   private formatMs(raw: string | null | undefined): string {
     if (raw == null) return 'N/A';
-    const n = Number(raw);
+    const n = Number(raw); // strips 0 padding, 005 -> 5
     return isNaN(n) ? 'N/A' : String(n);
   }
 
@@ -236,7 +238,9 @@ getGroupStatus(exp: Experiment): string {
   ngOnInit() {
     this.infrastructureService.refreshConfig();
     this.infrastructureService.getConfig().subscribe({
-      next: (config) => { this.config = config; },
+      next: (config) => {
+        this.config = config;
+      },
       error: () => {},
     });
     try {
@@ -246,7 +250,9 @@ getGroupStatus(exp: Experiment): string {
           this.isAdmin = user.user_role === 'admin';
           this.loadExperiments();
         },
-        error: () => { this.loadExperiments(); },
+        error: () => {
+          this.loadExperiments();
+        },
       });
     } catch {
       this.loadExperiments();
@@ -254,7 +260,7 @@ getGroupStatus(exp: Experiment): string {
   }
 
   loadExperiments(): void {
-    const userId = (this.isAdmin && this.showAllExperiments) ? undefined : this.userId;
+    const userId = this.isAdmin && this.showAllExperiments ? undefined : this.userId;
     this.experimentsService.getExperiments(userId ?? undefined).subscribe({
       next: (data) => {
         this.experiments = data;
