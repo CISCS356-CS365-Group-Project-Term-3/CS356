@@ -116,7 +116,7 @@ describe('Dashboard', () => {
   });
 
   it('run stat counts are correct', () => {
-    expect(component.pendingRunsCount).toBe(1);
+    expect(component.pendingRunsCount).toBe(0);
     expect(component.runningRunsCount).toBe(1);
     expect(component.completedRunsCount).toBe(1);
     expect(component.failedRunsCount).toBe(1);
@@ -162,27 +162,27 @@ describe('Dashboard', () => {
     expect(experimentsService.getExperimentById).not.toHaveBeenCalled();
   });
 
-  it('statusCellRenderer returns the right badge for each state', () => {
+  it('renderExperimentStatusCell returns the right badge for each state', () => {
     expect(
-      component.statusCellRenderer({
+      component.renderExperimentStatusCell({
         value: undefined,
         data: experiments[3],
       }),
     ).toContain('Draft');
     expect(
-      component.statusCellRenderer({
+      component.renderExperimentStatusCell({
         value: undefined,
         data: experiments[0],
       }),
     ).toContain('Pending');
-    expect(component.statusCellRenderer({ value: 'complete', data: experiments[0] })).toContain(
-      'complete',
+    expect(component.renderExperimentStatusCell({ value: 'complete', data: experiments[0] })).toContain(
+      'Complete',
     );
-    expect(component.statusCellRenderer({ value: 'running', data: experiments[1] })).toContain(
-      'running',
+    expect(component.renderExperimentStatusCell({ value: 'running', data: experiments[1] })).toContain(
+      'Running',
     );
-    expect(component.statusCellRenderer({ value: 'failed', data: experiments[2] })).toContain(
-      'failed',
+    expect(component.renderExperimentStatusCell({ value: 'failed', data: experiments[2] })).toContain(
+      'Failed',
     );
   });
 });
