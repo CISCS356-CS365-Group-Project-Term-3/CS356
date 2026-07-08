@@ -119,23 +119,30 @@ class Engine:
 
         return self.transcoder_result(result, 'decoding')
 
-    def run_transcode(self, encoder_sequence, decoder_sequence, timeout=None):
+    def run_transcode(self, encoder_sequence, decoder_sequence, timeout=None, tolerate_decode_failure=False):
         encoder_command = namespace_command_prefix(Settings.NetworkSimSettings.namespace_1) + Encoder.build_command(encoder_sequence)
         decoder_command = namespace_command_prefix(Settings.NetworkSimSettings.namespace_2) + Decoder.build_command(decoder_sequence)
 
         results = Transcoder.run_piped(encoder_command, decoder_command, timeout)
 
         self.transcoder_result(results['sender'], 'encoding')
-        self.transcoder_result(results['reciever'], 'decoding')
+        self.transcoder_result(results['reciever'], 'decoding', tolerate_failure=tolerate_decode_failure)
 
-    def transcoder_result(self, result, type):
+    def transcoder_result(self, result, type, tolerate_failure=False):
         success = result['return_code'] == 0
 
         if not success:
-            raise RuntimeError(
+            message = (
                 f"{type} failed with return code {result['return_code']}: "
                 f"{result.get('stderr', 'unknown error')}"
             )
+
+            if tolerate_failure:
+                # keep whatever was decoded so metrics can still be calculated
+                logger.warning(message)
+                return result
+
+            raise RuntimeError(message)
 
         return result
 
@@ -179,7 +186,13 @@ class Engine:
             logger.info("network setup")
 
             # run encode & decode across simulated network
-            encoding_result = self.run_transcode(encoder_payload, decoder_payload)
+            # if this run injects packet loss, allow the decoder to fail without
+            # aborting the experiment so we still capture how badly the codec degrades
+            encoding_result = self.run_transcode(
+                encoder_payload,
+                decoder_payload,
+                tolerate_decode_failure=bool(decoded.get("loss"))
+            )
             logger.debug(encoding_result)
 
             logger.info("experiment run complete")

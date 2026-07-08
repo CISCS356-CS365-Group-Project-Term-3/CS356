@@ -56,25 +56,21 @@ class Metric(ABC):
                 r_a: dict[str, np.typing.NDArray[np.float32]] = {}
                 (r_a['combined'], r_a['y'], r_a['u'], r_a['v']) = (np.empty(frame_count, dtype=np.float32) for _ in range(4))
 
-                ## build a map of the indices of the values we want (faster than scanning every single line)
-                # get first line
-                first_line = str(ffmpeg_output.readline())
-                # get rid of 'n:13' style index
-                first_line = self._slice_relevant(first_line)
-                # build index map
-                index_map = (self._find_index(first_line, target) for target in self.file_targets.get_tuple())
+                # parse each line by searching for each value's prefix on that line.
+                targets = self.file_targets.get_tuple()
+                arrays = list(r_a.values())
 
                 counter = 0
-
-                values_indexes = list(zip(r_a.values(), index_map)) # zip values and indexes for looping
 
                 ffmpeg_output.seek(0) # seek to start of file
                 for line_bytes in ffmpeg_output: # each line in the temp file
                     line = str(line_bytes)
-                    line = self._slice_relevant(line) # always discard initial 'n:13' style index or index map values get messed up
-                    for v,i in values_indexes:
-                        v[counter] = float(line[i[0]:i[1]]) 
-                        val = float(line[i[0]:i[1]])
+                    if self.file_targets.average not in line: # skip blank/partial lines
+                        continue
+                    if counter >= frame_count:
+                        break
+                    for arr, target in zip(arrays, targets):
+                        arr[counter] = float(self._parse_output(line, target))
 
                     counter += 1
 
