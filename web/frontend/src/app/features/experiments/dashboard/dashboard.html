@@ -19,7 +19,7 @@
   <div class="stats">
     <mat-card
       (click)="setStatusFilter('pending')"
-      [class.active]="activeStatusFilter === 'pending'"
+      [class.active-pending]="activeStatusFilter === 'pending'"
     >
       <mat-card-content>
         <div class="stat-val blue">{{ pendingRunsCount }}</div>
@@ -28,7 +28,7 @@
     </mat-card>
     <mat-card
       (click)="setStatusFilter('running')"
-      [class.active]="activeStatusFilter === 'running'"
+      [class.active-running]="activeStatusFilter === 'running'"
     >
       <mat-card-content>
         <div class="stat-val warn">{{ runningRunsCount }}</div>
@@ -37,14 +37,17 @@
     </mat-card>
     <mat-card
       (click)="setStatusFilter('complete')"
-      [class.active]="activeStatusFilter === 'complete'"
+      [class.active-complete]="activeStatusFilter === 'complete'"
     >
       <mat-card-content>
         <div class="stat-val green">{{ completedRunsCount }}</div>
         <div class="stat-lbl">Completed</div>
       </mat-card-content>
     </mat-card>
-    <mat-card (click)="setStatusFilter('failed')" [class.active]="activeStatusFilter === 'failed'">
+    <mat-card
+      (click)="setStatusFilter('failed')"
+      [class.active-failed]="activeStatusFilter === 'failed'"
+    >
       <mat-card-content>
         <div class="stat-val red">{{ failedRunsCount }}</div>
         <div class="stat-lbl">Failed</div>
@@ -65,7 +68,9 @@
   </div>
 
   @if (isLoading) {
-    <p class="state-msg">Loading experiments...</p>
+    <div class="loading-wrap">
+      <mat-spinner diameter="40" />
+    </div>
   } @else if (experiments.length === 0) {
     <p class="state-msg">
       No experiments yet. Click <strong>+ New Experiment</strong> to create one.

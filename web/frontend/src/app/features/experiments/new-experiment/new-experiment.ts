@@ -122,8 +122,22 @@ export class NewExperiment implements OnInit {
     return this.formService.form.sequences.length > 0;
   }
 
+  hasNetworkConfig(): boolean {
+    const net = this.formService.form.networkEmulation;
+    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
+  }
+
+  isNetworkConfigComplete(): boolean {
+    return !this.needsNetworkConfig() || this.hasNetworkConfig();
+  }
+
   isFormComplete(): boolean {
-    return this.isProjectSetupComplete() && this.isEncodersComplete() && this.isSequencesComplete();
+    return (
+      this.isProjectSetupComplete() &&
+      this.isEncodersComplete() &&
+      this.isSequencesComplete() &&
+      this.isNetworkConfigComplete()
+    );
   }
 
   isStepError(stepIndex: number): boolean {
@@ -138,11 +152,13 @@ export class NewExperiment implements OnInit {
     const net = form.networkEmulation;
     const encodePacketLoss = (v: number) => String(Math.round(v * 10)).padStart(3, '0');
     const encodeMs = (v: number) => String(Math.round(v)).padStart(3, '0');
-    const networkEmulation = {
-      packetLoss: net.packetLoss.length > 0 ? net.packetLoss.map(encodePacketLoss) : ['000'],
-      delay: net.delay.length > 0 ? net.delay.map(encodeMs) : ['000'],
-      jitter: net.jitter.length > 0 ? net.jitter.map(encodeMs) : ['000'],
-    };
+    const networkEmulation = status === 'draft'
+      ? net
+      : {
+          packetLoss: net.packetLoss.length > 0 ? net.packetLoss.map(encodePacketLoss) : ['000'],
+          delay: net.delay.length > 0 ? net.delay.map(encodeMs) : ['000'],
+          jitter: net.jitter.length > 0 ? net.jitter.map(encodeMs) : ['000'],
+        };
 
     const basePayload = {
       name: form.name,
@@ -177,7 +193,7 @@ export class NewExperiment implements OnInit {
       case 2:
         return this.isSequencesComplete();
       case 3:
-        return true; // network emulation is optional
+        return this.isNetworkConfigComplete();
       default:
         return true;
     }
