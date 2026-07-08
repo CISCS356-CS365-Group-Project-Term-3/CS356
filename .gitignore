@@ -3,7 +3,10 @@ ssh/
 experiments_engine/tests/test_data/*
 !experiments_engine/tests/test_data/*.y4m
 
-resources/*
+resources/input/*
+resources/output/*
+
+!resources/**/*.md
 
 **/.env
 **/__pycache__
