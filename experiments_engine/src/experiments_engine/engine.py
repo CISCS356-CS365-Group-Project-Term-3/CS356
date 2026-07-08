@@ -1,5 +1,6 @@
 import logging
 import os
+import requests
 
 from .network import setup_ip_to_ip, namespace_command_prefix, encoder_endpoint, decoder_endpoint, teardown_network
 from .metric import Ssim, Psnr
@@ -24,8 +25,21 @@ class Engine:
         self.config_store: ConfigStore = config_store
         self.output_store: OutputStore = output_store
 
+    def update_management_status(self, experiment_id, status):
+        x = requests.post(f'{Settings.experiment_management_url}/experiments/runs/{experiment_id}/{status}')
+        if x.status_code == 200:
+            logger.info(f'status for experiment {experiment_id} successfully updated as {status} in management backend')
+        else :
+            logger.info(f'error updating  status for experiment {experiment_id}: {x}')
+
     def process(self, experiment):
         (success, id, result) = self.run(experiment)
+        if success:
+            self.update_management_status(id, 'complete')
+            self.status = "COMPLETE"
+        else:
+            self.update_management_status(id, 'failed')
+            self.status = "failed"
         self.send_result(id, result)
         return success
 
@@ -43,6 +57,7 @@ class Engine:
 
             experiment_id = experiment['project']['experiment_id']
 
+            self.update_management_status(experiment_id, 'running')
             self.status = "RUNNING"
 
             sequence = experiment.get("sequence") # don't need default, already validated
