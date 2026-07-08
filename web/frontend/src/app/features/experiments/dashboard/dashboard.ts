@@ -50,6 +50,7 @@ export class Dashboard implements OnInit, OnDestroy {
   isAdmin: boolean = false;
   private userId: number | null = null;
   private config: InfrastructureConfig | null = null;
+  // handle for the live status poll, only set while something's actually running
   private pollSub?: Subscription;
 
   constructor(
@@ -101,6 +102,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.stopPolling();
   }
 
+  // undefined means "all users", only admins with the toggle on get that
   private scopedUserId(): number | undefined {
     return this.isAdmin && this.showAllExperiments ? undefined : (this.userId ?? undefined);
   }
@@ -112,6 +114,7 @@ export class Dashboard implements OnInit, OnDestroy {
     });
   }
 
+  // called after every load and every poll tick, decides if we should keep polling
   private updatePolling(): void {
     if (this.hasActiveRuns()) {
       this.startPolling();
@@ -121,13 +124,13 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   private startPolling(): void {
-    if (this.pollSub) return;
+    if (this.pollSub) return; // already running, don't stack another interval
     this.pollSub = interval(POLL_INTERVAL_MS)
       .pipe(switchMap(() => this.experimentsService.getExperiments(this.scopedUserId())))
       .subscribe({
         next: (data) => {
           this.experiments = data;
-          this.updatePolling();
+          this.updatePolling(); // stops itself once nothing's pending/running anymore
         },
       });
   }
@@ -147,6 +150,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.selectedExperiment = rows.length > 0 ? rows[0] : null;
   }
 
+  // ag grid doesnt deselect on a second click by itself, so this does it manually
   onRowClicked(event: RowClickedEvent): void {
     if (this.selectedExperiment?.groupID === event.data.groupID) {
       event.node.setSelected(false);
@@ -236,12 +240,14 @@ export class Dashboard implements OnInit, OnDestroy {
     },
   ];
 
+  // lets ag grid match rows across polling updates so it only repaints the badge that changed
   getRowId = (params: { data: Experiment }) => String(params.data.groupID);
 
   rowSelection: RowSelectionOptions = {
     mode: 'singleRow',
   };
 
+  // drafts toggle and status chip stack which both can be active at once
   get filteredExperiments(): Experiment[] {
     let experiments = this.showDraftsOnly
       ? this.experiments.filter((e) => e.status === 'draft')
@@ -255,6 +261,7 @@ export class Dashboard implements OnInit, OnDestroy {
     return experiments;
   }
 
+  // rolls up all the runs in an experiment into one badge, worst status wins
   getGroupStatus(exp: Experiment): string {
     if (exp.status === 'draft') return 'draft';
     const runs = exp.runs ?? [];
@@ -274,12 +281,15 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.selectedExperiment.runs;
   }
 
+  // reset the filter/selection when switching views so you don't end up staring
+  // at an empty grid because the old filter doesn't match anything in drafts
   toggleDrafts(): void {
     this.showDraftsOnly = !this.showDraftsOnly;
     this.activeStatusFilter = null;
     this.selectedExperiment = null;
   }
 
+  // these count experiments (group status), not individual runs, despite the name
   get pendingRunsCount() {
     return this.experiments.filter((e) => this.getGroupStatus(e) === 'pending').length;
   }
@@ -300,6 +310,8 @@ export class Dashboard implements OnInit, OnDestroy {
     this.activeStatusFilter = this.activeStatusFilter === status ? null : status;
   }
 
+  // hands the selected experiment off to the wizards form service, the wizard
+  // itself reads it back out via applyPendingTemplate() once it loads
   createFromTemplate(): void {
     if (!this.selectedExperiment) return;
     this.formService.setTemplate(this.selectedExperiment);
@@ -312,6 +324,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.router.navigate(['/experiments/new']);
   }
 
+  // these all fall back to N/A if infra config hasnt loaded yet or the IDs gone
   private getEncoderTypeName(id: number | null | undefined): string {
     if (id == null) return 'N/A';
     return this.config?.encoderTypes.find((e) => e.id === id)?.name ?? 'N/A';
@@ -340,6 +353,8 @@ export class Dashboard implements OnInit, OnDestroy {
     return isNaN(n) ? 'N/A' : String(n);
   }
 
+  // colours and labels for both the experiment grid and the run detail grid,
+  // renderStatusBadge below is shared by both
   private static readonly STATUS_STYLES: Record<string, string> = {
     complete: 'background:#e8f5e9;color:#388e3c',
     running: 'background:#fff3e0;color:#f57c00',
@@ -359,6 +374,8 @@ export class Dashboard implements OnInit, OnDestroy {
   renderExperimentStatusCell(params: { value: string | undefined; data: Experiment | undefined }) {
     if (!params.data) return '';
 
+    // value comes from the colDefss valueGetter so it's basically always set,
+    // the fallback here is jus for ag grid calling this early
     const statusValue = params.value ?? (params.data.status === 'draft' ? 'draft' : 'pending');
     return this.renderStatusBadge(statusValue);
   }
