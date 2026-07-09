@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatInputModule } from '@angular/material/input';
 import { NewExperimentFormService } from '../../new-experiment-form.service';
 import { InfrastructureService } from '../../../services/infrastructure';
 import { TransmissionCondition } from '../../../models/infrastructure-config.model';
@@ -17,18 +15,23 @@ const FIELD_CONDITION_NAME: Record<NetworkField, string> = {
 
 @Component({
   selector: 'app-network-emulation',
-  imports: [MatChipsModule, MatFormFieldModule, MatIconModule],
+  imports: [MatFormFieldModule, MatInputModule],
   templateUrl: './network-emulation.html',
   styleUrl: './network-emulation.scss',
 })
 export class NetworkEmulationStep implements OnInit {
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
   readonly fields: NetworkField[] = ['packetLoss', 'delay', 'jitter'];
 
   conditions: Record<NetworkField, TransmissionCondition | undefined> = {
     packetLoss: undefined,
     delay: undefined,
     jitter: undefined,
+  };
+
+  errors: Record<NetworkField, string | null> = {
+    packetLoss: null,
+    delay: null,
+    jitter: null,
   };
 
   constructor(
@@ -60,34 +63,57 @@ export class NetworkEmulationStep implements OnInit {
     const c = this.conditions[field];
     if (!c) return 'Enter a value';
     const u = c.unit ?? '';
-    return `${c.lowerBound}${u} – ${c.upperBound}${u}`;
+    return `${this.getMin(field, c)}${u} – ${c.upperBound}${u}`;
   }
 
-  addValue(field: NetworkField, event: MatChipInputEvent): void {
-    const raw = event.value.trim();
+  private getMin(field: NetworkField, c: TransmissionCondition | undefined): number {
+    const lowerBound = c?.lowerBound ?? 0;
+    return field === 'packetLoss' ? Math.max(lowerBound, 0.1) : lowerBound;
+  }
+
+  onBlur(field: NetworkField, input: HTMLInputElement): void {
+    this.updateValue(field, input.value);
+    const stored = this.formService.form.networkEmulation[field];
+    input.value = stored != null ? String(stored) : '';
+  }
+
+  clearError(field: NetworkField): void {
+    this.errors[field] = null;
+  }
+
+  private updateValue(field: NetworkField, rawValue: string): void {
+    const raw = rawValue.trim();
+    this.errors[field] = null;
+
+    if (raw === '') {
+      this.formService.form.networkEmulation[field] = null;
+      return;
+    }
+
     const c = this.conditions[field];
     const max = c?.upperBound ?? Infinity;
+    const unit = this.getUnit(field);
     let num: number;
+
+    const min = this.getMin(field, c);
 
     if (field === 'packetLoss') {
       num = Math.round(parseFloat(raw) * 10) / 10;
-      if (isNaN(num) || num < 0.1 || num > max) { event.chipInput.clear(); return; }
+      if (isNaN(num) || num < min || num > max) {
+        this.formService.form.networkEmulation[field] = null;
+        this.errors[field] = `Enter a value between ${min}${unit} and ${max}${unit}`;
+        return;
+      }
     } else {
       const parsed = parseFloat(raw);
-      if (isNaN(parsed) || !Number.isInteger(parsed)) { event.chipInput.clear(); return; }
+      if (isNaN(parsed) || !Number.isInteger(parsed) || parsed < min || parsed > max) {
+        this.formService.form.networkEmulation[field] = null;
+        this.errors[field] = `Enter a whole number between ${min}${unit} and ${max}${unit}`;
+        return;
+      }
       num = parsed;
-      const min = c?.lowerBound ?? 0;
-      if (num < min || num > max) { event.chipInput.clear(); return; }
     }
 
-    const current = this.formService.form.networkEmulation[field];
-    if (!current.includes(num)) {
-      current.push(num);
-    }
-    event.chipInput.clear();
-  }
-
-  removeValue(field: NetworkField, index: number): void {
-    this.formService.form.networkEmulation[field].splice(index, 1);
+    this.formService.form.networkEmulation[field] = num;
   }
 }

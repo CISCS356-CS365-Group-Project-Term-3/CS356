@@ -49,6 +49,8 @@ export class NewExperiment implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // picks up whatever dashboard.ts stashed via setTemplate/setDraft before routing here,
+    // does nothing if you just came in via "New Experiment" with nothing pending
     this.formService.applyPendingTemplate();
     try {
       this.userService.getUserInfo().subscribe({
@@ -56,17 +58,23 @@ export class NewExperiment implements OnInit {
           this.userId = user.user_id;
           this.userInfoLoaded = true;
         },
-        error: () => { this.userInfoLoaded = true; },
+        error: () => {
+          this.userInfoLoaded = true;
+        },
       });
     } catch {
       this.userInfoLoaded = true;
     }
     this.infrastructureService.getConfig().subscribe({
-      next: (config) => { this.config = config; },
+      next: (config) => {
+        this.config = config;
+      },
       error: () => {},
     });
   }
 
+  // whether the current project type even shows the network emulation step,
+  // driven by infra config rather than hardcoded here
   needsNetworkConfig(): boolean {
     const projectTypeId = this.formService.form.projectTypeId;
     return !!this.config?.projectTypes.find((pt) => pt.id === projectTypeId)?.networkEnabled;
@@ -76,6 +84,7 @@ export class NewExperiment implements OnInit {
     return this.stepper?.selectedIndex === 0;
   }
 
+  // step count isn't fixed, network emulation only shows up for some project types
   get isLastStep(): boolean {
     return this.stepper?.selectedIndex === this.stepper?.steps.length - 1;
   }
@@ -92,6 +101,8 @@ export class NewExperiment implements OnInit {
     if (this.isLastStep) {
       this.doSubmit('finalised');
     } else {
+      // remembers which steps youve actually been on, isStepError below only
+      // shows the warning triangle for steps youve visited and left incomplete
       this.visitedSteps.add(this.stepper.selectedIndex);
       this.stepper.next();
     }
@@ -113,8 +124,7 @@ export class NewExperiment implements OnInit {
   isEncodersComplete(): boolean {
     const encoders = this.formService.form.encoders;
     return (
-      encoders.length > 0 &&
-      encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null)
+      encoders.length > 0 && encoders.every((e) => e.encoderTypeId !== null && e.codecId !== null)
     );
   }
 
@@ -124,7 +134,7 @@ export class NewExperiment implements OnInit {
 
   hasNetworkConfig(): boolean {
     const net = this.formService.form.networkEmulation;
-    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
+    return net.packetLoss != null || net.delay != null || net.jitter != null;
   }
 
   isNetworkConfigComplete(): boolean {
@@ -140,6 +150,8 @@ export class NewExperiment implements OnInit {
     );
   }
 
+  // only flags a step red once yove actually been on it and left it incomplete,
+  // so a fresh wizard doesnt open already covered in warning triangles
   isStepError(stepIndex: number): boolean {
     return this.visitedSteps.has(stepIndex) && !this.canProceed(stepIndex);
   }
@@ -150,15 +162,26 @@ export class NewExperiment implements OnInit {
     const form = this.formService.form;
     const editingId = this.formService.editingId;
     const net = form.networkEmulation;
+    // packet loss goes out as tenths of a percent so it fits the engines 3 digit
+    // field (22.5% -> 225), delay/jitter just get rounded and padded the same way
     const encodePacketLoss = (v: number) => String(Math.round(v * 10)).padStart(3, '0');
     const encodeMs = (v: number) => String(Math.round(v)).padStart(3, '0');
-    const networkEmulation = status === 'draft'
-      ? net
-      : {
-          packetLoss: net.packetLoss.length > 0 ? net.packetLoss.map(encodePacketLoss) : ['000'],
-          delay: net.delay.length > 0 ? net.delay.map(encodeMs) : ['000'],
-          jitter: net.jitter.length > 0 ? net.jitter.map(encodeMs) : ['000'],
-        };
+    // drafts keep the raw values so the wizard can load them back in and let you
+    // keep editing, only a real submit encodes them for the backend/engine
+    // still wrapped in single element arrays since thats the format the
+    // backend expects, it just never gets more than one value per field now
+    const networkEmulation =
+      status === 'draft'
+        ? {
+            packetLoss: net.packetLoss != null ? [net.packetLoss] : [],
+            delay: net.delay != null ? [net.delay] : [],
+            jitter: net.jitter != null ? [net.jitter] : [],
+          }
+        : {
+            packetLoss: net.packetLoss != null ? [encodePacketLoss(net.packetLoss)] : ['000'],
+            delay: net.delay != null ? [encodeMs(net.delay)] : ['000'],
+            jitter: net.jitter != null ? [encodeMs(net.jitter)] : ['000'],
+          };
 
     const basePayload = {
       name: form.name,
@@ -184,6 +207,8 @@ export class NewExperiment implements OnInit {
     });
   }
 
+  // indices line up with the steps in new-experiment.html, review step has
+  // nothing of its own to validate so it just defaultsto true
   canProceed(stepIndex: number): boolean {
     switch (stepIndex) {
       case 0:

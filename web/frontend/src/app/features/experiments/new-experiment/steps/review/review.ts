@@ -50,22 +50,22 @@ export class ReviewStep implements OnInit {
 
   get hasNetworkEmulation(): boolean {
     const net = this.formService.form.networkEmulation;
-    return net.packetLoss.length > 0 || net.delay.length > 0 || net.jitter.length > 0;
+    return net.packetLoss != null || net.delay != null || net.jitter != null;
   }
 
   get packetLossDisplay(): string {
-    const vals = this.formService.form.networkEmulation.packetLoss;
-    return vals.length > 0 ? vals.map((v) => v + '%').join(', ') : '—';
+    const val = this.formService.form.networkEmulation.packetLoss;
+    return val != null ? val + '%' : '—';
   }
 
   get delayDisplay(): string {
-    const vals = this.formService.form.networkEmulation.delay;
-    return vals.length > 0 ? vals.map((v) => v + 'ms').join(', ') : '—';
+    const val = this.formService.form.networkEmulation.delay;
+    return val != null ? val + 'ms' : '—';
   }
 
   get jitterDisplay(): string {
-    const vals = this.formService.form.networkEmulation.jitter;
-    return vals.length > 0 ? vals.map((v) => v + 'ms').join(', ') : '—';
+    const val = this.formService.form.networkEmulation.jitter;
+    return val != null ? val + 'ms' : '—';
   }
 
   getSequenceDisplay(seq: SequenceConfig): SequenceDisplay {

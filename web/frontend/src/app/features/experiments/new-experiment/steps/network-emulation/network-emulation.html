@@ -1,27 +1,27 @@
 <div class="step-content">
   <p class="step-description">
-    Configure network emulation conditions. Add multiple values per field to compare their effect across experiments. All fields are optional.
+    Configure network emulation conditions for this experiment. All fields are optional.
   </p>
 
   <div class="fields-row">
     @for (field of fields; track field) {
-      <mat-form-field appearance="outline">
-        <mat-label>{{ getLabel(field) }}</mat-label>
-        <mat-chip-grid #chipGrid>
-          @for (val of formService.form.networkEmulation[field]; track $index; let i = $index) {
-            <mat-chip-row (removed)="removeValue(field, i)">
-              {{ val }}{{ getUnit(field) }}
-              <button matChipRemove><mat-icon>cancel</mat-icon></button>
-            </mat-chip-row>
-          }
+      <div class="network-field">
+        <mat-form-field appearance="outline" [color]="errors[field] ? 'warn' : 'primary'">
+          <mat-label>{{ getLabel(field) }}</mat-label>
           <input
+            matInput
+            type="text"
+            [value]="formService.form.networkEmulation[field] ?? ''"
             [placeholder]="getBoundsHint(field)"
-            [matChipInputFor]="chipGrid"
-            [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-            (matChipInputTokenEnd)="addValue(field, $event)"
+            (blur)="onBlur(field, inputEl)"
+            (input)="clearError(field)"
+            #inputEl
           />
-        </mat-chip-grid>
-      </mat-form-field>
+        </mat-form-field>
+        @if (errors[field]) {
+          <p class="field-error">{{ errors[field] }}</p>
+        }
+      </div>
     }
   </div>
 </div>
